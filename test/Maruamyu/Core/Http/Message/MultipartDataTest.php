@@ -12,8 +12,14 @@ class MultipartDataTest extends \PHPUnit_Framework_TestCase
 
     public function test_emptyName()
     {
-        $this->expectException('InvalidArgumentException');
-        new MultipartData('', Stream::fromTemp());
+        # for phpunit 4.*
+        try {
+            new MultipartData('', Stream::fromTemp());
+        } catch(\InvalidArgumentException $exception) {
+            $this->assertTrue(true);
+            return;
+        }
+        $this->assertFalse(true);
     }
 
     public function test_stream()

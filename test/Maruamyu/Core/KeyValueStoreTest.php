@@ -92,9 +92,14 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
     public function test_exceptionByEmptyKeyGet()
     {
         $kvs = new KeyValueStore();
-        $this->expectException('InvalidArgumentException');
-        $kvs->get(null);
-        $kvs->get('');
+        # for phpunit 4.*
+        try {
+            $kvs->get('');
+        } catch(\InvalidArgumentException $exception) {
+            $this->assertTrue(true);
+            return;
+        }
+        $this->assertFalse(true);
     }
 
     /**
@@ -112,9 +117,14 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
     public function test_exceptionByEmptyKeySet()
     {
         $kvs = new KeyValueStore();
-        $this->expectException('InvalidArgumentException');
-        $kvs->set(null, true);
-        $kvs->set('', true);
+        # for phpunit 4.*
+        try {
+            $kvs->set('', true);
+        } catch(\InvalidArgumentException $exception) {
+            $this->assertTrue(true);
+            return;
+        }
+        $this->assertFalse(true);
     }
 
     /**
@@ -132,9 +142,14 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
     public function test_exceptionByEmptyKeyDelete()
     {
         $kvs = new KeyValueStore();
-        $this->expectException('InvalidArgumentException');
-        $kvs->delete(null);
-        $kvs->delete('');
+        # for phpunit 4.*
+        try {
+            $kvs->delete('');
+        } catch(\InvalidArgumentException $exception) {
+            $this->assertTrue(true);
+            return;
+        }
+        $this->assertFalse(true);
     }
 
     /**

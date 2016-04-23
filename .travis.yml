@@ -1,6 +1,6 @@
 language: php
 before_script:
-  - composer install --dev
+  - composer install
 php:
   - '5.4'
   - '5.5'
