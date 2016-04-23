@@ -60,6 +60,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
         $handler = tmpfile();
         fwrite($handler, 'piyo');
+        fseek($handler, 0, SEEK_SET);
         $response = new Response($handler);
         $this->assertEquals('piyo', strval($response->getBody()));
     }
