@@ -30,7 +30,11 @@ class KeyValueStore implements KeyValueStoreInterface
         if (strlen($key) < 1) {
             throw new \InvalidArgumentException('key is empty.');
         }
-        return $this->data[$key];
+        if (isset($this->data[$key])) {
+            return $this->data[$key];
+        } else {
+            return [];
+        }
     }
 
     /**
