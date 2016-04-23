@@ -23,6 +23,9 @@
         "lib-openssl": "*",
         "psr/http-message": "1.*"
     },
+    "require-dev": {
+        "phpunit/phpunit": "5.*"
+    },
     "autoload": {
         "psr-4": {
             "Maruamyu\\": "src/Maruamyu/"
