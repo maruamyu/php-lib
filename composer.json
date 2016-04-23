@@ -2,7 +2,7 @@
     "name": "maruamyu/web-app-lib",
     "type": "library",
     "description": "simple and useful library for web application.",
-    "keywords": [],
+    "keywords": ["psr-7", "http", "request", "response"],
     "homepage": "https://github.com/maruamyu/php-lib",
     "license": "MIT",
     "authors": [
@@ -19,6 +19,7 @@
     ],
     "require": {
         "php": ">=5.4.0",
+        "lib-openssl": "*",
         "psr/http-message": "1.*"
     },
     "autoload": {
