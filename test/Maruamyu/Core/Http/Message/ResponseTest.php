@@ -58,7 +58,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $response = new Response($stream);
         $this->assertEquals('fuga', strval($response->getBody()));
 
-        $handler = tmpfile();
+        $handler = fopen('php://temp', 'c+b');
         fwrite($handler, 'piyo');
         fseek($handler, 0, SEEK_SET);
         $response = new Response($handler);
