@@ -37,22 +37,18 @@ class RsaSha1Signer implements SignerInterface
      */
     public function __construct($publicKey, $privateKey = null, $passphrase = null)
     {
-        if (is_resource($publicKey)) {
-            $this->publicKey = $publicKey;
-        } elseif (is_string($publicKey)) {
-            $this->publicKey = openssl_pkey_get_public($publicKey);
-        } else {
+        $publicKeyResource = static::fetchPublicKey($publicKey);
+        if (!$publicKeyResource) {
             throw new \InvalidArgumentException('invalid public key.');
         }
+        $this->publicKey = $publicKeyResource;
 
-        if (is_null($privateKey)) {
-            $this->privateKey = null;
-        } elseif (is_resource($privateKey)) {
-            $this->privateKey = $privateKey;
-        } elseif (is_string($privateKey)) {
-            $this->privateKey = openssl_pkey_get_private($privateKey, $passphrase);
-        } else {
-            throw new \InvalidArgumentException('invalid private key.');
+        if ($privateKey) {
+            $privateKeyResource = static::fetchPrivateKey($privateKey, $passphrase);
+            if (!$privateKeyResource) {
+                throw new \InvalidArgumentException('invalid private key.');
+            }
+            $this->privateKey = $privateKeyResource;
         }
     }
 
@@ -78,13 +74,18 @@ class RsaSha1Signer implements SignerInterface
             throw new \RuntimeException('private key required.');
         }
 
+        $method = static::normalizeMethod($method);
+        $uri = static::normalizeUri($uri);
+
         $message = static::normalizeQueryString($params);
         if ($headerParams) {
             $message->merge(static::normalizeQueryString($headerParams));
         }
         $message->delete('oauth_signature');
 
-        $baseString = $this->makeBaseString($method, $uri, $message);
+        $baseString = rawurlencode($method)
+            . '&' . rawurlencode(strval($uri))
+            . '&' . rawurlencode($message->toOAuthQueryString());
 
         $signature = null;
         $succeeded = openssl_sign($baseString, $signature, $this->privateKey, OPENSSL_ALGO_SHA1);
@@ -104,6 +105,9 @@ class RsaSha1Signer implements SignerInterface
      */
     public function verify($method, $uri, $params, $headerParams = null)
     {
+        $method = static::normalizeMethod($method);
+        $uri = static::normalizeUri($uri);
+
         $message = static::normalizeQueryString($params);
         if ($headerParams) {
             $message->merge(static::normalizeQueryString($headerParams));
@@ -117,30 +121,66 @@ class RsaSha1Signer implements SignerInterface
         list($signatureString) = $message->delete('oauth_signature');
         $signature = base64_decode($signatureString);
 
-        $baseString = $this->makeBaseString($method, $uri, $message);
+        $baseString = rawurlencode($method)
+            . '&' . rawurlencode(strval($uri))
+            . '&' . rawurlencode($message->toOAuthQueryString());
 
         $verified = openssl_verify($baseString, $signature, $this->publicKey, OPENSSL_ALGO_SHA1);
         return ($verified == 1);
     }
 
     /**
-     * @param string $method メソッド
-     * @param UriInterface $uri URL
-     * @param QueryString $message パラメータ
-     * @return string base_string
+     * @param string|resource $publicKey 公開鍵
+     * @return resource|null 公開鍵リソース (入力が正しくないときnull)
      */
-    private function makeBaseString($method, UriInterface $uri, QueryString $message)
+    private static function fetchPublicKey($publicKey)
     {
-        $method = static::normalizeMethod($method);
-        $uri = static::normalizeUri($uri);
+        if (is_resource($publicKey)) {
+            $detail = @openssl_pkey_get_details($publicKey);
+            if ($detail && $detail['type'] === OPENSSL_KEYTYPE_RSA
+                && isset($detail['rsa']) && !(isset($detail['rsa']['d']))
+            ) {
+                return $publicKey;
+            } else {
+                return null;
+            }
+        } elseif (is_string($publicKey)) {
+            $resource = openssl_pkey_get_public($publicKey);
+            if ($resource) {
+                return $resource;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
 
-        $workMessage = clone $message;
-        $workMessage->delete('oauth_signature');
-
-        $baseString = rawurlencode($method)
-            . '&' . rawurlencode(strval($uri))
-            . '&' . rawurlencode($workMessage->toOAuthQueryString());
-
-        return $baseString;
+    /**
+     * @param string|resource $privateKey 秘密鍵
+     * @param string $passphrase 鍵のパスフレーズ
+     * @return resource|null 秘密鍵リソース (入力が正しくないときnull)
+     */
+    private static function fetchPrivateKey($privateKey, $passphrase = null)
+    {
+        if (is_resource($privateKey)) {
+            $detail = @openssl_pkey_get_details($privateKey);
+            if ($detail && $detail['type'] === OPENSSL_KEYTYPE_RSA
+                && isset($detail['rsa']) && isset($detail['rsa']['d'])
+            ) {
+                return $privateKey;
+            } else {
+                return null;
+            }
+        } elseif (is_string($privateKey)) {
+            $resource = openssl_pkey_get_private($privateKey, $passphrase);
+            if ($resource) {
+                return $resource;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 }
