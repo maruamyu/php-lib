@@ -40,6 +40,20 @@ class Header extends KeyValueStore
     }
 
     /**
+     * ヘッダメッセージの文字列を取得する.
+     *
+     * @return string ヘッダメッセージ文字列
+     */
+    public function __toString()
+    {
+        $fields = $this->fields();
+        if (empty($fields)) {
+            return '';
+        }
+        return join("\r\n", $this->fields()) . "\r\n";
+    }
+
+    /**
      * 値を取得する.
      *
      * @param string $name 名前

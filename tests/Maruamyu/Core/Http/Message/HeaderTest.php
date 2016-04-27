@@ -78,6 +78,22 @@ class HeaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * メッセージヘッダの文字列
+     */
+    public function test_toString()
+    {
+        $kvs = new Header();
+        $this->assertEquals('', strval($kvs));
+
+        $kvs->set('Host', 'example.jp');
+        $kvs->set('Content-Type', 'text/html');
+
+        $expect  = 'Host: example.jp' . "\r\n";
+        $expect .= 'Content-Type: text/html' . "\r\n";
+        $this->assertEquals($expect, strval($kvs));
+    }
+
+    /**
      * メッセージヘッダのフィールドでの設定
      */
     public function test_setFromField()
