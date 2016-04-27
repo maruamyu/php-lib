@@ -25,7 +25,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Maruamyu\\": "src/Maruamyu/"
+            "Maruamyu\\Core\\": "src/Maruamyu/Core/"
         }
     }
 }
