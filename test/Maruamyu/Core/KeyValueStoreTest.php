@@ -95,7 +95,7 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
         # for phpunit 4.*
         try {
             $kvs->get('');
-        } catch(\InvalidArgumentException $exception) {
+        } catch (\InvalidArgumentException $exception) {
             $this->assertTrue(true);
             return;
         }
@@ -120,7 +120,7 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
         # for phpunit 4.*
         try {
             $kvs->set('', true);
-        } catch(\InvalidArgumentException $exception) {
+        } catch (\InvalidArgumentException $exception) {
             $this->assertTrue(true);
             return;
         }
@@ -145,7 +145,7 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
         # for phpunit 4.*
         try {
             $kvs->delete('');
-        } catch(\InvalidArgumentException $exception) {
+        } catch (\InvalidArgumentException $exception) {
             $this->assertTrue(true);
             return;
         }
