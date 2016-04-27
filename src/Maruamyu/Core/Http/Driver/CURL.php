@@ -99,6 +99,9 @@ class CURL extends DriverAbstract
         }
 
         curl_setopt($cURLHandler, CURLOPT_HTTPHEADER, $this->request->getHeaderFields());
+        if (!$this->request->hasHeader('User-Agent')) {
+            curl_setopt($cURLHandler, CURLOPT_USERAGENT, $this->defaultUserAgent());
+        }
 
         $responseBodyStream = fopen('php://temp', 'c+b');
         curl_setopt($cURLHandler, CURLOPT_FILE, $responseBodyStream);
@@ -117,6 +120,17 @@ class CURL extends DriverAbstract
         $this->response = $response;
 
         return $response;
+    }
+
+    /**
+     * User-Agent
+     *
+     * @return string User-Agent (cURLのバージョン)
+     */
+    private function defaultUserAgent()
+    {
+        $cURLVersion = curl_version();
+        return 'cURL/' . $cURLVersion['version'];
     }
 
     /**
