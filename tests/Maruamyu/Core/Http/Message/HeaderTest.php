@@ -37,6 +37,17 @@ class HeaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * 値を一覧で設定できる
+     */
+    public function test_setArray()
+    {
+        $kvs = new Header();
+        $kvs->set('X-Header', ['1', 'a']);
+        $kvs->set('X-Header', ['A']);
+        $this->assertEquals(['1', 'a', 'A'], $kvs->get('X-Header'));
+    }
+
+    /**
      * キーの一覧を取得できる
      */
     public function test_names()

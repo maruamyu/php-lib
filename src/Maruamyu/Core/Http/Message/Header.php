@@ -83,6 +83,17 @@ class Header extends KeyValueStore
      */
     public function set($name, $value, $overwrite = false)
     {
+        if (is_array($value)) {
+            if (static::isVector($value)) {
+                if ($overwrite) {
+                    $this->delete($name);
+                }
+                foreach ($value as $vv) {
+                    $this->set($name, $vv);
+                }
+                return $this->valueCount($name);
+            }
+        }
         return parent::set(strtolower($name), [$value, $name], $overwrite);
     }
 
