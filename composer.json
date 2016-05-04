@@ -19,8 +19,8 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "lib-curl": "*",
-        "lib-openssl": "*",
+        "ext-curl": "*",
+        "ext-openssl": "*",
         "psr/http-message": "1.*"
     },
     "autoload": {
