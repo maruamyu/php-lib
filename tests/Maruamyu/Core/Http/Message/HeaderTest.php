@@ -57,8 +57,9 @@ class HeaderTest extends \PHPUnit_Framework_TestCase
         $kvs->set('X-Header-1', '1');
         $kvs->set('X-Header-2', '2');
         $kvs->set('X-Header-3', '3');
-        $kvs->delete('X-Header-2');
+        $deleted = $kvs->delete('X-Header-2');
         $this->assertEquals(['X-Header-1', 'X-Header-3'], $kvs->names());
+        $this->assertEquals(['2'], $deleted);
     }
 
     /**

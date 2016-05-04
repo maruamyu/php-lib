@@ -95,7 +95,13 @@ class Header extends KeyValueStore
      */
     public function delete($name)
     {
-        return parent::delete(strtolower($name));
+        $deletedValues = [];
+        $deleted = parent::delete(strtolower($name));
+        foreach ($deleted as $elem) {
+            list($value) = $elem;
+            $deletedValues[] = $value;
+        }
+        return $deletedValues;
     }
 
     /**
