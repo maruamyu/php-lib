@@ -230,7 +230,7 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * データの統合
+     * データの統合(通常)
      */
     public function test_merge()
     {
@@ -274,6 +274,111 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(['first'], $kvs0->get('arcade'));
         $this->assertEquals(['first', '2'], $kvs0->get('xbox360'));
         $this->assertEquals(['2'], $kvs0->get('ps3'));
+    }
+
+    /**
+     * データの統合(配列)
+     */
+    public function test_merge_array()
+    {
+        $kvs0 = new KeyValueStore();
+        $kvs0->set('scalar', 'scalar_preset');
+        $kvs0->set('vector', 'vector_preset');
+        $kvs0->set('hash', 'hash_preset');
+        $kvs0->set('orig_key', 'orig_key_preset');
+
+        $arrayData = [
+            'scalar' => 'scalar_value',
+            'vector' => ['vector_value1', 'vector_value2'],
+            'hash' => ['hash_key' => 'hash_value'],
+            'new_key' => 'new_key_value',
+        ];
+
+        $kvs0->merge($arrayData);
+
+        $expectKeys = ['scalar', 'vector', 'hash', 'orig_key', 'new_key'];
+        sort($expectKeys, SORT_STRING);
+
+        $actualKeys = $kvs0->keys();
+        sort($actualKeys, SORT_STRING);
+
+        $this->assertEquals($expectKeys, $actualKeys);
+
+        $this->assertEquals(['scalar_preset', 'scalar_value'], $kvs0->get('scalar'));
+        $this->assertEquals(['vector_preset', 'vector_value1', 'vector_value2'], $kvs0->get('vector'));
+        $this->assertEquals(['hash_preset', ['hash_key' => 'hash_value']], $kvs0->get('hash'));
+        $this->assertEquals(['orig_key_preset'], $kvs0->get('orig_key'));
+        $this->assertEquals(['new_key_value'], $kvs0->get('new_key'));
+    }
+
+    /**
+     * データの統合(上書き)
+     */
+    public function test_merge_overwrite_array()
+    {
+        $kvs0 = new KeyValueStore();
+        $kvs0->set('scalar', 'scalar_preset');
+        $kvs0->set('vector', 'vector_preset');
+        $kvs0->set('hash', 'hash_preset');
+        $kvs0->set('orig_key', 'orig_key_preset');
+
+        $arrayData = [
+            'scalar' => 'scalar_value',
+            'vector' => ['vector_value1', 'vector_value2'],
+            'hash' => ['hash_key' => 'hash_value'],
+            'new_key' => 'new_key_value',
+        ];
+
+        $kvs0->merge($arrayData, true);
+
+        $expectKeys = ['scalar', 'vector', 'hash', 'orig_key', 'new_key'];
+        sort($expectKeys, SORT_STRING);
+
+        $actualKeys = $kvs0->keys();
+        sort($actualKeys, SORT_STRING);
+
+        $this->assertEquals($expectKeys, $actualKeys);
+
+        $this->assertEquals(['scalar_value'], $kvs0->get('scalar'));
+        $this->assertEquals(['vector_value1', 'vector_value2'], $kvs0->get('vector'));
+        $this->assertEquals([['hash_key' => 'hash_value']], $kvs0->get('hash'));
+        $this->assertEquals(['orig_key_preset'], $kvs0->get('orig_key'));
+        $this->assertEquals(['new_key_value'], $kvs0->get('new_key'));
+    }
+
+    /**
+     * データの統合(上書き)
+     */
+    public function test_merge_overwrite_kvs()
+    {
+        $kvs0 = new KeyValueStore();
+        $kvs0->set('scalar', 'scalar_preset');
+        $kvs0->set('vector', 'vector_preset');
+        $kvs0->set('hash', 'hash_preset');
+        $kvs0->set('orig_key', 'orig_key_preset');
+
+        $kvs1 = new KeyValueStore();
+        $kvs1->set('scalar', 'scalar_value');
+        $kvs1->set('vector', 'vector_value1');
+        $kvs1->set('vector', 'vector_value2');
+        $kvs1->set('hash', ['hash_key' => 'hash_value']);
+        $kvs1->set('new_key', 'new_key_value');
+
+        $kvs0->merge($kvs1, true);
+
+        $expectKeys = ['scalar', 'vector', 'hash', 'orig_key', 'new_key'];
+        sort($expectKeys, SORT_STRING);
+
+        $actualKeys = $kvs0->keys();
+        sort($actualKeys, SORT_STRING);
+
+        $this->assertEquals($expectKeys, $actualKeys);
+
+        $this->assertEquals(['scalar_value'], $kvs0->get('scalar'));
+        $this->assertEquals(['vector_value1', 'vector_value2'], $kvs0->get('vector'));
+        $this->assertEquals([['hash_key' => 'hash_value']], $kvs0->get('hash'));
+        $this->assertEquals(['orig_key_preset'], $kvs0->get('orig_key'));
+        $this->assertEquals(['new_key_value'], $kvs0->get('new_key'));
     }
 
     /**

@@ -7,6 +7,8 @@ namespace Maruamyu\Core;
  */
 class KeyValueStore implements KeyValueStoreInterface
 {
+    use ArrayDetectionTrait;
+
     private $data = [];
 
     /**
@@ -168,15 +170,16 @@ class KeyValueStore implements KeyValueStoreInterface
      * データの統合
      *
      * @param array|KeyValueStoreInterface $kvs 統合するKVSデータ
+     * @param boolean $overwrite 同じキーの値のとき上書きするならtrue
      * @return int 統合後のデータサイズ
      * @throws \InvalidArgumentException 指定されたKVSデータの形式が正しくないとき
      */
-    public function merge($kvs)
+    public function merge($kvs, $overwrite = false)
     {
         if ($kvs instanceof KeyValueStoreInterface) {
-            $this->mergeFromKeyValueStore($kvs);
+            $this->mergeFromKeyValueStore($kvs, $overwrite);
         } elseif (is_array($kvs)) {
-            $this->mergeFromArray($kvs);
+            $this->mergeFromArray($kvs, $overwrite);
         } else {
             throw new \InvalidArgumentException('invalid type.');
         }
@@ -216,13 +219,17 @@ class KeyValueStore implements KeyValueStoreInterface
      * データの統合(KVS)
      *
      * @param KeyValueStoreInterface $kvs 統合するKVSデータ
+     * @param boolean $overwrite 同じキーの値のとき上書きするならtrue
      */
-    protected function mergeFromKeyValueStore(KeyValueStoreInterface $kvs)
+    protected function mergeFromKeyValueStore(KeyValueStoreInterface $kvs, $overwrite = false)
     {
         foreach ($kvs->keys() as $key) {
             $values = $kvs->get($key);
             if (empty($values)) {
                 continue;
+            }
+            if ($overwrite) {
+                $this->delete($key);
             }
             foreach ($values as $value) {
                 $this->set($key, $value);
@@ -234,11 +241,21 @@ class KeyValueStore implements KeyValueStoreInterface
      * データの統合(array)
      *
      * @param array $data 統合するKVSデータ
+     * @param boolean $overwrite 同じキーの値のとき上書きするならtrue
      */
-    protected function mergeFromArray(array $data)
+    protected function mergeFromArray(array $data, $overwrite = false)
     {
         foreach ($data as $key => $value) {
-            $this->set($key, $value);
+            if (static::isVector($value)) {
+                if ($overwrite) {
+                    $this->delete($key);
+                }
+                foreach ($value as $elem) {
+                    $this->set($key, $elem);
+                }
+            } else {
+                $this->set($key, $value, $overwrite);
+            }
         }
     }
 }
