@@ -121,6 +121,18 @@ class Header extends KeyValueStore
     }
 
     /**
+     * キーに対する値の数を取得する.
+     *
+     * @param string $name キー
+     * @return int キーに対する値の数
+     * @throws \InvalidArgumentException 空のキーを指定したとき
+     */
+    public function valueCount($name)
+    {
+        return parent::valueCount(strtolower($name));
+    }
+
+    /**
      * 名前の一覧を取得する.
      *
      * @return string[] 名前の一覧
