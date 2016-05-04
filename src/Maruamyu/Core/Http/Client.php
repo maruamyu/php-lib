@@ -4,6 +4,7 @@ namespace Maruamyu\Core\Http;
 
 use Maruamyu\Core\Http\Driver\DriverFactory;
 use Maruamyu\Core\Http\Driver\DriverInterface;
+use Maruamyu\Core\Http\Message\Header;
 use Maruamyu\Core\Http\Message\NormalizeMessageTrait;
 use Maruamyu\Core\Http\Message\Request;
 use Maruamyu\Core\Http\Message\Response;
@@ -17,6 +18,11 @@ class Client
     use NormalizeMessageTrait;
 
     /**
+     * @var Header
+     */
+    protected $defaultHeaders;
+
+    /**
      * @var DriverFactory
      */
     protected $httpDriverFactory = null;
@@ -25,6 +31,18 @@ class Client
      * @var Response
      */
     protected $latestResponse = null;
+
+    /**
+     * @param array $config 設定
+     */
+    public function __construct(array $config = [])
+    {
+        if (isset($config['headers'])) {
+            $this->defaultHeaders = new Header($config['headers']);
+        } else {
+            $this->defaultHeaders = null;
+        }
+    }
 
     /**
      * 指定されたリクエストメッセージを送信し, レスポンスを返す.
@@ -54,11 +72,22 @@ class Client
      *
      * @param string $method HTTPメソッド
      * @param string|UriInterface $uri URL
+     * @param array $options オプション
      * @return Response レスポンス
      */
-    public function request($method, $uri)
+    public function request($method, $uri, array $options = [])
     {
-        $request = new Request($method, $uri);
+        if ($options && isset($options['headers'])) {
+            if ($this->defaultHeaders) {
+                $headers = clone $this->defaultHeaders;
+                $headers->merge($options['headers'], true);
+            } else {
+                $headers = new Header($options['headers']);
+            }
+        } else {
+            $headers = $this->defaultHeaders;
+        }
+        $request = new Request($method, $uri, null, $headers);
         return $this->send($request);
     }
 
