@@ -4,7 +4,7 @@ namespace Maruamyu\Core\Http;
 
 use Maruamyu\Core\Http\Driver\DriverFactory;
 use Maruamyu\Core\Http\Driver\DriverInterface;
-use Maruamyu\Core\Http\Message\Header;
+use Maruamyu\Core\Http\Message\Headers;
 use Maruamyu\Core\Http\Message\NormalizeMessageTrait;
 use Maruamyu\Core\Http\Message\Request;
 use Maruamyu\Core\Http\Message\Response;
@@ -18,7 +18,7 @@ class Client
     use NormalizeMessageTrait;
 
     /**
-     * @var Header
+     * @var Headers
      */
     protected $defaultHeaders;
 
@@ -38,7 +38,7 @@ class Client
     public function __construct(array $config = [])
     {
         if (isset($config['headers'])) {
-            $this->defaultHeaders = new Header($config['headers']);
+            $this->defaultHeaders = new Headers($config['headers']);
         } else {
             $this->defaultHeaders = null;
         }
@@ -80,9 +80,9 @@ class Client
         if ($options && isset($options['headers'])) {
             if ($this->defaultHeaders) {
                 $headers = clone $this->defaultHeaders;
-                $headers->merge($options['headers'], true);
+                $headers->merge($options['headers']);
             } else {
-                $headers = new Header($options['headers']);
+                $headers = new Headers($options['headers']);
             }
         } else {
             $headers = $this->defaultHeaders;

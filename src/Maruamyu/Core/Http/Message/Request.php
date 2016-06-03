@@ -37,9 +37,9 @@ class Request extends MessageAbstract implements RequestInterface
      * @param string $method メソッド
      * @param string|PsrUriInterface $uri URL
      * @param string|StreamInterface $body 内容
-     * @param Header|string|array $header ヘッダ
+     * @param Headers|string|array $headers ヘッダ
      */
-    public function __construct($method = 'GET', $uri = null, $body = null, $header = null)
+    public function __construct($method = 'GET', $uri = null, $body = null, $headers = null)
     {
         parent::__construct();
 
@@ -63,10 +63,10 @@ class Request extends MessageAbstract implements RequestInterface
             throw new \InvalidArgumentException('invalid request body.');
         }
 
-        if ($header instanceof Header) {
-            $this->header = clone $header;
-        } elseif (is_array($header) || is_string($header)) {
-            $this->header = new Header($header);
+        if ($headers instanceof Headers) {
+            $this->headers = clone $headers;
+        } elseif (is_array($headers) || is_string($headers)) {
+            $this->headers = new Headers($headers);
         }
 
         $this->multipartDataList = [];

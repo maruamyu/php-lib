@@ -92,12 +92,12 @@ class Response extends MessageAbstract implements ResponseInterface
      * インスタンスを初期化する.
      *
      * @param StreamInterface|resource|string $body 内容
-     * @param Header|string|array $header ヘッダ
+     * @param Headers|string|array $headers ヘッダ
      * @param int $statusCode HTTPステータスコード
      * @param string $statusReasonPhrase ステータスを表す文字列("OK"等)
      * @param string $protocolVersion プロトコルバージョン
      */
-    public function __construct($body = null, $header = null, $statusCode = 0, $statusReasonPhrase = '', $protocolVersion = '')
+    public function __construct($body = null, $headers = null, $statusCode = 0, $statusReasonPhrase = '', $protocolVersion = '')
     {
         parent::__construct();
 
@@ -113,10 +113,10 @@ class Response extends MessageAbstract implements ResponseInterface
             throw new \InvalidArgumentException('invalid request body.');
         }
 
-        if ($header instanceof Header) {
-            $this->header = clone $header;
-        } elseif (is_array($header) || is_string($header)) {
-            $this->header = new Header($header);
+        if ($headers instanceof Headers) {
+            $this->headers = clone $headers;
+        } elseif (is_array($headers) || is_string($headers)) {
+            $this->headers = new Headers($headers);
         }
 
         if ($statusCode > 0) {

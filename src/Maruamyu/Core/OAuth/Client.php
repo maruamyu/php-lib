@@ -4,7 +4,7 @@ namespace Maruamyu\Core\OAuth;
 
 use Maruamyu\Core\Http\Driver\DriverFactory;
 use Maruamyu\Core\Http\Driver\DriverInterface;
-use Maruamyu\Core\Http\Message\Header;
+use Maruamyu\Core\Http\Message\Headers;
 use Maruamyu\Core\Http\Message\NormalizeMessageTrait;
 use Maruamyu\Core\Http\Message\QueryString;
 use Maruamyu\Core\Http\Message\Request;
@@ -138,14 +138,14 @@ class Client
 
         $authorization = $this->makeAuthorization($method, $uri, $params);
 
-        $header = new Header();
+        $headers = new Headers();
         if ($notUseAuthorizationHeader) {
             foreach ($authorization as $key => $value) {
-                $params->set($key, $value, true);
+                $params->set($key, $value);
             }
         } else {
             $authorization['realm'] = $uri->getScheme() . '://' . $uri->getHost() . '/';
-            $header->set('Authorization', AuthorizationHeader::build($authorization));
+            $headers->set('Authorization', AuthorizationHeader::build($authorization));
         }
 
         if ($isQueryStringOnly) {
@@ -155,7 +155,7 @@ class Client
             $requestBody = $params->toString();
         }
 
-        return new Request($method, $uri, $requestBody, $header);
+        return new Request($method, $uri, $requestBody, $headers);
     }
 
     /**

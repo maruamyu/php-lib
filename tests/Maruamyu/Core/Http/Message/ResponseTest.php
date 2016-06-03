@@ -67,11 +67,11 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
     public function test_header_with_initialize()
     {
-        $header = new Header();
-        $header->set('Content-Type', 'text/html');
-        $header->set('Cookie', 'hoge=hogehoge');
-        $response = new Response('', $header);
-        $this->assertEquals($header->fields(), $response->getHeaderFields());
+        $headers = new Headers();
+        $headers->set('Content-Type', 'text/html');
+        $headers->set('Cookie', 'hoge=hogehoge');
+        $response = new Response('', $headers);
+        $this->assertEquals($headers->fields(), $response->getHeaderFields());
 
         $response = new Response('', ['Content-Type' => 'text/plain']);
         $this->assertEquals(['Content-Type: text/plain'], $response->getHeaderFields());

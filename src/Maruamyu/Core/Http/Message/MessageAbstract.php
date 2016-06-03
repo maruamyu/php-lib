@@ -20,9 +20,9 @@ abstract class MessageAbstract implements MessageInterface
 
     /**
      * メッセージヘッダ
-     * @var Header
+     * @var Headers
      */
-    protected $header;
+    protected $headers;
 
     /**
      * メッセージ本文(ストリームインスタンス)
@@ -36,7 +36,7 @@ abstract class MessageAbstract implements MessageInterface
     public function __construct()
     {
         $this->protocolVersion = static::DEFAULT_HTTP_VERSION;
-        $this->header = new Header();
+        $this->headers = new Headers();
     }
 
     /**
@@ -44,7 +44,7 @@ abstract class MessageAbstract implements MessageInterface
      */
     public function __clone()
     {
-        $this->header = clone $this->header;
+        $this->headers = clone $this->headers;
     }
 
     /**
@@ -73,29 +73,7 @@ abstract class MessageAbstract implements MessageInterface
      */
     public function getHeaders()
     {
-        $lowerToOrig = [];
-        $tmpHeaders = [];
-        $lowerNames = $this->header->keys();
-        foreach ($lowerNames as $lowerName) {
-            $pairs = $this->header->get($lowerName);
-            foreach ($pairs as $pair) {
-                list($value, $origName) = $pair;
-
-                $lowerToOrig[$lowerName] = $origName;
-
-                if (!isset($headers[$lowerName])) {
-                    $tmpHeaders[$lowerName] = [];
-                }
-                $tmpHeaders[$lowerName][] = $value;
-            }
-        }
-
-        $headers = [];
-        foreach ($lowerNames as $lowerName => $values) {
-            $origName = $lowerToOrig[$lowerName];
-            $headers[$origName] = $values;
-        }
-        return $headers;
+        return $this->headers->toArray();
     }
 
     /**
@@ -106,7 +84,7 @@ abstract class MessageAbstract implements MessageInterface
      */
     public function hasHeader($name)
     {
-        return $this->header->hasKey($name);
+        return $this->headers->hasName($name);
     }
 
     /**
@@ -117,7 +95,7 @@ abstract class MessageAbstract implements MessageInterface
      */
     public function getHeader($name)
     {
-        return $this->header->get($name);
+        return $this->headers->get($name);
     }
 
     /**
@@ -142,7 +120,7 @@ abstract class MessageAbstract implements MessageInterface
     public function withHeader($name, $value)
     {
         $newInstance = clone $this;
-        $newInstance->header->set($name, $value, true);
+        $newInstance->headers->set($name, $value);
         return $newInstance;
     }
 
@@ -158,7 +136,7 @@ abstract class MessageAbstract implements MessageInterface
     public function withAddedHeader($name, $value)
     {
         $newInstance = clone $this;
-        $newInstance->header->set($name, $value);
+        $newInstance->headers->add($name, $value);
         return $newInstance;
     }
 
@@ -171,7 +149,7 @@ abstract class MessageAbstract implements MessageInterface
     public function withoutHeader($name)
     {
         $newInstance = clone $this;
-        $newInstance->header->delete($name);
+        $newInstance->headers->delete($name);
         return $newInstance;
     }
 
@@ -241,6 +219,6 @@ abstract class MessageAbstract implements MessageInterface
      */
     public function getHeaderFields()
     {
-        return $this->header->fields();
+        return $this->headers->fields();
     }
 }

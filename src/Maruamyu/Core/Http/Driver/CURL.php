@@ -2,7 +2,7 @@
 
 namespace Maruamyu\Core\Http\Driver;
 
-use Maruamyu\Core\Http\Message\Header;
+use Maruamyu\Core\Http\Message\Headers;
 use Maruamyu\Core\Http\Message\Request;
 use Maruamyu\Core\Http\Message\Response;
 
@@ -187,7 +187,7 @@ class CURL extends DriverAbstract
      */
     private static function parseResponse($headerHandler, $bodyHandler)
     {
-        $header = new Header();
+        $headers = new Headers();
         $statusCode = 0;
         $statusReasonPhrase = '';
         $protocolVersion = '';
@@ -199,7 +199,7 @@ class CURL extends DriverAbstract
             if ($delimiterPos !== false) {
                 $name = substr($line, 0, $delimiterPos);
                 $value = substr($line, ($delimiterPos + 2));
-                $header->set($name, $value);
+                $headers->add($name, $value);
             } else if (preg_match('#^HTTP/([0-9\.]+) (\d+) ?(.*)$#u', $line, $match)) {
                 $statusCode = intval($match[2], 10);
                 $statusReasonPhrase = $match[3];
@@ -207,6 +207,6 @@ class CURL extends DriverAbstract
             }
         }
 
-        return new Response($bodyHandler, $header, $statusCode, $statusReasonPhrase, $protocolVersion);
+        return new Response($bodyHandler, $headers, $statusCode, $statusReasonPhrase, $protocolVersion);
     }
 }

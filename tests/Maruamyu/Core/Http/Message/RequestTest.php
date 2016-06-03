@@ -54,11 +54,11 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $request = new Request('GET', 'http://example.jp/', null, ['X-Fuga' => 'fugafuga']);
         $this->assertEquals('fugafuga', $request->getHeaderLine('X-Fuga'));
 
-        $header = new Header();
-        $header->set('X-Piyo', 'hoge');
-        $header->set('X-Piyo', 'fuga');
-        $header->set('X-Piyo', 'piyo');
-        $request = new Request('GET', 'http://example.jp/', null, $header);
+        $headers = new Headers();
+        $headers->add('X-Piyo', 'hoge');
+        $headers->add('X-Piyo', 'fuga');
+        $headers->add('X-Piyo', 'piyo');
+        $request = new Request('GET', 'http://example.jp/', null, $headers);
         $this->assertEquals('hoge, fuga, piyo', $request->getHeaderLine('X-Piyo'));
     }
 
