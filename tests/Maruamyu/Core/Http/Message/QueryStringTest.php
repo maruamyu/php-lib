@@ -60,8 +60,8 @@ class QueryStringTest extends \PHPUnit_Framework_TestCase
     public function test_toStringSimple()
     {
         $kvs = new QueryString();
-        $kvs->set('mobage', 'シンデレラガールズ');
-        $kvs->set('gree', 'ミリオンライブ！');
+        $kvs->add('mobage', 'シンデレラガールズ');
+        $kvs->add('gree', 'ミリオンライブ！');
 
         $expect = 'mobage=' . rawurlencode('シンデレラガールズ')
             . '&gree=' . rawurlencode('ミリオンライブ！');
@@ -74,8 +74,8 @@ class QueryStringTest extends \PHPUnit_Framework_TestCase
     public function test_toStringDuplicateKey()
     {
         $kvs = new QueryString();
-        $kvs->set('mobage', 'シンデレラガールズ');
-        $kvs->set('mobage', 'サイドエム');
+        $kvs->add('mobage', 'シンデレラガールズ');
+        $kvs->add('mobage', 'サイドエム');
 
         $expect = 'mobage=' . rawurlencode('シンデレラガールズ')
             . '&mobage=' . rawurlencode('サイドエム');
@@ -89,9 +89,9 @@ class QueryStringTest extends \PHPUnit_Framework_TestCase
     public function test_toPHPQueryString()
     {
         $kvs = new QueryString();
-        $kvs->set('trysail', 'もちょ');
-        $kvs->set('trysail', '天');
-        $kvs->set('trysail', 'ナンス');
+        $kvs->add('trysail', 'もちょ');
+        $kvs->add('trysail', '天');
+        $kvs->add('trysail', 'ナンス');
 
         $expect = rawurlencode('trysail[0]') . '=' . rawurlencode('もちょ')
             . '&' . rawurlencode('trysail[1]') . '=' . rawurlencode('天')
@@ -106,8 +106,8 @@ class QueryStringTest extends \PHPUnit_Framework_TestCase
     public function test_toOAuthQueryString()
     {
         $kvs = new QueryString();
-        $kvs->set('7', 'ナンス');
-        $kvs->set('10', '天');
+        $kvs->add('7', 'ナンス');
+        $kvs->add('10', '天');
 
         # 文字列順で並び替えるので '10' が先
         $expect = '10=' . rawurlencode('天')
@@ -122,9 +122,9 @@ class QueryStringTest extends \PHPUnit_Framework_TestCase
     public function test_buildMultiPartData()
     {
         $kvs = new QueryString();
-        $kvs->set('"Mobage"', 'モバコイン');
-        $kvs->set('iPhone', 'iTunes store カード');
-        $kvs->set('Android', 'Google Play カード');
+        $kvs->add('"Mobage"', 'モバコイン');
+        $kvs->add('iPhone', 'iTunes store カード');
+        $kvs->add('Android', 'Google Play カード');
 
         $boundary = bin2hex(openssl_random_pseudo_bytes(32));
         $expect = '';

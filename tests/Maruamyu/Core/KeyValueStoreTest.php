@@ -7,39 +7,38 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * setした値をgetで取り出せる
      */
-    public function test_setAndGet()
+    public function test_set_get()
     {
         $kvs = new KeyValueStore();
-        $afterElemCount = $kvs->set('765pro', 'haruka');
-
+        $kvs->set('765pro', 'haruka');
         $this->assertEquals(['haruka'], $kvs->get('765pro'));
-        $this->assertEquals(1, $afterElemCount);
-    }
-
-    /**
-     * 同じキーでsetした2つの値を取り出せる
-     */
-    public function test_setTwise()
-    {
-        $kvs = new KeyValueStore();
-        $kvs->set('346pro', 'udzuki');
-        $afterElemCount = $kvs->set('346pro', 'rin');
-
-        $this->assertEquals(['udzuki', 'rin'], $kvs->get('346pro'));
-        $this->assertEquals(2, $afterElemCount);
     }
 
     /**
      * 前の値を破棄してsetできる
      */
-    public function test_setOverwrite()
+    public function test_set_overwrite()
     {
         $kvs = new KeyValueStore();
         $kvs->set('jupiter', '961pro');
-        $afterElemCount = $kvs->set('jupiter', '315pro', true);
-
+        $kvs->set('jupiter', '315pro');
         $this->assertEquals(['315pro'], $kvs->get('jupiter'));
+    }
+
+    /**
+     * 同じキーでsetした2つの値を取り出せる
+     */
+    public function test_add()
+    {
+        $kvs = new KeyValueStore();
+
+        $afterElemCount = $kvs->add('346pro', 'udzuki');
         $this->assertEquals(1, $afterElemCount);
+        $this->assertEquals(['udzuki'], $kvs->get('346pro'));
+
+        $afterElemCount = $kvs->add('346pro', 'rin');
+        $this->assertEquals(2, $afterElemCount);
+        $this->assertEquals(['udzuki', 'rin'], $kvs->get('346pro'));
     }
 
     /**
@@ -65,10 +64,11 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
         $kvs->set('vocal', '5 star');
         $kvs->set('dance', '3 star');
         $kvs->set('visual', '1 star');
+
         $deleted = $kvs->delete('dance');
+        $this->assertEquals(['3 star'], $deleted);
 
         $this->assertEquals(['vocal', 'visual'], $kvs->keys());
-        $this->assertEquals(['3 star'], $deleted);
     }
 
     /**
@@ -77,6 +77,7 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
     public function test_hasKey()
     {
         $kvs = new KeyValueStore();
+
         $this->assertFalse($kvs->hasKey('kotori'));
 
         $kvs->set('kotori', 'piyopiyo');
@@ -164,23 +165,19 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
     /**
      * データサイズ
      */
-    public function test_size()
+    public function test_count()
     {
         $kvs = new KeyValueStore();
 
-        $this->assertEquals(0, $kvs->size());
         $this->assertEquals(0, $kvs->count());
 
         $kvs->set('LOVE LAIKA', 'minami');
-        $this->assertEquals(1, $kvs->size());
         $this->assertEquals(1, $kvs->count());
 
         $kvs->set('LOVE LAIKA', 'anastasia');
-        $this->assertEquals(1, $kvs->size());
         $this->assertEquals(1, $kvs->count());
 
         $kvs->set('Rosenburg Engel', 'ranko');
-        $this->assertEquals(2, $kvs->size());
         $this->assertEquals(2, $kvs->count());
     }
 
@@ -191,15 +188,15 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
     {
         $kvs = new KeyValueStore();
 
-        $kvs->set('CANDY ISLAND', 'anzu');
+        $kvs->add('CANDY ISLAND', 'anzu');
         $this->assertEquals(1, $kvs->valueCount('CANDY ISLAND'));
 
-        $kvs->set('CANDY ISLAND', 'kanako');
-        $kvs->set('CANDY ISLAND', 'chieri');
+        $kvs->add('CANDY ISLAND', 'kanako');
+        $kvs->add('CANDY ISLAND', 'chieri');
         $this->assertEquals(3, $kvs->valueCount('CANDY ISLAND'));
 
-        $kvs->set('Asterisk', 'miku');
-        $kvs->set('Asterisk', 'riina');
+        $kvs->add('Asterisk', 'miku');
+        $kvs->add('Asterisk', 'riina');
         $this->assertEquals(2, $kvs->valueCount('Asterisk'));
     }
 
@@ -230,23 +227,22 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * データの統合(通常)
+     * データの結合(KVS)
      */
-    public function test_merge()
+    public function test_append_kvs()
     {
         $kvs1 = new KeyValueStore();
-        $kvs1->set('arcade', 'first');
-        $kvs1->set('xbox360', 'first');
+        $kvs1->add('arcade', 'first');
+        $kvs1->add('xbox360', 'first');
 
-        $kvs2 = [
-            'xbox360' => '2',
-            'ps3' => '2',
-        ];
+        $kvs2 = new KeyValueStore();
+        $kvs2->add('xbox360', '2');
+        $kvs2->add('ps3', '2');
 
         #----------
 
         $kvs0 = new KeyValueStore();
-        $kvs0->merge($kvs1);
+        $kvs0->append($kvs1);
 
         $expectKeys = ['arcade', 'xbox360'];
         sort($expectKeys, SORT_STRING);
@@ -261,7 +257,7 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
 
         #----------
 
-        $kvs0->merge($kvs2);
+        $kvs0->append($kvs2);
 
         $expectKeys = ['arcade', 'xbox360', 'ps3'];
         sort($expectKeys, SORT_STRING);
@@ -277,15 +273,15 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * データの統合(配列)
+     * データの結合(配列)
      */
-    public function test_merge_array()
+    public function test_append_array()
     {
         $kvs0 = new KeyValueStore();
-        $kvs0->set('scalar', 'scalar_preset');
-        $kvs0->set('vector', 'vector_preset');
-        $kvs0->set('hash', 'hash_preset');
-        $kvs0->set('orig_key', 'orig_key_preset');
+        $kvs0->add('scalar', 'scalar_preset');
+        $kvs0->add('vector', 'vector_preset');
+        $kvs0->add('hash', 'hash_preset');
+        $kvs0->add('orig_key', 'orig_key_preset');
 
         $arrayData = [
             'scalar' => 'scalar_value',
@@ -294,7 +290,7 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
             'new_key' => 'new_key_value',
         ];
 
-        $kvs0->merge($arrayData);
+        $kvs0->append($arrayData);
 
         $expectKeys = ['scalar', 'vector', 'hash', 'orig_key', 'new_key'];
         sort($expectKeys, SORT_STRING);
@@ -312,24 +308,24 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * データの統合(上書き)
+     * データの統合(KVS)
      */
-    public function test_merge_overwrite_array()
+    public function test_merge_kvs()
     {
         $kvs0 = new KeyValueStore();
-        $kvs0->set('scalar', 'scalar_preset');
-        $kvs0->set('vector', 'vector_preset');
-        $kvs0->set('hash', 'hash_preset');
-        $kvs0->set('orig_key', 'orig_key_preset');
+        $kvs0->add('scalar', 'scalar_preset');
+        $kvs0->add('vector', 'vector_preset');
+        $kvs0->add('hash', 'hash_preset');
+        $kvs0->add('orig_key', 'orig_key_preset');
 
-        $arrayData = [
-            'scalar' => 'scalar_value',
-            'vector' => ['vector_value1', 'vector_value2'],
-            'hash' => ['hash_key' => 'hash_value'],
-            'new_key' => 'new_key_value',
-        ];
+        $kvs1 = new KeyValueStore();
+        $kvs1->add('scalar', 'scalar_value');
+        $kvs1->add('vector', 'vector_value1');
+        $kvs1->add('vector', 'vector_value2');
+        $kvs1->add('hash', ['hash_key' => 'hash_value']);
+        $kvs1->add('new_key', 'new_key_value');
 
-        $kvs0->merge($arrayData, true);
+        $kvs0->merge($kvs1);
 
         $expectKeys = ['scalar', 'vector', 'hash', 'orig_key', 'new_key'];
         sort($expectKeys, SORT_STRING);
@@ -347,24 +343,24 @@ class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * データの統合(上書き)
+     * データの統合(配列)
      */
-    public function test_merge_overwrite_kvs()
+    public function test_merge_array()
     {
         $kvs0 = new KeyValueStore();
-        $kvs0->set('scalar', 'scalar_preset');
-        $kvs0->set('vector', 'vector_preset');
-        $kvs0->set('hash', 'hash_preset');
-        $kvs0->set('orig_key', 'orig_key_preset');
+        $kvs0->add('scalar', 'scalar_preset');
+        $kvs0->add('vector', 'vector_preset');
+        $kvs0->add('hash', 'hash_preset');
+        $kvs0->add('orig_key', 'orig_key_preset');
 
-        $kvs1 = new KeyValueStore();
-        $kvs1->set('scalar', 'scalar_value');
-        $kvs1->set('vector', 'vector_value1');
-        $kvs1->set('vector', 'vector_value2');
-        $kvs1->set('hash', ['hash_key' => 'hash_value']);
-        $kvs1->set('new_key', 'new_key_value');
+        $arrayData = [
+            'scalar' => 'scalar_value',
+            'vector' => ['vector_value1', 'vector_value2'],
+            'hash' => ['hash_key' => 'hash_value'],
+            'new_key' => 'new_key_value',
+        ];
 
-        $kvs0->merge($kvs1, true);
+        $kvs0->merge($arrayData);
 
         $expectKeys = ['scalar', 'vector', 'hash', 'orig_key', 'new_key'];
         sort($expectKeys, SORT_STRING);

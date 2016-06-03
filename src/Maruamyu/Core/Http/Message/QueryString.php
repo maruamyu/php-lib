@@ -19,16 +19,16 @@ class QueryString extends KeyValueStore
      */
     public function __construct($initValue = null)
     {
-        $this->initialize();
+        parent::__construct();
 
         if (is_array($initValue)) {
             foreach ($initValue as $key => $value) {
                 if (static::isVector($value)) {
                     foreach ($value as $valueElem) {
-                        $this->set($key, $valueElem);
+                        $this->add($key, $valueElem);
                     }
                 } else {
-                    $this->set($key, $value);
+                    $this->add($key, $value);
                 }
             }
         } elseif (is_string($initValue)) {
@@ -38,7 +38,7 @@ class QueryString extends KeyValueStore
             $parsed = static::parseQueryString($initValue);
             foreach ($parsed as $key => $values) {
                 foreach ($values as $value) {
-                    $this->set($key, $value);
+                    $this->add($key, $value);
                 }
             }
         }
