@@ -87,7 +87,12 @@ class Client
         } else {
             $headers = $this->defaultHeaders;
         }
-        $request = new Request($method, $uri, null, $headers);
+        if ($options && isset($options['body'])) {
+            $body = $options['body'];
+        } else {
+            $body = null;
+        }
+        $request = new Request($method, $uri, $body, $headers);
         return $this->send($request);
     }
 
