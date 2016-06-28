@@ -45,13 +45,7 @@ class Request extends MessageAbstract implements RequestInterface
 
         $this->method = static::normalizeMethod($method);
 
-        if (is_null($uri)) {
-            $this->uri = new Uri();
-        } else if ($uri instanceof PsrUriInterface) {
-            $this->uri = clone $uri;
-        } else {
-            $this->uri = new Uri($uri);
-        }
+        $this->uri = static::normalizeUri($uri);
 
         if (is_null($body)) {
             $this->body = null;
