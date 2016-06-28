@@ -55,6 +55,42 @@ class QueryStringTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * ignore invalid key
+     */
+    public function test_parseQueryString_ignoreInvalidKey()
+    {
+        $actual = QueryString::parseQueryString('emily=stuart&=julia');
+        $expect = [
+            'emily' => ['stuart'],
+        ];
+        $this->assertEquals($expect, $actual);
+    }
+
+    /**
+     * ignore invalid key-value pair
+     */
+    public function test_parseQueryString_ignoreInvalidKVPair()
+    {
+        $actual = QueryString::parseQueryString('&imai=asami&&imai=asaka&');
+        $expect = [
+            'imai' => ['asami', 'asaka'],
+        ];
+        $this->assertEquals($expect, $actual);
+    }
+
+    /**
+     * empty value
+     */
+    public function test_parseQueryString_emptyValue()
+    {
+        $actual = QueryString::parseQueryString('name=&name=value1&name=&name=value2&name=');
+        $expect = [
+            'name' => ['', 'value1', '', 'value2', ''],
+        ];
+        $this->assertEquals($expect, $actual);
+    }
+
+    /**
      * シンプルなQUERY_STRINGの生成
      */
     public function test_toStringSimple()

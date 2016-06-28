@@ -150,11 +150,13 @@ class QueryString extends KeyValueStore
         foreach ($kvpairs as $kvpair) {
             list($key, $value) = explode('=', $kvpair, 2);
             $key = rawurldecode($key);
-            $value = rawurldecode($value);
+            if (strlen($key) < 1) {
+                continue;
+            }
             if (!(isset($parsed[$key]))) {
                 $parsed[$key] = [];
             }
-            $parsed[$key][] = $value;
+            $parsed[$key][] = rawurldecode($value);
         }
         return $parsed;
     }
