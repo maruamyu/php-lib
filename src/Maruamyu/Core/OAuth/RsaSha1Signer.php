@@ -65,7 +65,7 @@ class RsaSha1Signer implements SignerInterface
      * @param string|UriInterface $uri URL
      * @param array|QueryString $params リクエストパラメータ
      * @param array $headerParams Authorizationヘッダのパラメータ
-     * @return string 署名(バイナリデータ)
+     * @return string 署名(Base64エンコード済み)
      * @throws \RuntimeException 秘密鍵が指定されていない場合
      */
     public function makeSignature($method, $uri, $params, $headerParams = null)
@@ -77,10 +77,17 @@ class RsaSha1Signer implements SignerInterface
         $method = static::normalizeMethod($method);
         $uri = static::normalizeUri($uri);
 
-        $message = static::normalizeQueryString($params);
-        if ($headerParams) {
-            $message->merge(static::normalizeQueryString($headerParams));
+        $message = static::normalizeQueryString($headerParams);
+        $message->delete('realm');
+
+        $message->append(static::normalizeQueryString($params));
+
+        $uriQueryString = $uri->getQueryString();
+        if ($uriQueryString->hasAny()) {
+            $uri = $uri->withQuery('');
+            $message->append($uriQueryString);
         }
+
         $message->delete('oauth_signature');
 
         $baseString = rawurlencode($method)
@@ -90,7 +97,7 @@ class RsaSha1Signer implements SignerInterface
         $signature = null;
         $succeeded = openssl_sign($baseString, $signature, $this->privateKey, OPENSSL_ALGO_SHA1);
         if ($succeeded) {
-            return $signature;
+            return base64_encode($signature);
         } else {
             return null;
         }
@@ -108,9 +115,15 @@ class RsaSha1Signer implements SignerInterface
         $method = static::normalizeMethod($method);
         $uri = static::normalizeUri($uri);
 
-        $message = static::normalizeQueryString($params);
-        if ($headerParams) {
-            $message->merge(static::normalizeQueryString($headerParams));
+        $message = static::normalizeQueryString($headerParams);
+        $message->delete('realm');
+
+        $message->append(static::normalizeQueryString($params));
+
+        $uriQueryString = $uri->getQueryString();
+        if ($uriQueryString->hasAny()) {
+            $uri = $uri->withQuery('');
+            $message->append($uriQueryString);
         }
 
         list($signatureMethod) = $message->get('oauth_signature_method');

@@ -78,8 +78,7 @@ __EOS__;
         ];
 
         $singer = new RsaSha1Signer(self::PUBLIC_KEY, self::PRIVATE_KEY, self::PASSPHRASE);
-        $signatureRaw = $singer->makeSignature($method, $url, $params, $authParams);
-        $signature = base64_encode($signatureRaw);
+        $signature = $singer->makeSignature($method, $url, $params, $authParams);
         $this->assertEquals('CIfhEbtNGmK5GD5Ny3W5pKbJX55gQwy8qUXl5rx6USpbOzwAOELGu+YCVCK5RjZHGBWajAdd/k2J5gVTpWS/uyk+UpFhEnhrbs9CczNP+yJFHmG16QY0DPep+Rs3h3wX5HHRQteHW3a2CzjohyiqCOMM7wUZFwzADIIugkvuZ3NKcd++Tp2PgDA6ZUejARfCXcHztMFcJWPPziCWjtArpCi07qSp/ips4v6F0mtuvx/VrkGfMLWMq4ZQ0q+QF9mooM5THvrSJ2tEkzoQe+MJm/ioDG7JFQ9NYNfJtXycQ4mL790SiZvs68DHd91sR2EF2cK1RBZ4QdCTerjlzyJVXg==', $signature);
     }
 
@@ -109,6 +108,64 @@ __EOS__;
 
         $authParams['oauth_signature'] = 'invalid_signature';
         $this->assertFalse($singer->verify($method, $url, $params, $authParams));
+    }
+
+    public function test_verify_query_string()
+    {
+        $consumerKey = $this->getConsumerKey();
+        $accessToken = $this->getAccessToken();
+
+        $method = 'GET';
+        $url = 'http://example.jp/';
+        $params = [
+            'hoge' => 'ほげほげ',
+            'fuga' => 'ふがふが',
+        ];
+        $authParams = [
+            'oauth_version' => '1.0',
+            'oauth_signature_method' => 'RSA-SHA1',
+            'oauth_timestamp' => '1234567890',
+            'oauth_nonce' => 'nonce',
+            'oauth_consumer_key' => $consumerKey->getToken(),
+            'oauth_token' => $accessToken->getToken(),
+            'oauth_signature' => 'CIfhEbtNGmK5GD5Ny3W5pKbJX55gQwy8qUXl5rx6USpbOzwAOELGu+YCVCK5RjZHGBWajAdd/k2J5gVTpWS/uyk+UpFhEnhrbs9CczNP+yJFHmG16QY0DPep+Rs3h3wX5HHRQteHW3a2CzjohyiqCOMM7wUZFwzADIIugkvuZ3NKcd++Tp2PgDA6ZUejARfCXcHztMFcJWPPziCWjtArpCi07qSp/ips4v6F0mtuvx/VrkGfMLWMq4ZQ0q+QF9mooM5THvrSJ2tEkzoQe+MJm/ioDG7JFQ9NYNfJtXycQ4mL790SiZvs68DHd91sR2EF2cK1RBZ4QdCTerjlzyJVXg==',
+        ];
+
+        $url .= '?' . http_build_query($params);
+
+        $singer = new RsaSha1Signer(self::PUBLIC_KEY, self::PRIVATE_KEY, self::PASSPHRASE);
+        $this->assertTrue($singer->verify($method, $url, null, $authParams));
+
+        $authParams['oauth_signature'] = 'invalid_signature';
+        $this->assertFalse($singer->verify($method, $url, null, $authParams));
+    }
+
+    public function test_verify_query_string_all()
+    {
+        $consumerKey = $this->getConsumerKey();
+        $accessToken = $this->getAccessToken();
+
+        $method = 'GET';
+        $url = 'http://example.jp/';
+        $params = [
+            'hoge' => 'ほげほげ',
+            'fuga' => 'ふがふが',
+            'oauth_version' => '1.0',
+            'oauth_signature_method' => 'RSA-SHA1',
+            'oauth_timestamp' => '1234567890',
+            'oauth_nonce' => 'nonce',
+            'oauth_consumer_key' => $consumerKey->getToken(),
+            'oauth_token' => $accessToken->getToken(),
+            'oauth_signature' => 'CIfhEbtNGmK5GD5Ny3W5pKbJX55gQwy8qUXl5rx6USpbOzwAOELGu+YCVCK5RjZHGBWajAdd/k2J5gVTpWS/uyk+UpFhEnhrbs9CczNP+yJFHmG16QY0DPep+Rs3h3wX5HHRQteHW3a2CzjohyiqCOMM7wUZFwzADIIugkvuZ3NKcd++Tp2PgDA6ZUejARfCXcHztMFcJWPPziCWjtArpCi07qSp/ips4v6F0mtuvx/VrkGfMLWMq4ZQ0q+QF9mooM5THvrSJ2tEkzoQe+MJm/ioDG7JFQ9NYNfJtXycQ4mL790SiZvs68DHd91sR2EF2cK1RBZ4QdCTerjlzyJVXg==',
+        ];
+
+        $url .= '?' . http_build_query($params);
+
+        $singer = new RsaSha1Signer(self::PUBLIC_KEY, self::PRIVATE_KEY, self::PASSPHRASE);
+        $this->assertTrue($singer->verify($method, $url, null));
+
+        $url .= 'invalid_param=1';
+        $this->assertFalse($singer->verify($method, $url, null));
     }
 
     private function getConsumerKey()

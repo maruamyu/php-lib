@@ -55,33 +55,20 @@ class HmacSha1Signer implements SignerInterface
         $method = static::normalizeMethod($method);
         $uri = static::normalizeUri($uri);
 
-        $message = static::normalizeQueryString($params);
-        if ($headerParams) {
-            $message->merge(static::normalizeQueryString($headerParams));
-        }
+        $message = static::normalizeQueryString($headerParams);
+        $message->delete('realm');
 
-        # パラメータをQUERY_STRINGで処理するメソッド
-        if ($method === 'GET' || $method === 'HEAD') {
-            $uriQueryString = $uri->getQueryString();
-            if ($uriQueryString->hasAny()) {
-                $uri = $uri->withQuery('');
-                $message->merge($uriQueryString);
-            }
+        $message->append(static::normalizeQueryString($params));
+
+        $uriQueryString = $uri->getQueryString();
+        if ($uriQueryString->hasAny()) {
+            $uri = $uri->withQuery('');
+            $message->append($uriQueryString);
         }
 
         $message->delete('oauth_signature');
-        $message->delete('realm');
 
-        $baseString = rawurlencode($method)
-            . '&' . rawurlencode(strval($uri))
-            . '&' . rawurlencode($message->toOAuthQueryString());
-
-        $salt = rawurlencode($this->consumerKey->getTokenSecret()) . '&';
-        if ($this->accessToken) {
-            $salt .= rawurlencode($this->accessToken->getTokenSecret());
-        }
-
-        return base64_encode(hash_hmac('sha1', $baseString, $salt, true));
+        return $this->makeSignatureWithoutNormalize($method, $uri, $message);
     }
 
     /**
@@ -96,12 +83,15 @@ class HmacSha1Signer implements SignerInterface
         $method = static::normalizeMethod($method);
         $uri = static::normalizeUri($uri);
 
-        $message = static::normalizeQueryString($params);
-        if ($headerParams) {
-            if (isset($headerParams['realm'])) {
-                unset($headerParams['realm']);
-            }
-            $message->merge(static::normalizeQueryString($headerParams));
+        $message = static::normalizeQueryString($headerParams);
+        $message->delete('realm');
+
+        $message->append(static::normalizeQueryString($params));
+
+        $uriQueryString = $uri->getQueryString();
+        if ($uriQueryString->hasAny()) {
+            $uri = $uri->withQuery('');
+            $message->append($uriQueryString);
         }
 
         list($signatureMethod) = $message->get('oauth_signature_method');
@@ -111,7 +101,27 @@ class HmacSha1Signer implements SignerInterface
 
         list($origSignature) = $message->delete('oauth_signature');
 
-        $signature = $this->makeSignature($method, $uri, $message);
+        $signature = $this->makeSignatureWithoutNormalize($method, $uri, $message);
         return (strcmp($signature, $origSignature) == 0);
+    }
+
+    /**
+     * @param string $method HTTP method
+     * @param UriInterface $uri URL
+     * @param QueryString $message normalized request parameters
+     * @return string signature
+     */
+    private function makeSignatureWithoutNormalize($method, UriInterface $uri, QueryString $message)
+    {
+        $baseString = rawurlencode($method)
+            . '&' . rawurlencode(strval($uri))
+            . '&' . rawurlencode($message->toOAuthQueryString());
+
+        $salt = rawurlencode($this->consumerKey->getTokenSecret()) . '&';
+        if ($this->accessToken) {
+            $salt .= rawurlencode($this->accessToken->getTokenSecret());
+        }
+
+        return base64_encode(hash_hmac('sha1', $baseString, $salt, true));
     }
 }
