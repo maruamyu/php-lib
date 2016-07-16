@@ -55,13 +55,31 @@ class QueryStringTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * ignore invalid key
+     * ignore empty key
      */
     public function test_parseQueryString_ignoreInvalidKey()
     {
-        $actual = QueryString::parseQueryString('emily=stuart&=julia');
+        $queryString = '&=julia&roco=&'
+            . rawurlencode('エミリー') . '=' . rawurlencode('スチュアート') . '&';
+        $actual = QueryString::parseQueryString($queryString);
         $expect = [
-            'emily' => ['stuart'],
+            'roco' => [''],
+            'エミリー' => ['スチュアート'],
+        ];
+        $this->assertEquals($expect, $actual);
+    }
+
+    /**
+     * key only
+     */
+    public function test_parseQueryString_keyOnly()
+    {
+        $queryString = 'emily&' . rawurlencode('ジュリア') . '&' . rawurlencode('ロコ');
+        $actual = QueryString::parseQueryString($queryString);
+        $expect = [
+            'emily' => [''],
+            'ジュリア' => [''],
+            'ロコ' => [''],
         ];
         $this->assertEquals($expect, $actual);
     }
