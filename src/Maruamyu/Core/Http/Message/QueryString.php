@@ -148,15 +148,18 @@ class QueryString extends KeyValueStore
         $queryString = str_replace(';', '&', $queryString);
         $kvpairs = explode('&', $queryString);
         foreach ($kvpairs as $kvpair) {
-            list($key, $value) = explode('=', $kvpair, 2);
-            $key = rawurldecode($key);
+            $delimiterPos = strpos($kvpair, '=', 0);
+            if ($delimiterPos === false) {
+                continue;
+            }
+            $key = rawurldecode(substr($kvpair, 0, $delimiterPos));
             if (strlen($key) < 1) {
                 continue;
             }
             if (!(isset($parsed[$key]))) {
                 $parsed[$key] = [];
             }
-            $parsed[$key][] = rawurldecode($value);
+            $parsed[$key][] = rawurldecode(substr($kvpair, ($delimiterPos + 1)));  # strlen('=') = 1
         }
         return $parsed;
     }
