@@ -150,16 +150,20 @@ class QueryString extends KeyValueStore
         foreach ($kvpairs as $kvpair) {
             $delimiterPos = strpos($kvpair, '=', 0);
             if ($delimiterPos === false) {
-                continue;
+                $key = $kvpair;
+                $value = '';
+            } else {
+                $key = substr($kvpair, 0, $delimiterPos);
+                $value = substr($kvpair, ($delimiterPos + 1));  # strlen('=') = 1
             }
-            $key = rawurldecode(substr($kvpair, 0, $delimiterPos));
+            $key = rawurldecode($key);
             if (strlen($key) < 1) {
                 continue;
             }
             if (!(isset($parsed[$key]))) {
                 $parsed[$key] = [];
             }
-            $parsed[$key][] = rawurldecode(substr($kvpair, ($delimiterPos + 1)));  # strlen('=') = 1
+            $parsed[$key][] = rawurldecode($value);
         }
         return $parsed;
     }
