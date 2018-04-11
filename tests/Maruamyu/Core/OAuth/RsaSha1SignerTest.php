@@ -2,7 +2,7 @@
 
 namespace Maruamyu\Core\OAuth;
 
-class RsaSha1SignerTest extends \PHPUnit_Framework_TestCase
+class RsaSha1SignerTest extends \PHPUnit\Framework\TestCase
 {
     const PRIVATE_KEY = <<<__EOS__
 -----BEGIN RSA PRIVATE KEY-----

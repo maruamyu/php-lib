@@ -2,7 +2,7 @@
 
 namespace Maruamyu\Core\Http\Message;
 
-class QueryStringTest extends \PHPUnit_Framework_TestCase
+class QueryStringTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * シンプルなQUERY_STRINGのパース

@@ -2,7 +2,7 @@
 
 namespace Maruamyu\Core\OAuth;
 
-class AccessTokenTest extends \PHPUnit_Framework_TestCase
+class AccessTokenTest extends \PHPUnit\Framework\TestCase
 {
     public function test_token()
     {

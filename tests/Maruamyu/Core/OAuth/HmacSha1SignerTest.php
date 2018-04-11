@@ -2,7 +2,7 @@
 
 namespace Maruamyu\Core\OAuth;
 
-class HmacSha1SignerTest extends \PHPUnit_Framework_TestCase
+class HmacSha1SignerTest extends \PHPUnit\Framework\TestCase
 {
     public function test_getSignatureMethod()
     {

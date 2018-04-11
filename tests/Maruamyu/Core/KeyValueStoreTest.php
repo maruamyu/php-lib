@@ -2,7 +2,7 @@
 
 namespace Maruamyu\Core;
 
-class KeyValueStoreTest extends \PHPUnit_Framework_TestCase
+class KeyValueStoreTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * setした値をgetで取り出せる
