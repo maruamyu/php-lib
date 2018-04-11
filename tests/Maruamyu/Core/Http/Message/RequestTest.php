@@ -2,7 +2,7 @@
 
 namespace Maruamyu\Core\Http\Message;
 
-class RequestTest extends \PHPUnit_Framework_TestCase
+class RequestTest extends \PHPUnit\Framework\TestCase
 {
     public function test_method()
     {

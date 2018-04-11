@@ -2,7 +2,7 @@
 
 namespace Maruamyu\Core\OAuth;
 
-class PlainTextSignerTest extends \PHPUnit_Framework_TestCase
+class PlainTextSignerTest extends \PHPUnit\Framework\TestCase
 {
     public function test_getSignatureMethod()
     {

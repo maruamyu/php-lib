@@ -2,7 +2,7 @@
 
 namespace Maruamyu\Core\Http\Message;
 
-class MultipartDataTest extends \PHPUnit_Framework_TestCase
+class MultipartDataTest extends \PHPUnit\Framework\TestCase
 {
     public function test_name()
     {

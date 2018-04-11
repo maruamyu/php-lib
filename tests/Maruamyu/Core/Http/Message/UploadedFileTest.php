@@ -2,7 +2,7 @@
 
 namespace Maruamyu\Core\Http\Message;
 
-class UploadedFileTest extends \PHPUnit_Framework_TestCase
+class UploadedFileTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * ファイルのサイズ

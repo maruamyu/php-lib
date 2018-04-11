@@ -2,7 +2,7 @@
 
 namespace Maruamyu\Core\OAuth;
 
-class ConsumerKeyTest extends \PHPUnit_Framework_TestCase
+class ConsumerKeyTest extends \PHPUnit\Framework\TestCase
 {
     public function test_token()
     {

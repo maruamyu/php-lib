@@ -2,7 +2,7 @@
 
 namespace Maruamyu\Core\Http\Message;
 
-class ResponseTest extends \PHPUnit_Framework_TestCase
+class ResponseTest extends \PHPUnit\Framework\TestCase
 {
     public function test_statusCode()
     {

@@ -5,7 +5,7 @@ namespace Maruamyu\Core\OAuth;
 use Maruamyu\Core\Http\Message\ServerRequest;
 use Maruamyu\Core\Http\Message\Uri;
 
-class ServiceProviderTest extends \PHPUnit_Framework_TestCase
+class ServiceProviderTest extends \PHPUnit\Framework\TestCase
 {
     const PRIVATE_KEY = <<<__EOS__
 -----BEGIN RSA PRIVATE KEY-----

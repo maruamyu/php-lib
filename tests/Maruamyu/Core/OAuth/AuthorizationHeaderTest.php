@@ -2,7 +2,7 @@
 
 namespace Maruamyu\Core\OAuth;
 
-class AuthorizationHeaderTest extends \PHPUnit_Framework_TestCase
+class AuthorizationHeaderTest extends \PHPUnit\Framework\TestCase
 {
     public function test_getScheme()
     {

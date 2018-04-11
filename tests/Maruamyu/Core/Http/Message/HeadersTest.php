@@ -2,7 +2,7 @@
 
 namespace Maruamyu\Core\Http\Message;
 
-class HeadersTest extends \PHPUnit_Framework_TestCase
+class HeadersTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * setした値をgetで取り出せる
