@@ -95,20 +95,27 @@ class Stream implements PsrStreamInterface
      */
     public function close()
     {
-        if ($this->handler) {
-            fclose($this->handler);
+        if (isset($this->handler)) {
+            if (is_resource($this->handler)) {
+                fclose($this->handler);
+            }
+            $this->detach();
         }
-        $this->handler = null;
     }
 
     /**
-     * ストリームのハンドラ(PHPのresource型の値)を返す.
+     * ストリームのハンドラを返して, このインスタンスを無効にする
      *
      * @return resource|null ハンドラ
      */
     public function detach()
     {
-        return $this->handler;
+        if (!$this->handler) {
+            return null;
+        }
+        $forReturn = $this->handler;
+        $this->handler = null;
+        return $forReturn;
     }
 
     /**
@@ -138,11 +145,10 @@ class Stream implements PsrStreamInterface
      */
     public function tell()
     {
-        $handler = $this->detach();
-        if (!$handler) {
+        if (!$this->handler) {
             throw new \RuntimeException('stream handler is null.');
         }
-        return ftell($handler);
+        return ftell($this->handler);
     }
 
     /**
@@ -153,11 +159,10 @@ class Stream implements PsrStreamInterface
      */
     public function eof()
     {
-        $handler = $this->detach();
-        if (!$handler) {
+        if (!$this->handler) {
             return true;
         }
-        return feof($handler);
+        return feof($this->handler);
     }
 
     /**
@@ -180,11 +185,10 @@ class Stream implements PsrStreamInterface
      */
     public function seek($offset, $whence = SEEK_SET)
     {
-        $handler = $this->detach();
-        if (!$handler) {
+        if (!$this->handler) {
             throw new \RuntimeException('stream handler is null.');
         }
-        fseek($handler, $offset, $whence);
+        fseek($this->handler, $offset, $whence);
     }
 
     /**
@@ -236,16 +240,14 @@ class Stream implements PsrStreamInterface
         if (strlen($string) < 1) {
             return 0;
         }
-        $handler = $this->detach();
-        if (!$handler) {
+        if (!$this->handler) {
             throw new \RuntimeException('stream handler is null.');
         }
-        $writtenSize = fwrite($handler, $string);
-        if (!$writtenSize) {
+        $writtenSize = fwrite($this->handler, $string);
+        if ($writtenSize === false) {
             throw new \RuntimeException('write error');
-
         }
-        fflush($handler);
+        fflush($this->handler);
         return $writtenSize;
     }
 
@@ -275,11 +277,10 @@ class Stream implements PsrStreamInterface
      */
     public function read($length)
     {
-        $handler = $this->detach();
-        if (!$handler) {
+        if (!$this->handler) {
             throw new \RuntimeException('stream handler is null.');
         }
-        return fread($handler, $length);
+        return fread($this->handler, $length);
     }
 
     /**
@@ -291,11 +292,10 @@ class Stream implements PsrStreamInterface
      */
     public function getContents()
     {
-        $handler = $this->detach();
-        if (!$handler) {
+        if (!$this->handler) {
             throw new \RuntimeException('stream handler is null.');
         }
-        return stream_get_contents($handler);
+        return stream_get_contents($this->handler);
     }
 
     /**
@@ -307,11 +307,10 @@ class Stream implements PsrStreamInterface
      */
     public function getMetadata($key = null)
     {
-        $handler = $this->detach();
-        if (!$handler) {
+        if (!$this->handler) {
             return null;
         }
-        $meta = stream_get_meta_data($handler);
+        $meta = stream_get_meta_data($this->handler);
         if (is_null($key)) {
             return $meta;
         } else {
