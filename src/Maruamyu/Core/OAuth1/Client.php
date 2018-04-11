@@ -1,6 +1,6 @@
 <?php
 
-namespace Maruamyu\Core\OAuth;
+namespace Maruamyu\Core\OAuth1;
 
 use Maruamyu\Core\Http\Driver\DriverFactory;
 use Maruamyu\Core\Http\Driver\DriverInterface;

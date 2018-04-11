@@ -1,6 +1,6 @@
 <?php
 
-namespace Maruamyu\Core\OAuth;
+namespace Maruamyu\Core\OAuth1;
 
 class AccessTokenTest extends \PHPUnit\Framework\TestCase
 {

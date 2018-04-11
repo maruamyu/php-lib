@@ -1,6 +1,6 @@
 <?php
 
-namespace Maruamyu\Core\OAuth;
+namespace Maruamyu\Core\OAuth1;
 
 class HmacSha1SignerTest extends \PHPUnit\Framework\TestCase
 {
@@ -11,7 +11,7 @@ class HmacSha1SignerTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('HMAC-SHA1', $singer->getSignatureMethod());
     }
 
-    public function test_makeSignature()
+    public function test_sign()
     {
         $consumerKey = $this->getConsumerKey();
         $accessToken = $this->getAccessToken();
@@ -27,12 +27,12 @@ class HmacSha1SignerTest extends \PHPUnit\Framework\TestCase
             'oauth_signature_method' => 'HMAC-SHA1',
             'oauth_timestamp' => '1234567890',
             'oauth_nonce' => 'nonce',
-            'oauth_consumer_key' => $consumerKey->getToken(),
+            'oauth_consumer_key' => $consumerKey->getKey(),
             'oauth_token' => $accessToken->getToken(),
         ];
 
         $singer = new HmacSha1Signer($consumerKey, $accessToken);
-        $signature = $singer->makeSignature($method, $url, $params, $authParams);
+        $signature = $singer->sign($method, $url, $params, $authParams);
         $this->assertEquals('qBoVJCjYWRHEmXh5VRqzItHuA50=', $signature);
     }
 
@@ -52,7 +52,7 @@ class HmacSha1SignerTest extends \PHPUnit\Framework\TestCase
             'oauth_signature_method' => 'HMAC-SHA1',
             'oauth_timestamp' => '1234567890',
             'oauth_nonce' => 'nonce',
-            'oauth_consumer_key' => $consumerKey->getToken(),
+            'oauth_consumer_key' => $consumerKey->getKey(),
             'oauth_token' => $accessToken->getToken(),
             'oauth_signature' => 'qBoVJCjYWRHEmXh5VRqzItHuA50=',
         ];
@@ -80,7 +80,7 @@ class HmacSha1SignerTest extends \PHPUnit\Framework\TestCase
             'oauth_signature_method' => 'HMAC-SHA1',
             'oauth_timestamp' => '1234567890',
             'oauth_nonce' => 'nonce',
-            'oauth_consumer_key' => $consumerKey->getToken(),
+            'oauth_consumer_key' => $consumerKey->getKey(),
             'oauth_token' => $accessToken->getToken(),
             'oauth_signature' => 'qBoVJCjYWRHEmXh5VRqzItHuA50=',
         ];
@@ -108,7 +108,7 @@ class HmacSha1SignerTest extends \PHPUnit\Framework\TestCase
             'oauth_signature_method' => 'HMAC-SHA1',
             'oauth_timestamp' => '1234567890',
             'oauth_nonce' => 'nonce',
-            'oauth_consumer_key' => $consumerKey->getToken(),
+            'oauth_consumer_key' => $consumerKey->getKey(),
             'oauth_token' => $accessToken->getToken(),
             'oauth_signature' => 'qBoVJCjYWRHEmXh5VRqzItHuA50=',
         ];

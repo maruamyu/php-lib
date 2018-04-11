@@ -1,13 +1,13 @@
 <?php
 
-namespace Maruamyu\Core\OAuth;
+namespace Maruamyu\Core\OAuth1;
 
 use Maruamyu\Core\Http\Message\NormalizeMessageTrait;
 use Maruamyu\Core\Http\Message\QueryString;
 use Maruamyu\Core\Http\Message\UriInterface;
 
 /**
- * OAuth HMAC-SHA1署名 処理クラス
+ * OAuth1 HMAC-SHA1 signature operations
  */
 class HmacSha1Signer implements SignerInterface
 {
@@ -24,8 +24,6 @@ class HmacSha1Signer implements SignerInterface
     private $accessToken;
 
     /**
-     * インスタンスを初期化する.
-     *
      * @param ConsumerKey $consumerKey ConsumerKey
      * @param AccessToken $accessToken AccessToken
      */
@@ -36,7 +34,7 @@ class HmacSha1Signer implements SignerInterface
     }
 
     /**
-     * @return string 署名生成方式
+     * @return string oauth_signature_method
      */
     public function getSignatureMethod()
     {
@@ -44,13 +42,13 @@ class HmacSha1Signer implements SignerInterface
     }
 
     /**
-     * @param string $method メソッド
+     * @param string $method HTTP Method
      * @param string|UriInterface $uri URL
-     * @param array|QueryString $params リクエストパラメータ
-     * @param array $headerParams Authorizationヘッダのパラメータ
-     * @return string 署名
+     * @param array|QueryString $params request parameters
+     * @param array $headerParams Authorization header parameters
+     * @return string signature
      */
-    public function makeSignature($method, $uri, $params, $headerParams = null)
+    public function sign($method, $uri, $params, $headerParams = null)
     {
         $method = static::normalizeMethod($method);
         $uri = static::normalizeUri($uri);
@@ -72,11 +70,11 @@ class HmacSha1Signer implements SignerInterface
     }
 
     /**
-     * @param string $method メソッド
+     * @param string $method HTTP Method
      * @param string|UriInterface $uri URL
-     * @param array|QueryString $params リクエストパラメータ
-     * @param array $headerParams Authorizationヘッダのパラメータ
-     * @return boolean パラメータ内の署名が正しければtrue, それ以外はfalse
+     * @param array|QueryString $params request parameters
+     * @param array $headerParams Authorization header parameters
+     * @return boolean true if valid signature in params, else false
      */
     public function verify($method, $uri, $params, $headerParams = null)
     {
@@ -117,7 +115,7 @@ class HmacSha1Signer implements SignerInterface
             . '&' . rawurlencode(strval($uri))
             . '&' . rawurlencode($message->toOAuthQueryString());
 
-        $salt = rawurlencode($this->consumerKey->getTokenSecret()) . '&';
+        $salt = rawurlencode($this->consumerKey->getSecret()) . '&';
         if ($this->accessToken) {
             $salt .= rawurlencode($this->accessToken->getTokenSecret());
         }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Maruamyu\Core\OAuth;
+namespace Maruamyu\Core\OAuth1;
 
 class RsaSha1SignerTest extends \PHPUnit\Framework\TestCase
 {
@@ -57,7 +57,7 @@ __EOS__;
         $this->assertEquals('RSA-SHA1', $singer->getSignatureMethod());
     }
 
-    public function test_makeSignature()
+    public function test_sign()
     {
         $consumerKey = $this->getConsumerKey();
         $accessToken = $this->getAccessToken();
@@ -73,12 +73,12 @@ __EOS__;
             'oauth_signature_method' => 'RSA-SHA1',
             'oauth_timestamp' => '1234567890',
             'oauth_nonce' => 'nonce',
-            'oauth_consumer_key' => $consumerKey->getToken(),
+            'oauth_consumer_key' => $consumerKey->getKey(),
             'oauth_token' => $accessToken->getToken(),
         ];
 
         $singer = new RsaSha1Signer(self::PUBLIC_KEY, self::PRIVATE_KEY, self::PASSPHRASE);
-        $signature = $singer->makeSignature($method, $url, $params, $authParams);
+        $signature = $singer->sign($method, $url, $params, $authParams);
         $this->assertEquals('CIfhEbtNGmK5GD5Ny3W5pKbJX55gQwy8qUXl5rx6USpbOzwAOELGu+YCVCK5RjZHGBWajAdd/k2J5gVTpWS/uyk+UpFhEnhrbs9CczNP+yJFHmG16QY0DPep+Rs3h3wX5HHRQteHW3a2CzjohyiqCOMM7wUZFwzADIIugkvuZ3NKcd++Tp2PgDA6ZUejARfCXcHztMFcJWPPziCWjtArpCi07qSp/ips4v6F0mtuvx/VrkGfMLWMq4ZQ0q+QF9mooM5THvrSJ2tEkzoQe+MJm/ioDG7JFQ9NYNfJtXycQ4mL790SiZvs68DHd91sR2EF2cK1RBZ4QdCTerjlzyJVXg==', $signature);
     }
 
@@ -98,7 +98,7 @@ __EOS__;
             'oauth_signature_method' => 'RSA-SHA1',
             'oauth_timestamp' => '1234567890',
             'oauth_nonce' => 'nonce',
-            'oauth_consumer_key' => $consumerKey->getToken(),
+            'oauth_consumer_key' => $consumerKey->getKey(),
             'oauth_token' => $accessToken->getToken(),
             'oauth_signature' => 'CIfhEbtNGmK5GD5Ny3W5pKbJX55gQwy8qUXl5rx6USpbOzwAOELGu+YCVCK5RjZHGBWajAdd/k2J5gVTpWS/uyk+UpFhEnhrbs9CczNP+yJFHmG16QY0DPep+Rs3h3wX5HHRQteHW3a2CzjohyiqCOMM7wUZFwzADIIugkvuZ3NKcd++Tp2PgDA6ZUejARfCXcHztMFcJWPPziCWjtArpCi07qSp/ips4v6F0mtuvx/VrkGfMLWMq4ZQ0q+QF9mooM5THvrSJ2tEkzoQe+MJm/ioDG7JFQ9NYNfJtXycQ4mL790SiZvs68DHd91sR2EF2cK1RBZ4QdCTerjlzyJVXg==',
         ];
@@ -126,7 +126,7 @@ __EOS__;
             'oauth_signature_method' => 'RSA-SHA1',
             'oauth_timestamp' => '1234567890',
             'oauth_nonce' => 'nonce',
-            'oauth_consumer_key' => $consumerKey->getToken(),
+            'oauth_consumer_key' => $consumerKey->getKey(),
             'oauth_token' => $accessToken->getToken(),
             'oauth_signature' => 'CIfhEbtNGmK5GD5Ny3W5pKbJX55gQwy8qUXl5rx6USpbOzwAOELGu+YCVCK5RjZHGBWajAdd/k2J5gVTpWS/uyk+UpFhEnhrbs9CczNP+yJFHmG16QY0DPep+Rs3h3wX5HHRQteHW3a2CzjohyiqCOMM7wUZFwzADIIugkvuZ3NKcd++Tp2PgDA6ZUejARfCXcHztMFcJWPPziCWjtArpCi07qSp/ips4v6F0mtuvx/VrkGfMLWMq4ZQ0q+QF9mooM5THvrSJ2tEkzoQe+MJm/ioDG7JFQ9NYNfJtXycQ4mL790SiZvs68DHd91sR2EF2cK1RBZ4QdCTerjlzyJVXg==',
         ];
@@ -154,7 +154,7 @@ __EOS__;
             'oauth_signature_method' => 'RSA-SHA1',
             'oauth_timestamp' => '1234567890',
             'oauth_nonce' => 'nonce',
-            'oauth_consumer_key' => $consumerKey->getToken(),
+            'oauth_consumer_key' => $consumerKey->getKey(),
             'oauth_token' => $accessToken->getToken(),
             'oauth_signature' => 'CIfhEbtNGmK5GD5Ny3W5pKbJX55gQwy8qUXl5rx6USpbOzwAOELGu+YCVCK5RjZHGBWajAdd/k2J5gVTpWS/uyk+UpFhEnhrbs9CczNP+yJFHmG16QY0DPep+Rs3h3wX5HHRQteHW3a2CzjohyiqCOMM7wUZFwzADIIugkvuZ3NKcd++Tp2PgDA6ZUejARfCXcHztMFcJWPPziCWjtArpCi07qSp/ips4v6F0mtuvx/VrkGfMLWMq4ZQ0q+QF9mooM5THvrSJ2tEkzoQe+MJm/ioDG7JFQ9NYNfJtXycQ4mL790SiZvs68DHd91sR2EF2cK1RBZ4QdCTerjlzyJVXg==',
         ];

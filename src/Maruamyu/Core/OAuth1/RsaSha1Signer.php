@@ -1,13 +1,13 @@
 <?php
 
-namespace Maruamyu\Core\OAuth;
+namespace Maruamyu\Core\OAuth1;
 
 use Maruamyu\Core\Http\Message\NormalizeMessageTrait;
 use Maruamyu\Core\Http\Message\QueryString;
 use Maruamyu\Core\Http\Message\UriInterface;
 
 /**
- * OAuth RSA-SHA1署名 処理クラス
+ * OAuth 1.0 RSA-SHA1 signature operations
  */
 class RsaSha1Signer implements SignerInterface
 {
@@ -24,16 +24,14 @@ class RsaSha1Signer implements SignerInterface
     private $privateKey;
 
     /**
-     * インスタンスを初期化する.
+     * key format: string or resource
+     * string - PEM format
+     * resource - return from openssl_pkey_get_*
      *
-     * 鍵は string または resource
-     * string - PEM形式の値
-     * resource - openssl_pkey_get_* で取得できる値
-     *
-     * @param string|resource $publicKey 公開鍵
-     * @param string|resource $privateKey 秘密鍵
-     * @param string $passphrase 鍵のパスフレーズ
-     * @throws \InvalidArgumentException 鍵が正しくない場合
+     * @param string|resource $publicKey
+     * @param string|resource $privateKey
+     * @param string $passphrase
+     * @throws \InvalidArgumentException if invalid keys
      */
     public function __construct($publicKey, $privateKey = null, $passphrase = null)
     {
@@ -53,7 +51,7 @@ class RsaSha1Signer implements SignerInterface
     }
 
     /**
-     * @return string 署名生成方式
+     * @return string oauth_signature_method
      */
     public function getSignatureMethod()
     {
@@ -61,14 +59,13 @@ class RsaSha1Signer implements SignerInterface
     }
 
     /**
-     * @param string $method メソッド
+     * @param string $method HTTP Method
      * @param string|UriInterface $uri URL
-     * @param array|QueryString $params リクエストパラメータ
-     * @param array $headerParams Authorizationヘッダのパラメータ
-     * @return string 署名(Base64エンコード済み)
-     * @throws \RuntimeException 秘密鍵が指定されていない場合
+     * @param array|QueryString $params request parameters
+     * @param array $headerParams Authorization header parameters
+     * @return string signature
      */
-    public function makeSignature($method, $uri, $params, $headerParams = null)
+    public function sign($method, $uri, $params, $headerParams = null)
     {
         if (!$this->privateKey) {
             throw new \RuntimeException('private key required.');
@@ -104,11 +101,11 @@ class RsaSha1Signer implements SignerInterface
     }
 
     /**
-     * @param string $method メソッド
+     * @param string $method HTTP Method
      * @param string|UriInterface $uri URL
-     * @param array|QueryString $params リクエストパラメータ
-     * @param array $headerParams Authorizationヘッダのパラメータ
-     * @return boolean パラメータ内の署名が正しければtrue, それ以外はfalse
+     * @param array|QueryString $params request parameters
+     * @param array $headerParams Authorization header parameters
+     * @return boolean true if valid signature in params, else false
      */
     public function verify($method, $uri, $params, $headerParams = null)
     {
@@ -143,8 +140,8 @@ class RsaSha1Signer implements SignerInterface
     }
 
     /**
-     * @param string|resource $publicKey 公開鍵
-     * @return resource|null 公開鍵リソース (入力が正しくないときnull)
+     * @param string|resource $publicKey
+     * @return resource|null resource of public key, null if invalid
      */
     private static function fetchPublicKey($publicKey)
     {
@@ -170,9 +167,9 @@ class RsaSha1Signer implements SignerInterface
     }
 
     /**
-     * @param string|resource $privateKey 秘密鍵
-     * @param string $passphrase 鍵のパスフレーズ
-     * @return resource|null 秘密鍵リソース (入力が正しくないときnull)
+     * @param string|resource $privateKey
+     * @param string $passphrase
+     * @return resource|null resource of private key, null if invalid
      */
     private static function fetchPrivateKey($privateKey, $passphrase = null)
     {

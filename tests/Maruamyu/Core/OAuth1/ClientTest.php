@@ -1,6 +1,6 @@
 <?php
 
-namespace Maruamyu\Core\OAuth;
+namespace Maruamyu\Core\OAuth1;
 
 class ClientTest extends \PHPUnit\Framework\TestCase
 {
@@ -46,7 +46,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($url, $parsed['realm']);
         $this->assertEquals('1.0', $parsed['oauth_version']);
         $this->assertEquals('HMAC-SHA1', $parsed['oauth_signature_method']);
-        $this->assertEquals($consumerKey->getToken(), $parsed['oauth_consumer_key']);
+        $this->assertEquals($consumerKey->getKey(), $parsed['oauth_consumer_key']);
         $this->assertEquals($accessToken->getToken(), $parsed['oauth_token']);
         $this->assertNotNull($parsed['oauth_timestamp']);
         $this->assertNotNull($parsed['oauth_nonce']);
@@ -71,7 +71,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
 
         $this->assertEquals('1.0', $headerValue['oauth_version']);
         $this->assertEquals('HMAC-SHA1', $headerValue['oauth_signature_method']);
-        $this->assertEquals($consumerKey->getToken(), $headerValue['oauth_consumer_key']);
+        $this->assertEquals($consumerKey->getKey(), $headerValue['oauth_consumer_key']);
         $this->assertEquals($accessToken->getToken(), $headerValue['oauth_token']);
         $this->assertNotNull($headerValue['oauth_timestamp']);
         $this->assertNotNull($headerValue['oauth_nonce']);

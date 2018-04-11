@@ -1,13 +1,13 @@
 <?php
 
-namespace Maruamyu\Core\OAuth;
+namespace Maruamyu\Core\OAuth1;
 
 use Maruamyu\Core\Http\Message\NormalizeMessageTrait;
 use Maruamyu\Core\Http\Message\QueryString;
 use Maruamyu\Core\Http\Message\UriInterface;
 
 /**
- * OAuth PLAINTEXT signature generator
+ * OAuth 1.0 PLAINTEXT signature operations
  */
 class PlaintextSigner implements SignerInterface
 {
@@ -50,9 +50,9 @@ class PlaintextSigner implements SignerInterface
      * @param array $headerParams Authorization header params (void)
      * @return string signature
      */
-    public function makeSignature($method, $uri, $params, $headerParams = null)
+    public function sign($method, $uri, $params, $headerParams = null)
     {
-        $salt = rawurlencode($this->consumerKey->getTokenSecret()) . '&';
+        $salt = rawurlencode($this->consumerKey->getSecret()) . '&';
         if ($this->accessToken) {
             $salt .= rawurlencode($this->accessToken->getTokenSecret());
         }
@@ -89,7 +89,7 @@ class PlaintextSigner implements SignerInterface
 
         list($origSignature) = $message->delete('oauth_signature');
 
-        $signature = $this->makeSignature($method, $uri, $params, $headerParams);
+        $signature = $this->sign($method, $uri, $params, $headerParams);
         return (strcmp($signature, $origSignature) == 0);
     }
 }

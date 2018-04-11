@@ -1,6 +1,6 @@
 <?php
 
-namespace Maruamyu\Core\OAuth;
+namespace Maruamyu\Core\OAuth1;
 
 use Maruamyu\Core\Http\Message\ServerRequest;
 use Maruamyu\Core\Http\Message\Uri;
@@ -112,7 +112,7 @@ __EOS__;
         $accessToken = $this->getAccessToken();
         $serviceProvider = new ServiceProvider($consumerKey);
         $serviceProvider->setAccessToken($accessToken);
-        $serviceProvider->setRsaKeyPair(self::PUBLIC_KEY);
+        $serviceProvider->setRsaKey(self::PUBLIC_KEY);
 
         $serverRequest = $this->getRsaSha1ServerRequest();
         $this->assertTrue($serviceProvider->verifySignature($serverRequest));
@@ -134,7 +134,7 @@ __EOS__;
         $consumerKey = $this->getConsumerKey();
         $accessToken = $this->getAccessToken();
         $serviceProvider = new ServiceProvider($consumerKey, 'RSA-SHA1');
-        $serviceProvider->setRsaKeyPair(self::PUBLIC_KEY, self::PRIVATE_KEY, self::PASSPHRASE);
+        $serviceProvider->setRsaKey(self::PUBLIC_KEY, self::PRIVATE_KEY, self::PASSPHRASE);
         $serviceProvider->setAccessToken($accessToken);
 
         $method = 'POST';
@@ -148,7 +148,7 @@ __EOS__;
 
         $this->assertEquals('1.0', $authParams['oauth_version']);
         $this->assertEquals('RSA-SHA1', $authParams['oauth_signature_method']);
-        $this->assertEquals($consumerKey->getToken(), $authParams['oauth_consumer_key']);
+        $this->assertEquals($consumerKey->getKey(), $authParams['oauth_consumer_key']);
         $this->assertEquals($accessToken->getToken(), $authParams['oauth_token']);
         $this->assertFalse(empty($authParams['oauth_nonce']));
         $this->assertFalse(empty($authParams['oauth_timestamp']));
@@ -207,7 +207,7 @@ __EOS__;
         $authorizationValue = 'OAuth realm="http://example.jp/"';
         $authorizationValue .= ' , oauth_version="1.0"';
         $authorizationValue .= ' , oauth_signature_method="HMAC-SHA1"';
-        $authorizationValue .= ' , oauth_consumer_key="' . rawurlencode($consumerKey->getToken()) . '"';
+        $authorizationValue .= ' , oauth_consumer_key="' . rawurlencode($consumerKey->getKey()) . '"';
         $authorizationValue .= ' , oauth_token="' . rawurlencode($accessToken->getToken()) . '"';
         $authorizationValue .= ' , oauth_nonce="nonce"';
         $authorizationValue .= ' , oauth_timestamp="1234567890"';
@@ -234,7 +234,7 @@ __EOS__;
         $authorizationValue = 'OAuth realm="http://example.jp/"';
         $authorizationValue .= ' , oauth_version="1.0"';
         $authorizationValue .= ' , oauth_signature_method="RSA-SHA1"';
-        $authorizationValue .= ' , oauth_consumer_key="' . rawurlencode($consumerKey->getToken()) . '"';
+        $authorizationValue .= ' , oauth_consumer_key="' . rawurlencode($consumerKey->getKey()) . '"';
         $authorizationValue .= ' , oauth_token="' . rawurlencode($accessToken->getToken()) . '"';
         $authorizationValue .= ' , oauth_nonce="nonce"';
         $authorizationValue .= ' , oauth_timestamp="1234567890"';
@@ -257,13 +257,13 @@ __EOS__;
             'fuga' => 'ふがふが',
         ];
 
-        $plainTextSignature = rawurlencode($consumerKey->getTokenSecret())
+        $plainTextSignature = rawurlencode($consumerKey->getSecret())
             . '&' . rawurlencode($accessToken->getTokenSecret());
 
         $authorizationValue = 'OAuth realm="https://example.jp/"';
         $authorizationValue .= ' , oauth_version="1.0"';
         $authorizationValue .= ' , oauth_signature_method="PLAINTEXT"';
-        $authorizationValue .= ' , oauth_consumer_key="' . rawurlencode($consumerKey->getToken()) . '"';
+        $authorizationValue .= ' , oauth_consumer_key="' . rawurlencode($consumerKey->getKey()) . '"';
         $authorizationValue .= ' , oauth_token="' . rawurlencode($accessToken->getToken()) . '"';
         $authorizationValue .= ' , oauth_nonce="nonce"';
         $authorizationValue .= ' , oauth_timestamp="1234567890"';

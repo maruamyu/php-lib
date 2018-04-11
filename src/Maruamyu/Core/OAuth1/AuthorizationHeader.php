@@ -1,17 +1,18 @@
 <?php
 
-namespace Maruamyu\Core\OAuth;
+namespace Maruamyu\Core\OAuth1;
 
+/**
+ * OAuth 1.0 Authorization Header
+ */
 class AuthorizationHeader
 {
     private $params;
 
     /**
-     * インスタンスを初期化する.
-     *
-     * @param array|string $initValue ヘッダの値
-     *   array  - auth-paramsの内容(連想配列)
-     *   string - Authorizationヘッダの値
+     * @param array|string $initValue Authorization Header value
+     *   array  - auth-params (array)
+     *   string - Authorization Header value
      */
     public function __construct($initValue = null)
     {
@@ -23,7 +24,7 @@ class AuthorizationHeader
     }
 
     /**
-     * auth-schemeを表す文字列を取得する.
+     * auth-scheme
      *
      * @return string 'OAuth'
      */
@@ -33,9 +34,9 @@ class AuthorizationHeader
     }
 
     /**
-     * auth-paramsの内容を取得する.
+     * auth-params
      *
-     * @return array auth-paramsの内容
+     * @return array auth-params
      */
     public function getParams()
     {
@@ -43,9 +44,9 @@ class AuthorizationHeader
     }
 
     /**
-     * Authorizationヘッダの値を取得する.
+     * Authorization Header value
      *
-     * @return string Authorizationヘッダの値
+     * @return string Authorization Header value
      */
     public function getHeaderValue()
     {
@@ -53,10 +54,10 @@ class AuthorizationHeader
     }
 
     /**
-     * Authorizationヘッダの値を生成する.
+     * build Authorization Header value
      *
-     * @param array $authParams 署名パラメータ
-     * @return string Authorizationヘッダの値
+     * @param array $authParams auth-params
+     * @return string Authorization Header value
      */
     public static function build(array $authParams)
     {
@@ -64,10 +65,10 @@ class AuthorizationHeader
     }
 
     /**
-     * auth-paramsの値(文字列)を生成する.
+     * build auth-params string
      *
-     * @param array $authParams パラメータ
-     * @return string auth-paramsの値(文字列)
+     * @param array $authParams auth-params
+     * @return string auth-params
      */
     public static function buildAuthParams(array $authParams)
     {
@@ -84,11 +85,11 @@ class AuthorizationHeader
     }
 
     /**
-     * Authorizationヘッダの値をパースする.
+     * parse Authorization Header value
      *
-     * @param string $headerValue Authorizationヘッダの値
-     * @return array auth-paramsを配列にしたもの
-     *   (auth-schemeがOAuth以外のときは空配列が返る)
+     * @param string $headerValue Authorization Header value
+     * @return array auth-params
+     * @note if auth-scheme != OAuth, then return empty array.
      */
     public static function parse($headerValue)
     {
@@ -104,10 +105,10 @@ class AuthorizationHeader
     }
 
     /**
-     * auth-paramsの値(文字列)をパースする.
+     * parse auth-params string
      *
-     * @param string $authParams auth-paramsの値(文字列)
-     * @return array auth-paramsを配列にしたもの
+     * @param string $authParams auth-params
+     * @return array auth-params
      */
     public static function parseAuthParams($authParams)
     {

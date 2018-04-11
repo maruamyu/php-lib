@@ -1,6 +1,6 @@
 <?php
 
-namespace Maruamyu\Core\OAuth;
+namespace Maruamyu\Core\OAuth1;
 
 use Maruamyu\Core\Http\Message\Headers;
 use Maruamyu\Core\Http\Message\NormalizeMessageTrait;
@@ -17,7 +17,7 @@ class CoreLogic
 
     const DEFAULT_SIGNATURE_METHOD = 'HMAC-SHA1';
 
-    protected static $supportedSignatureMethods = [
+    const SUPPORTED_SIGNATURE_METHODS = [
         'HMAC-SHA1',
         'RSA-SHA1',
         'PLAINTEXT',
@@ -117,7 +117,7 @@ class CoreLogic
      * @param string $passphrase passphrase of private key
      * @throws \InvalidArgumentException if invalid key data
      */
-    public function setRsaKeyPair($publicKey, $privateKey = null, $passphrase = null)
+    public function setRsaKey($publicKey, $privateKey = null, $passphrase = null)
     {
         $this->rsaSha1Signer = new RsaSha1Signer($publicKey, $privateKey, $passphrase);
     }
@@ -140,7 +140,7 @@ class CoreLogic
      */
     public function setSignatureMethod($signatureMethod)
     {
-        if (!in_array($signatureMethod, static::$supportedSignatureMethods)) {
+        if (!in_array($signatureMethod, static::SUPPORTED_SIGNATURE_METHODS)) {
             throw new \InvalidArgumentException('invalid signature method: ' . $signatureMethod);
         }
         $this->signatureMethod = $signatureMethod;
@@ -209,7 +209,7 @@ class CoreLogic
         $signer = $this->getSigner($this->getSignatureMethod());
         $authParams = $this->createAuthParams();
         $authParams['oauth_signature_method'] = $signer->getSignatureMethod();
-        $authParams['oauth_signature'] = $signer->makeSignature($method, $uri, $params, $authParams);
+        $authParams['oauth_signature'] = $signer->sign($method, $uri, $params, $authParams);
         return $authParams;
     }
 
@@ -222,7 +222,7 @@ class CoreLogic
     {
         $authParams = $this->createOneTimeAuthParams();
         $authParams['oauth_version'] = $this->getVersion();
-        $authParams['oauth_consumer_key'] = $this->consumerKey->getToken();
+        $authParams['oauth_consumer_key'] = $this->consumerKey->getKey();
         if ($this->accessToken) {
             $authParams['oauth_token'] = $this->accessToken->getToken();
         }
@@ -265,7 +265,7 @@ class CoreLogic
                 return new HmacSha1Signer($this->consumerKey, $this->accessToken);
             case 'RSA-SHA1':
                 if (!$this->rsaSha1Signer) {
-                    throw new \RuntimeException('rsa keypair not set yet.');
+                    throw new \RuntimeException('RSA key not set yet.');
                 }
                 return clone $this->rsaSha1Signer;
             case 'PLAINTEXT':
