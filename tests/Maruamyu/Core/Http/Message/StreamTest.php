@@ -56,6 +56,7 @@ class StreamTest extends \PHPUnit\Framework\TestCase
     {
         $stream = Stream::fromTemp();
         $this->assertEquals('resource', gettype($stream->detach()));
+        $this->assertNull($stream->detach());
     }
 
     /**
