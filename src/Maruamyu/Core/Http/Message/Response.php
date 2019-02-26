@@ -85,14 +85,10 @@ class Response extends MessageAbstract implements ResponseInterface
         511 => 'Network Authentication Required',
     ];
 
-    /**
-     * HTTPステータスコード
-     */
+    /** @var integer */
     private $statusCode = 0;
 
-    /**
-     * ステータスを表す文字列
-     */
+    /** @var string */
     private $reasonPhrase = '';
 
     /**

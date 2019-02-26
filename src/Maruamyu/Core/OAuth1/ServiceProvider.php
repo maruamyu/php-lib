@@ -40,7 +40,7 @@ class ServiceProvider extends CoreLogic
     }
 
     /**
-     * fetch applicagit tion/x-www-form-urlencoded data from request
+     * fetch application/x-www-form-urlencoded data from request
      *
      * @param Request $request HTTP request message
      * @return QueryString|null form data (null if invalid Content-Type)

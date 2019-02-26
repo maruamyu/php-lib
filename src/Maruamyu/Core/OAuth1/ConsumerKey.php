@@ -18,8 +18,8 @@ class ConsumerKey
     private $secret;
 
     /**
-     * @param string $token oauth_consumer_key
-     * @param string $tokenSecret oauth_consumer_secret
+     * @param string $key oauth_consumer_key
+     * @param string $secret oauth_consumer_secret
      */
     public function __construct($key, $secret)
     {

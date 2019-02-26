@@ -93,7 +93,7 @@ class Headers
      * 値を取得する.
      *
      * @param string $name 名前
-     * @return mixed[] 名前に対する値のリスト (存在しなかったときは空)
+     * @return string[] 名前に対する値のリスト (存在しなかったときは空)
      */
     public function get($name)
     {
