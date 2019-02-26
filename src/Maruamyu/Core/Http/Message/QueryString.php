@@ -35,7 +35,7 @@ class QueryString extends KeyValueStore
             # parse_str($initValue, $parsed);
             # では, hoge=hoge&hoge=hogehoge を解釈できない.
             # そのため, 独自のパーサを利用する.
-            $parsed = static::parseQueryString($initValue);
+            $parsed = static::parse($initValue);
             foreach ($parsed as $key => $values) {
                 foreach ($values as $value) {
                     $this->add($key, $value);
@@ -76,6 +76,21 @@ class QueryString extends KeyValueStore
     }
 
     /**
+     * @param string $key
+     * @param string $glue
+     * @return string
+     */
+    public function getString($key, $glue = '')
+    {
+        $values = $this->get($key);
+        if (isset($values)) {
+            return join($glue, $values);
+        } else {
+            return '';
+        }
+    }
+
+    /**
      * @return string OAuthの署名に利用するQUERY_STRING形式の文字列
      *   注意: PHPの独自拡張形式ではない文字列を(意図的に)出力します
      */
@@ -101,7 +116,7 @@ class QueryString extends KeyValueStore
 
     /**
      * @return string PHPの独自拡張形式なQUERY_STRING形式の文字列
-     * @see \http_build_query
+     * @see \http_build_query()
      */
     public function toPHPQueryString()
     {
@@ -138,7 +153,7 @@ class QueryString extends KeyValueStore
      *   (例: "key[]=value" は ['key[]' => ['value']] となります)
      * @return array パースした配列
      */
-    public static function parseQueryString($queryString)
+    public static function parse($queryString)
     {
         if (strlen($queryString) < 1) {
             return [];
@@ -148,7 +163,7 @@ class QueryString extends KeyValueStore
         $queryString = str_replace(';', '&', $queryString);
         $kvpairs = explode('&', $queryString);
         foreach ($kvpairs as $kvpair) {
-            $delimiterPos = strpos($kvpair, '=', 0);
+            $delimiterPos = strpos($kvpair, '=');
             if ($delimiterPos === false) {
                 $key = $kvpair;
                 $value = '';
@@ -166,5 +181,51 @@ class QueryString extends KeyValueStore
             $parsed[$key][] = rawurldecode($value);
         }
         return $parsed;
+    }
+
+    /**
+     * @param string[][] $parameters
+     * @return string
+     */
+    public static function build(array $parameters)
+    {
+        $kvpairs = [];
+        foreach ($parameters as $key => $values) {
+            $encodedKey = rawurlencode($key);
+            if (is_array($values)) {
+                foreach ($values as $value) {
+                    $kvpairs[] = $encodedKey . '=' . rawurlencode(strval($value));
+                }
+            } else {
+                $kvpairs[] = $encodedKey . '=' . rawurlencode($values);
+            }
+        }
+        return join('&', $kvpairs);
+    }
+
+    /**
+     * for OAuth1.0 base_string
+     *
+     * @param string[][] $parameters
+     * @return string
+     */
+    public static function buildForOAuth1(array $parameters)
+    {
+        $kvpairs = [];
+        $keys = array_keys($parameters);
+        sort($keys, SORT_STRING);
+        foreach ($keys as $key) {
+            $encodedKey = rawurlencode($key);
+            if (is_array($parameters[$key])) {
+                $values = $parameters[$key];
+                sort($values, SORT_STRING);
+                foreach ($values as $value) {
+                    $kvpairs[] = $encodedKey . '=' . rawurlencode(strval($value));
+                }
+            } else {
+                $kvpairs[] = $encodedKey . '=' . rawurlencode($parameters[$key]);
+            }
+        }
+        return join('&', $kvpairs);
     }
 }

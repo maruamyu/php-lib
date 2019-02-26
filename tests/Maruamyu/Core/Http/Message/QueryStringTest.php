@@ -7,9 +7,9 @@ class QueryStringTest extends \PHPUnit\Framework\TestCase
     /**
      * シンプルなQUERY_STRINGのパース
      */
-    public function test_parseQueryStringBySimpleString()
+    public function test_parseBySimpleString()
     {
-        $actual = QueryString::parseQueryString('kasuga=mirai&mogami=shizuka');
+        $actual = QueryString::parse('kasuga=mirai&mogami=shizuka');
         $expect = [
             'kasuga' => ['mirai'],
             'mogami' => ['shizuka'],
@@ -20,9 +20,9 @@ class QueryStringTest extends \PHPUnit\Framework\TestCase
     /**
      * 同じキーがあるQUERY_STRINGのパース
      */
-    public function test_parseQueryStringByDuplicateKey()
+    public function test_parseByDuplicateKey()
     {
-        $actual = QueryString::parseQueryString('haruka=amami&haruka=yamazaki');
+        $actual = QueryString::parse('haruka=amami&haruka=yamazaki');
         $expect = [
             'haruka' => ['amami', 'yamazaki'],
         ];
@@ -32,9 +32,9 @@ class QueryStringTest extends \PHPUnit\Framework\TestCase
     /**
      * PHPの独自形式なQUERY_STRINGを意図的にそのままパース(配列の添え字なし)
      */
-    public function test_parseQueryStringByPHPFormatWithoutIndex()
+    public function test_parseByPHPFormatWithoutIndex()
     {
-        $actual = QueryString::parseQueryString('haruka[]=tomatsu&haruka[]=yoshimura');
+        $actual = QueryString::parse('haruka[]=tomatsu&haruka[]=yoshimura');
         $expect = [
             'haruka[]' => ['tomatsu', 'yoshimura'],
         ];
@@ -44,9 +44,9 @@ class QueryStringTest extends \PHPUnit\Framework\TestCase
     /**
      * PHPの独自形式なQUERY_STRINGを意図的にそのままパース(配列の添え字あり)
      */
-    public function test_parseQueryStringByPHPFormatWithIndex()
+    public function test_parseByPHPFormatWithIndex()
     {
-        $actual = QueryString::parseQueryString('nao[0]=yokoyama&nao[1]=kamiya');
+        $actual = QueryString::parse('nao[0]=yokoyama&nao[1]=kamiya');
         $expect = [
             'nao[0]' => ['yokoyama'],
             'nao[1]' => ['kamiya'],
@@ -57,11 +57,11 @@ class QueryStringTest extends \PHPUnit\Framework\TestCase
     /**
      * ignore empty key
      */
-    public function test_parseQueryString_ignoreInvalidKey()
+    public function test_parse_ignoreInvalidKey()
     {
         $queryString = '&=julia&roco=&'
             . rawurlencode('エミリー') . '=' . rawurlencode('スチュアート') . '&';
-        $actual = QueryString::parseQueryString($queryString);
+        $actual = QueryString::parse($queryString);
         $expect = [
             'roco' => [''],
             'エミリー' => ['スチュアート'],
@@ -72,10 +72,10 @@ class QueryStringTest extends \PHPUnit\Framework\TestCase
     /**
      * key only
      */
-    public function test_parseQueryString_keyOnly()
+    public function test_parse_keyOnly()
     {
         $queryString = 'emily&' . rawurlencode('ジュリア') . '&' . rawurlencode('ロコ');
-        $actual = QueryString::parseQueryString($queryString);
+        $actual = QueryString::parse($queryString);
         $expect = [
             'emily' => [''],
             'ジュリア' => [''],
@@ -87,9 +87,9 @@ class QueryStringTest extends \PHPUnit\Framework\TestCase
     /**
      * ignore invalid key-value pair
      */
-    public function test_parseQueryString_ignoreInvalidKVPair()
+    public function test_parse_ignoreInvalidKVPair()
     {
-        $actual = QueryString::parseQueryString('&imai=asami&&imai=asaka&');
+        $actual = QueryString::parse('&imai=asami&&imai=asaka&');
         $expect = [
             'imai' => ['asami', 'asaka'],
         ];
@@ -99,9 +99,9 @@ class QueryStringTest extends \PHPUnit\Framework\TestCase
     /**
      * empty value
      */
-    public function test_parseQueryString_emptyValue()
+    public function test_parse_emptyValue()
     {
-        $actual = QueryString::parseQueryString('name=&name=value1&name=&name=value2&name=');
+        $actual = QueryString::parse('name=&name=value1&name=&name=value2&name=');
         $expect = [
             'name' => ['', 'value1', '', 'value2', ''],
         ];
@@ -119,7 +119,7 @@ class QueryStringTest extends \PHPUnit\Framework\TestCase
 
         $expect = 'mobage=' . rawurlencode('シンデレラガールズ')
             . '&gree=' . rawurlencode('ミリオンライブ！');
-        $this->assertEquals($expect, (string)$kvs);
+        $this->assertEquals($expect, strval($kvs));
     }
 
     /**
@@ -134,7 +134,7 @@ class QueryStringTest extends \PHPUnit\Framework\TestCase
         $expect = 'mobage=' . rawurlencode('シンデレラガールズ')
             . '&mobage=' . rawurlencode('サイドエム');
 
-        $this->assertEquals($expect, (string)$kvs);
+        $this->assertEquals($expect, strval($kvs));
     }
 
     /**
@@ -199,5 +199,36 @@ class QueryStringTest extends \PHPUnit\Framework\TestCase
         $expect .= 'Google Play カード' . "\r\n";
 
         $this->assertEquals($expect, $kvs->toMultiPartFormData($boundary));
+    }
+
+    /**
+     * static function build QUERY_STRING
+     */
+    public function test_build()
+    {
+        $parameters = [
+            'mobage' => ['シンデレラガールズ', 'サイドエム'],
+            'gree' => 'ミリオンライブ！',
+        ];
+
+        $expect = 'mobage=' . rawurlencode('シンデレラガールズ')
+            . '&mobage=' . rawurlencode('サイドエム')
+            . '&gree=' . rawurlencode('ミリオンライブ！');
+
+        $this->assertEquals($expect, QueryString::build($parameters));
+    }
+
+    /**
+     * static function build OAuth1 QUERY_STRING
+     */
+    public function test_buildOAuth1()
+    {
+        $parameters = [
+            '7' => 'ナンス',
+            '10' => '天',
+        ];
+        $expect = '10=' . rawurlencode('天')
+            . '&7=' . rawurlencode('ナンス');
+        $this->assertEquals($expect, QueryString::buildForOAuth1($parameters));
     }
 }
