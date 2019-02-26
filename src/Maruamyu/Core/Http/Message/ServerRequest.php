@@ -64,7 +64,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      * 指定されたCookieデータを設定した新しいインスタンスを返す.
      *
      * @param array $cookieParams パラメータ
-     * @return self パラメータを設定した新しいインスタンス
+     * @return static パラメータを設定した新しいインスタンス
      */
     public function withCookieParams(array $cookieParams)
     {
@@ -89,7 +89,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      * ({parse_str()}を使ったPHP互換形式)
      *
      * @param array $queryParams パラメータ
-     * @return self パラメータを設定した新しいインスタンス
+     * @return static パラメータを設定した新しいインスタンス
      */
     public function withQueryParams(array $queryParams)
     {
@@ -112,7 +112,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      * アップロードされたファイルのリストを設定した新しいインスタンスを返す.
      *
      * @param UploadedFileInterface[] $uploadedFiles アップロードファイルのリスト
-     * @return self パラメータを設定した新しいインスタンス
+     * @return static パラメータを設定した新しいインスタンス
      * @throws \InvalidArgumentException 入力データが正しくないとき
      */
     public function withUploadedFiles(array $uploadedFiles)
@@ -144,7 +144,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      * ({parse_str()}または{json_decode()}を使ったPHP互換形式)
      *
      * @param null|array|object $parsedBody POSTデータ
-     * @return self POSTデータを設定した新しいインスタンス
+     * @return static POSTデータを設定した新しいインスタンス
      * @throws \InvalidArgumentException POSTデータが正しくないとき
      */
     public function withParsedBody($parsedBody)
@@ -189,7 +189,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      *
      * @param string $name 属性名
      * @param mixed $value 属性値
-     * @return self 属性情報を設定した新しいインスタンス
+     * @return static 属性情報を設定した新しいインスタンス
      * @see getAttributes()
      */
     public function withAttribute($name, $value)
@@ -203,7 +203,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      * リクエストの属性情報を削除した新しいインスタンスを返す.
      *
      * @param string $name 属性名
-     * @return self 属性情報から属性名を削除した新しいインスタンス
+     * @return static 属性情報から属性名を削除した新しいインスタンス
      * @see getAttributes()
      */
     public function withoutAttribute($name)

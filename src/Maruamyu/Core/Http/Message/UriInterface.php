@@ -33,14 +33,14 @@ interface UriInterface extends PsrUriInterface
 
     /**
      * @param string|array|QueryString $queryString QUERY_STRINGデータ
-     * @return self 指定のQUERY_STRINGデータを設定した新しいインスタンス
+     * @return static 指定のQUERY_STRINGデータを設定した新しいインスタンス
      * @throws \InvalidArgumentException QUERY_STRINGデータが正しくないとき
      */
     public function withQueryString($queryString);
 
     /**
      * @param string|array|QueryString $queryString QUERY_STRINGデータ
-     * @return self 指定のQUERY_STRINGデータをマージした新しいインスタンス
+     * @return static 指定のQUERY_STRINGデータをマージした新しいインスタンス
      * @throws \InvalidArgumentException QUERY_STRINGデータが正しくないとき
      */
     public function withAddedQueryString($queryString);

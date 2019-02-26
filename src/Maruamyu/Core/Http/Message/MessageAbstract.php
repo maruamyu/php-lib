@@ -57,7 +57,7 @@ abstract class MessageAbstract implements MessageInterface
 
     /**
      * @param string $version HTTPプロトコルバージョン
-     * @return self 指定のHTTPプロトコルバージョンを設定した新しいインスタンス
+     * @return static 指定のHTTPプロトコルバージョンを設定した新しいインスタンス
      */
     public function withProtocolVersion($version)
     {
@@ -136,7 +136,7 @@ abstract class MessageAbstract implements MessageInterface
      *
      * @param string $name 設定するヘッダ名
      * @param string $value 設定するヘッダ値
-     * @return self 指定のヘッダを設定した新しいインスタンス
+     * @return static 指定のヘッダを設定した新しいインスタンス
      * @throws \InvalidArgumentException ヘッダ名または値が正しくないとき
      */
     public function withHeader($name, $value)
@@ -152,7 +152,7 @@ abstract class MessageAbstract implements MessageInterface
      *
      * @param string $name 追加するヘッダ名
      * @param string $value 追加するヘッダ値
-     * @return self 指定のヘッダを追加した新しいインスタンス
+     * @return static 指定のヘッダを追加した新しいインスタンス
      * @throws \InvalidArgumentException ヘッダ名または値が正しくないとき
      */
     public function withAddedHeader($name, $value)
@@ -166,7 +166,7 @@ abstract class MessageAbstract implements MessageInterface
      * メッセージヘッダを削除する.
      *
      * @param string $name 削除するヘッダ名
-     * @return self 指定のヘッダを削除した新しいインスタンス
+     * @return static 指定のヘッダを削除した新しいインスタンス
      */
     public function withoutHeader($name)
     {
@@ -188,7 +188,7 @@ abstract class MessageAbstract implements MessageInterface
 
     /**
      * @param StreamInterface $body 内容を保持したストリーム
-     * @return self 指定の内容を設定した新しいインスタンス
+     * @return static 指定の内容を設定した新しいインスタンス
      * @throws \InvalidArgumentException 内容が正しくないとき
      */
     public function withBody(StreamInterface $body)
@@ -206,7 +206,7 @@ abstract class MessageAbstract implements MessageInterface
      * (PSR-7規定にない独自実装メソッド)
      *
      * @param string $contents 内容
-     * @return self 指定の内容を設定した新しいインスタンス
+     * @return static 指定の内容を設定した新しいインスタンス
      */
     public function withBodyContents($contents)
     {

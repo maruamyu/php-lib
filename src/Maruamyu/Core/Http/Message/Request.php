@@ -96,7 +96,7 @@ class Request extends MessageAbstract implements RequestInterface
 
     /**
      * @param string $requestTarget リクエスト対象(パス)
-     * @return self 指定のリクエスト対象を設定した新しいインスタンス
+     * @return static 指定のリクエスト対象を設定した新しいインスタンス
      */
     public function withRequestTarget($requestTarget)
     {
@@ -117,7 +117,7 @@ class Request extends MessageAbstract implements RequestInterface
      * @param PsrUriInterface $uri Uriオブジェクト インスタンス
      * @param boolean $preserveHost 持っているHostヘッダを再設定しないときtrueを指定
      *   (falseだと, Uriからホストを読み取ってHostヘッダへ設定する.)
-     * @return self 指定のUriを設定した新しいインスタンス
+     * @return static 指定のUriを設定した新しいインスタンス
      */
     public function withUri(PsrUriInterface $uri, $preserveHost = false)
     {
@@ -140,7 +140,7 @@ class Request extends MessageAbstract implements RequestInterface
 
     /**
      * @param string $method リクエストメソッド
-     * @return self 指定のメソッドを設定した新しいインスタンス
+     * @return static 指定のメソッドを設定した新しいインスタンス
      * @throws \InvalidArgumentException メソッドが正しくないとき
      */
     public function withMethod($method)
@@ -164,7 +164,7 @@ class Request extends MessageAbstract implements RequestInterface
 
     /**
      * @param MultipartData[] MultipartDataリスト
-     * @return self 指定のMultipartDataリストを設定した新しいインスタンス
+     * @return static 指定のMultipartDataリストを設定した新しいインスタンス
      */
     public function withMultipartDataList(array $multipartDataList)
     {

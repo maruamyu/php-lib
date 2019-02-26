@@ -19,7 +19,7 @@ class Stream implements PsrStreamInterface
      *
      * @param string $path ファイルパス
      * @param string $mode モード
-     * @return self
+     * @return static
      * @throws \RuntimeException ファイルオープンが失敗したとき
      */
     public static function fromFilePath($path, $mode = 'c+b')
@@ -35,7 +35,7 @@ class Stream implements PsrStreamInterface
      * 一時データのインスタンスを生成する.
      *
      * @param string $initData 初期データ
-     * @return self
+     * @return static
      */
     public static function fromTemp($initData = '')
     {
