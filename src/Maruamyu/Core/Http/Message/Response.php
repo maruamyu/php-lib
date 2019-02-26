@@ -148,7 +148,7 @@ class Response extends MessageAbstract implements ResponseInterface
     /**
      * @param int $code HTTPステータスコード
      * @param string $reasonPhrase ステータスを表す文字列("OK"等)
-     * @return self 指定のステータスコードを設定した新しいインスタンス
+     * @return static 指定のステータスコードを設定した新しいインスタンス
      * @throws \InvalidArgumentException コードが正しくないとき
      */
     public function withStatus($code, $reasonPhrase = '')

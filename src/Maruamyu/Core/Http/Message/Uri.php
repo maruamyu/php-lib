@@ -203,7 +203,7 @@ class Uri implements UriInterface
 
     /**
      * @param string $scheme プロトコル
-     * @return self 指定のプロトコルを設定した新しいインスタンス
+     * @return static 指定のプロトコルを設定した新しいインスタンス
      * @throws \InvalidArgumentException プロトコルが正しくない, または未指定のとき
      */
     public function withScheme($scheme)
@@ -216,7 +216,7 @@ class Uri implements UriInterface
     /**
      * @param string $user ユーザー名
      * @param null|string $password パスワード
-     * @return self 指定の認証パラメータを設定した新しいインスタンス
+     * @return static 指定の認証パラメータを設定した新しいインスタンス
      */
     public function withUserInfo($user, $password = null)
     {
@@ -227,7 +227,7 @@ class Uri implements UriInterface
 
     /**
      * @param string $host ホスト
-     * @return self 指定のホストを設定した新しいインスタンス
+     * @return static 指定のホストを設定した新しいインスタンス
      * @throws \InvalidArgumentException ホストが正しくないとき
      */
     public function withHost($host)
@@ -239,7 +239,7 @@ class Uri implements UriInterface
 
     /**
      * @param int|null $port ポート
-     * @return self 指定のポートを設定した新しいインスタンス
+     * @return static 指定のポートを設定した新しいインスタンス
      * @throws \InvalidArgumentException ポートが正しくないとき
      */
     public function withPort($port)
@@ -251,7 +251,7 @@ class Uri implements UriInterface
 
     /**
      * @param string $path パス
-     * @return self 指定のパスを設定した新しいインスタンス
+     * @return static 指定のパスを設定した新しいインスタンス
      * @throws \InvalidArgumentException パスが正しくないとき
      */
     public function withPath($path)
@@ -263,7 +263,7 @@ class Uri implements UriInterface
 
     /**
      * @param string $query QUERY_STRING部の文字列
-     * @return self 指定のQUERY_STRINGを設定した新しいインスタンス
+     * @return static 指定のQUERY_STRINGを設定した新しいインスタンス
      * @throws \InvalidArgumentException QUERY_STRINGが正しくないとき
      */
     public function withQuery($query)
@@ -275,7 +275,7 @@ class Uri implements UriInterface
 
     /**
      * @param string $fragment fragment
-     * @return self 指定のfragmentを設定した新しいインスタンス
+     * @return static 指定のfragmentを設定した新しいインスタンス
      */
     public function withFragment($fragment)
     {
@@ -303,7 +303,7 @@ class Uri implements UriInterface
 
     /**
      * @param string|array|QueryString $queryString QUERY_STRINGデータ
-     * @return self 指定のQUERY_STRINGデータを設定した新しいインスタンス
+     * @return static 指定のQUERY_STRINGデータを設定した新しいインスタンス
      * @throws \InvalidArgumentException QUERY_STRINGデータが正しくないとき
      */
     public function withQueryString($queryString)
@@ -315,7 +315,7 @@ class Uri implements UriInterface
 
     /**
      * @param string|array|QueryString $queryString QUERY_STRINGデータ
-     * @return self 指定のQUERY_STRINGデータをマージした新しいインスタンス
+     * @return static 指定のQUERY_STRINGデータをマージした新しいインスタンス
      * @throws \InvalidArgumentException QUERY_STRINGデータが正しくないとき
      */
     public function withAddedQueryString($queryString)
