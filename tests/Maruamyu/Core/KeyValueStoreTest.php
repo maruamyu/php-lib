@@ -109,7 +109,12 @@ class KeyValueStoreTest extends \PHPUnit\Framework\TestCase
     public function test_notExceptionByZeroKeyGet()
     {
         $kvs = new KeyValueStore();
-        $kvs->get(0);
+        try {
+            $kvs->get(0);
+            $this->assertTrue(true);
+        } catch (\Exception $exception) {
+            $this->assertTrue(false);
+        }
     }
 
     /**
@@ -134,7 +139,12 @@ class KeyValueStoreTest extends \PHPUnit\Framework\TestCase
     public function test_notExceptionByZeroKeySet()
     {
         $kvs = new KeyValueStore();
-        $kvs->set(0, 'zero');
+        try {
+            $kvs->set(0, 'zero');
+            $this->assertTrue(true);
+        } catch (\Exception $exception) {
+            $this->assertTrue(false);
+        }
     }
 
     /**
@@ -159,7 +169,12 @@ class KeyValueStoreTest extends \PHPUnit\Framework\TestCase
     public function test_notExceptionByZeroKeyDelete()
     {
         $kvs = new KeyValueStore();
-        $kvs->delete(0);
+        try {
+            $kvs->delete(0);
+            $this->assertTrue(true);
+        } catch (\Exception $exception) {
+            $this->assertTrue(false);
+        }
     }
 
     /**

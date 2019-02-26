@@ -26,10 +26,7 @@ class KeyValueStore implements KeyValueStoreInterface
      */
     public function get($key)
     {
-        $key = strval($key);
-        if (strlen($key) < 1) {
-            throw new \InvalidArgumentException('key is empty.');
-        }
+        $key = static::validateKey($key);
         if (isset($this->data[$key])) {
             return $this->data[$key];
         } else {
@@ -47,10 +44,7 @@ class KeyValueStore implements KeyValueStoreInterface
      */
     public function set($key, $value)
     {
-        $key = strval($key);
-        if (strlen($key) < 1) {
-            throw new \InvalidArgumentException('key is empty.');
-        }
+        $key = static::validateKey($key);
         $this->data[$key] = [$value];
     }
 
@@ -65,10 +59,7 @@ class KeyValueStore implements KeyValueStoreInterface
      */
     public function add($key, $value)
     {
-        $key = strval($key);
-        if (strlen($key) < 1) {
-            throw new \InvalidArgumentException('key is empty.');
-        }
+        $key = static::validateKey($key);
         if (!(isset($this->data[$key]))) {
             $this->data[$key] = [];
         }
@@ -85,10 +76,7 @@ class KeyValueStore implements KeyValueStoreInterface
      */
     public function delete($key)
     {
-        $key = strval($key);
-        if (strlen($key) < 1) {
-            throw new \InvalidArgumentException('key is empty.');
-        }
+        $key = static::validateKey($key);
         $deleted = [];
         if (isset($this->data[$key])) {
             $deleted = $this->data[$key];
@@ -117,10 +105,7 @@ class KeyValueStore implements KeyValueStoreInterface
      */
     public function valueCount($key)
     {
-        $key = strval($key);
-        if (strlen($key) < 1) {
-            throw new \InvalidArgumentException('key is empty.');
-        }
+        $key = static::validateKey($key);
         if (isset($this->data[$key])) {
             return count($this->data[$key]);
         } else {
@@ -315,5 +300,19 @@ class KeyValueStore implements KeyValueStoreInterface
                 $this->add($key, $value);
             }
         }
+    }
+
+    /**
+     * @param string $key
+     * @return string $key
+     * @throws \InvalidArgumentException if empty
+     */
+    protected static function validateKey($key)
+    {
+        $key = strval($key);
+        if (strlen($key) < 1) {
+            throw new \InvalidArgumentException('key is empty.');
+        }
+        return $key;
     }
 }
