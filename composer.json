@@ -27,5 +27,10 @@
         "psr-4": {
             "Maruamyu\\Core\\": "src/Maruamyu/Core/"
         }
+    },
+    "extra": {
+        "branch-alias": {
+            "ver1x": "v1.2.4-dev"
+        }
     }
 }
