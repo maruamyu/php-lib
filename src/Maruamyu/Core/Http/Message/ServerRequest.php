@@ -93,7 +93,9 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function withQueryParams(array $queryParams)
     {
-        $this->queryParams = $queryParams;
+        $newInstance = clone $this;
+        $newInstance->queryParams = $queryParams;
+        return $newInstance;
     }
 
     /**
