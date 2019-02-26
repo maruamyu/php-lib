@@ -9,6 +9,7 @@ class KeyValueStore implements KeyValueStoreInterface
 {
     use ArrayDetectionTrait;
 
+    /** @var mixed[][] ['key' => [value1, value2, ...], ...] */
     private $data = [];
 
     /**
@@ -148,7 +149,7 @@ class KeyValueStore implements KeyValueStoreInterface
      * 空(サイズが0)かどうか判定する.
      *
      * @return boolean 空(サイズが0)ならtrue, それ以外はfalse
-     * @see #hasAny
+     * @see hasAny()
      */
     public function isEmpty()
     {
@@ -159,7 +160,7 @@ class KeyValueStore implements KeyValueStoreInterface
      * 空でない(サイズが0でない)かどうか判定する.
      *
      * @return boolean 空でないならtrue, それ以外はfalse
-     * @see #isEmpty
+     * @see isEmpty()
      */
     public function hasAny()
     {
