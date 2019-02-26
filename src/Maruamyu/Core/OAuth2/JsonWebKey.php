@@ -100,7 +100,8 @@ class JsonWebKey
 
         # check EC curve_name
         if ($data['kty'] === 'EC') {
-            if (isset(JsonWebAlgorithms::ECDSA_CURVE_NAME[$data['crv']]) == false) {
+            $ecdsaCurveNames = JsonWebAlgorithms::ECDSA_CURVE_NAME;
+            if (isset($ecdsaCurveNames[$data['crv']]) == false) {
                 $errorMsg = 'invalid data: crv=' . $data['crv'] . ' is not supported';
                 throw new \InvalidArgumentException($errorMsg);
             }
@@ -436,10 +437,11 @@ class JsonWebKey
     public function verifySignature($message, $signature)
     {
         $alg = $this->getAlgorithm();
-        if (isset(JsonWebAlgorithms::HASH_ALGORITHM[$alg]) == false) {
+        $hashAlgorithms = JsonWebAlgorithms::HASH_ALGORITHM;
+        if (isset($hashAlgorithms[$alg]) == false) {
             throw new \RuntimeException('alg=' . $alg . ' is not supported');
         }
-        list(, $hashAlgorithm) = JsonWebAlgorithms::HASH_ALGORITHM[$alg];
+        list(, $hashAlgorithm) = $hashAlgorithms[$alg];
 
         $signatureInterface = $this->getSignatureInterface();
         return $signatureInterface->verifySignature($message, $signature, $hashAlgorithm);
@@ -456,10 +458,11 @@ class JsonWebKey
             throw new \RuntimeException('not has private key');
         }
         $alg = $this->getAlgorithm();
-        if (isset(JsonWebAlgorithms::HASH_ALGORITHM[$alg]) == false) {
+        $hashAlgorithms = JsonWebAlgorithms::HASH_ALGORITHM;
+        if (isset($hashAlgorithms[$alg]) == false) {
             throw new \RuntimeException('alg=' . $alg . ' is not supported');
         }
-        list(, $hashAlgorithm) = JsonWebAlgorithms::HASH_ALGORITHM[$alg];
+        list(, $hashAlgorithm) = $hashAlgorithms[$alg];
 
         $signatureInterface = $this->getSignatureInterface();
         return $signatureInterface->makeSignature($message, $hashAlgorithm);
