@@ -2,6 +2,7 @@
 
 namespace Maruamyu\Core\OAuth1;
 
+use Maruamyu\Core\Cipher\Rsa;
 use Maruamyu\Core\Http\Message\NormalizeMessageTrait;
 use Maruamyu\Core\Http\Message\QueryString;
 use Maruamyu\Core\Http\Message\UriInterface;
@@ -13,14 +14,10 @@ class RsaSha1Signer implements SignerInterface
 {
     use NormalizeMessageTrait;
 
-    /**
-     * @var string
-     */
+    /** @var resource */
     private $publicKey;
 
-    /***
-     * @var string
-     */
+    /** @var resource */
     private $privateKey;
 
     /**
@@ -35,14 +32,14 @@ class RsaSha1Signer implements SignerInterface
      */
     public function __construct($publicKey, $privateKey = null, $passphrase = null)
     {
-        $publicKeyResource = static::fetchPublicKey($publicKey);
+        $publicKeyResource = Rsa::fetchPublicKey($publicKey);
         if (!$publicKeyResource) {
             throw new \InvalidArgumentException('invalid public key.');
         }
         $this->publicKey = $publicKeyResource;
 
         if ($privateKey) {
-            $privateKeyResource = static::fetchPrivateKey($privateKey, $passphrase);
+            $privateKeyResource = Rsa::fetchPrivateKey($privateKey, $passphrase);
             if (!$privateKeyResource) {
                 throw new \InvalidArgumentException('invalid private key.');
             }
@@ -137,60 +134,5 @@ class RsaSha1Signer implements SignerInterface
 
         $verified = openssl_verify($baseString, $signature, $this->publicKey, OPENSSL_ALGO_SHA1);
         return ($verified == 1);
-    }
-
-    /**
-     * @param string|resource $publicKey
-     * @return resource|null resource of public key, null if invalid
-     */
-    private static function fetchPublicKey($publicKey)
-    {
-        if (is_resource($publicKey)) {
-            $detail = @openssl_pkey_get_details($publicKey);
-            if ($detail && $detail['type'] === OPENSSL_KEYTYPE_RSA
-                && isset($detail['rsa']) && !(isset($detail['rsa']['d']))
-            ) {
-                return $publicKey;
-            } else {
-                return null;
-            }
-        } elseif (is_string($publicKey)) {
-            $resource = openssl_pkey_get_public($publicKey);
-            if ($resource) {
-                return $resource;
-            } else {
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * @param string|resource $privateKey
-     * @param string $passphrase
-     * @return resource|null resource of private key, null if invalid
-     */
-    private static function fetchPrivateKey($privateKey, $passphrase = null)
-    {
-        if (is_resource($privateKey)) {
-            $detail = @openssl_pkey_get_details($privateKey);
-            if ($detail && $detail['type'] === OPENSSL_KEYTYPE_RSA
-                && isset($detail['rsa']) && isset($detail['rsa']['d'])
-            ) {
-                return $privateKey;
-            } else {
-                return null;
-            }
-        } elseif (is_string($privateKey)) {
-            $resource = openssl_pkey_get_private($privateKey, $passphrase);
-            if ($resource) {
-                return $resource;
-            } else {
-                return null;
-            }
-        } else {
-            return null;
-        }
     }
 }

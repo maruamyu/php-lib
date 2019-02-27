@@ -2,6 +2,8 @@
 
 namespace Maruamyu\Core\Cipher;
 
+use Maruamyu\Core\Asn1;
+
 /**
  * DSA (not EC) cryptography
  */
@@ -52,5 +54,57 @@ class Dsa extends PublicKeyCryptography
         } else {
             return null;
         }
+    }
+
+    /**
+     * @param string[] $parameters DSA public key parameters (binary)
+     *   p
+     *   q
+     *   g
+     *   pub_key
+     * @return resource|null public key resource, null if invalid key
+     */
+    public static function publicKeyFromParameters(array $parameters)
+    {
+        $parametersSequenceValue = Asn1::encodeIntegerBinary($parameters['p'], true)
+            . Asn1::encodeIntegerBinary($parameters['q'], true)
+            . Asn1::encodeIntegerBinary($parameters['g'], true);
+        $parametersSequence = chr(0x30) . Asn1::toLengthBinary(strlen($parametersSequenceValue)) . $parametersSequenceValue;
+
+        $headerSequenceValue = Asn1::encodeObjectIdentifier('1.2.840.10040.4.1') . $parametersSequence;
+        $headerSequence = chr(0x30) . Asn1::toLengthBinary(strlen($headerSequenceValue)) . $headerSequenceValue;
+
+        $pubBitStringValue = Asn1::encodeIntegerBinary($parameters['pub_key'], true);
+
+        $publicKeySequenceValue = $headerSequence . Asn1::encodeBitString($pubBitStringValue);
+        $publicKeySequence = chr(0x30) . Asn1::toLengthBinary(strlen($publicKeySequenceValue)) . $publicKeySequenceValue;
+
+        $publicKeyPem = '-----BEGIN PUBLIC KEY-----' . "\r\n" . chunk_split(base64_encode($publicKeySequence)) . '-----END PUBLIC KEY-----';
+        return openssl_pkey_get_public($publicKeyPem);
+    }
+
+    /**
+     * @param string[] $parameters DSA private key parameters (binary)
+     *   p
+     *   q
+     *   g
+     *   pub_key
+     *   priv_key
+     * @return resource|null public key resource, null if invalid key
+     */
+    public static function privateKeyFromParameters(array $parameters)
+    {
+        $parameterValues = [
+            Asn1::encodeInteger(0),  # version = 0
+            Asn1::encodeIntegerBinary($parameters['p'], true),
+            Asn1::encodeIntegerBinary($parameters['q'], true),
+            Asn1::encodeIntegerBinary($parameters['g'], true),
+            Asn1::encodeIntegerBinary($parameters['pub_key'], true),
+            Asn1::encodeIntegerBinary($parameters['priv_key'], true),
+        ];
+        $privateKeySequenceValue = join('', $parameterValues);
+        $privateKeySequence = chr(0x30) . Asn1::toLengthBinary(strlen($privateKeySequenceValue)) . $privateKeySequenceValue;
+        $privateKeyPem = '-----BEGIN DSA PRIVATE KEY-----' . "\r\n" . chunk_split(base64_encode($privateKeySequence)) . '-----END DSA PRIVATE KEY-----';
+        return openssl_pkey_get_private($privateKeyPem);
     }
 }

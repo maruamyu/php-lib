@@ -83,7 +83,7 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
      * @param integer|null $hashAlgorithm OPENSSL_ALGO_*
      *   (if null, using DEFAULT_HASH_ALGORITHM)
      * @return string signature
-     * @throws \RuntimeException if failed or private key not set yet
+     * @throws \Exception if failed or private key not set yet
      */
     public function makeSignature($message, $hashAlgorithm = null)
     {
@@ -120,7 +120,7 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
     /**
      * @param string $clearText
      * @return string encrypted
-     * @throws \RuntimeException if failed
+     * @throws \Exception if failed
      */
     public function encrypt($clearText)
     {
@@ -135,7 +135,7 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
     /**
      * @param string $encrypted
      * @return string clearText
-     * @throws \RuntimeException if failed
+     * @throws \Exception if failed
      */
     public function decrypt($encrypted)
     {

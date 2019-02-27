@@ -68,10 +68,17 @@ class Asn1
 
     /**
      * @param string $binary
+     * @param boolean $forcePositive add 0x00 to head if true and standed MSB
      * @return string
      */
-    public static function encodeIntegerBinary($binary)
+    public static function encodeIntegerBinary($binary, $forcePositive = false)
     {
+        if ($forcePositive) {
+            $mostSignificantOctet = ord(substr($binary, 0, 1));
+            if ($mostSignificantOctet & 0x80) {
+                $binary = chr(0x00) . $binary;
+            }
+        }
         return chr(static::TAG_VALUES['INTEGER']) . Asn1::toLengthBinary(strlen($binary)) . $binary;
     }
 

@@ -95,8 +95,7 @@ class Ecdsa extends PublicKeyCryptography
         }
         $curveObjectId = $curveObjectIds[$curveName];
 
-        $headerSequenceValue = Asn1::encodeObjectIdentifier('1.2.840.10045.2.1')
-            . Asn1::encodeObjectIdentifier($curveObjectId);
+        $headerSequenceValue = Asn1::encodeObjectIdentifier('1.2.840.10045.2.1') . Asn1::encodeObjectIdentifier($curveObjectId);
         $headerSequence = chr(0x30) . Asn1::toLengthBinary(strlen($headerSequenceValue)) . $headerSequenceValue;
 
         $xyBitString = Asn1::encodeBitString(chr(0x04) . $x . $y);

@@ -63,8 +63,7 @@ class Rsa extends PublicKeyCryptography
      */
     public static function publicKeyFromModulusAndExponent($modulus, $exponent)
     {
-        $parametersSequenceValue = Asn1::encodeIntegerBinary(chr(0x00) . $modulus)
-            . Asn1::encodeIntegerBinary($exponent);
+        $parametersSequenceValue = Asn1::encodeIntegerBinary($modulus, true) . Asn1::encodeIntegerBinary($exponent, true);
         $parametersSequence = chr(0x30) . Asn1::toLengthBinary(strlen($parametersSequenceValue)) . $parametersSequenceValue;
 
         $parametersSequenceBitString = Asn1::encodeBitString($parametersSequence);
@@ -95,14 +94,14 @@ class Rsa extends PublicKeyCryptography
     {
         $parameterValues = [
             Asn1::encodeInteger(0),  # version = 0
-            Asn1::encodeIntegerBinary($parameters['n']),  # modulus
-            Asn1::encodeIntegerBinary($parameters['e']),  # publicExponent
-            Asn1::encodeIntegerBinary($parameters['d']),  # privateExponent
-            Asn1::encodeIntegerBinary($parameters['p']),  # prime1
-            Asn1::encodeIntegerBinary($parameters['q']),  # prime2
-            Asn1::encodeIntegerBinary($parameters['dmp1']),  # exponent1
-            Asn1::encodeIntegerBinary($parameters['dmq1']),  # exponent2
-            Asn1::encodeIntegerBinary($parameters['iqmp']),  # coefficient
+            Asn1::encodeIntegerBinary($parameters['n'], true),  # modulus
+            Asn1::encodeIntegerBinary($parameters['e'], true),  # publicExponent
+            Asn1::encodeIntegerBinary($parameters['d'], true),  # privateExponent
+            Asn1::encodeIntegerBinary($parameters['p'], true),  # prime1
+            Asn1::encodeIntegerBinary($parameters['q'], true),  # prime2
+            Asn1::encodeIntegerBinary($parameters['dmp1'], true),  # exponent1
+            Asn1::encodeIntegerBinary($parameters['dmq1'], true),  # exponent2
+            Asn1::encodeIntegerBinary($parameters['iqmp'], true),  # coefficient
         ];
         $privateKeySequenceValue = join('', $parameterValues);
         $privateKeySequence = chr(0x30) . Asn1::toLengthBinary(strlen($privateKeySequenceValue)) . $privateKeySequenceValue;

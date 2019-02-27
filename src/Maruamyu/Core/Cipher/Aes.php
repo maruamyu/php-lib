@@ -80,15 +80,15 @@ class Aes implements EncryptionInterface
      */
     public function encrypt($clearText, $iv = '')
     {
-        # check IV length
         if (strlen($iv) > 0) {
+            # check IV length
             $ivLength = strlen($iv) * 8;
             if ($ivLength != $this->blockSize) {
                 $errorMsg = 'invalid IV length = ' . $ivLength . ' (expects: ' . $this->blockSize . ')';
                 throw new \InvalidArgumentException($errorMsg);
             }
         } else {
-            # using key (insecure!!)
+            # IV create from key (insecure!!)
             $iv = substr($this->key, 0, ($this->blockSize / 8));
         }
 
@@ -111,15 +111,15 @@ class Aes implements EncryptionInterface
      */
     public function decrypt($encrypted, $iv = '')
     {
-        # check IV length
         if (strlen($iv) > 0) {
+            # check IV length
             $ivLength = strlen($iv) * 8;
             if ($ivLength != $this->blockSize) {
                 $errorMsg = 'invalid IV length = ' . $ivLength . ' (expects: ' . $this->blockSize . ')';
                 throw new \InvalidArgumentException($errorMsg);
             }
         } else {
-            # using key (insecure!!)
+            # IV create from key (insecure!!)
             $iv = substr($this->key, 0, ($this->blockSize / 8));
         }
 
