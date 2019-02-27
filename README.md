@@ -11,6 +11,15 @@ PHPのWebアプリ向けの便利ライブラリを公開しています.
 
 現在のところ `master` ブランチは v2.\* になっています.
 
+## モジュール
+
+名前空間 `Maruamyu\Core\` の下に各モジュールが配置されています.
+
+- `Cipher` : RSAなどデジタル署名や暗号化 (OpenSSLのラッパー)
+- `Http` : PSR-7準拠, 独自拡張ありのHTTP関連処理 (cURLのラッパー)
+- `OAuth1` : OAuth1.0 関連処理
+- `OAuth2` : OAuth2.0, OpenID Connect 関連処理 JWTなど
+
 ## インストール
 
 ```
