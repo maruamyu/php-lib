@@ -17,22 +17,24 @@ class JsonWebToken
      * @param string $jwtString
      * @param JsonWebKey[] $jwks [ kid => JsonWebKey, ... ]  (ignore signature if empty)
      * @return array payload
+     * @throws \Exception if invalid JWT
      */
     public static function parse($jwtString, array $jwks = [])
     {
         $parts = explode('.', $jwtString);
         if (count($parts) < 2) {
-            throw new \InvalidArgumentException('invalid JWT');
+            throw new \DomainException('invalid JWT');
         }
 
         # header
         $headerJson = Base64Url::decode($parts[0]);
         $header = json_decode($headerJson, true);
         if (isset($header['alg']) == false) {
-            throw new \InvalidArgumentException('invalid JWT : alg is empty');
+            throw new \DomainException('invalid JWT : alg is empty');
         }
         if (isset($header['enc']) || (isset($header['typ']) && ($header['typ'] === 'JWE'))) {
-            throw new \RuntimeException('JWE is not supported');
+            # TODO JWE is not supported
+            throw new \DomainException('JWE is not supported');
         }
 
         # payload
@@ -42,23 +44,23 @@ class JsonWebToken
         # signature
         if (isset($parts[2]) && (empty($jwks) == false)) {
             if (isset($header['kid']) == false) {
-                throw new \InvalidArgumentException('invalid JWT : kid is empty');
+                throw new \DomainException('invalid JWT : kid is empty');
             }
             $keyId = strval($header['kid']);
             if (isset($jwks[$keyId]) == false) {
-                throw new \RuntimeException('key not found. (kid=' . $keyId . ')');
+                throw new \DomainException('key not found. (kid=' . $keyId . ')');
             }
             $jsonWebkey = $jwks[$keyId];
 
             $alg = $jsonWebkey->getAlgorithm();
             $hashAlgorithms = JsonWebAlgorithms::HASH_ALGORITHM;
             if (isset($hashAlgorithms[$alg]) == false) {
-                throw new \RuntimeException('alg=' . $alg . ' is not supported');
+                throw new \DomainException('alg=' . $alg . ' is not supported');
             }
             if (isset($header['alg'])) {
                 if ($header['alg'] !== $alg) {
                     $errorMsg = 'Algorithm not match. (jwk.alg=' . $alg . ', jwt.alg=' . $header['alg'] . ')';
-                    throw new \RuntimeException($errorMsg);
+                    throw new \DomainException($errorMsg);
                 }
             }
 
@@ -66,7 +68,7 @@ class JsonWebToken
             $signature = Base64Url::decode($parts[2]);
             $verified = $jsonWebkey->verifySignature($message, $signature);
             if (!$verified) {
-                throw new \InvalidArgumentException('invalid JWT : signature not match');
+                throw new \RuntimeException('invalid JWT : signature not match');
             }
         }
 
@@ -77,6 +79,7 @@ class JsonWebToken
      * @param array $payload
      * @param JsonWebKey $jsonWebKey (exclude signature if null)
      * @return string
+     * @throws \Exception if invalid payload or JsonWebKey
      */
     public static function build(array $payload, JsonWebKey $jsonWebKey = null)
     {

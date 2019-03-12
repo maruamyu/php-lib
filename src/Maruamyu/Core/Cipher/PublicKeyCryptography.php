@@ -23,7 +23,7 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
      * @param string|resource $publicKey
      * @param string|resource $privateKey
      * @param string $passphrase
-     * @throws \InvalidArgumentException if invalid keys
+     * @throws \Exception if invalid keys
      */
     public function __construct($publicKey, $privateKey = null, $passphrase = null)
     {
@@ -32,7 +32,7 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
             # enable: encrypt, decrypt, makeSignature, verifySignature
             $privateKeyResource = static::fetchPrivateKey($privateKey, $passphrase);
             if (!$privateKeyResource) {
-                throw new \InvalidArgumentException('invalid private key.');
+                throw new \DomainException('invalid private key.');
             }
             $this->privateKey = $privateKeyResource;
             # if given private key, then get public key from private key
@@ -43,7 +43,7 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
             # enable: encrypt, verifySignature
             $publicKeyResource = static::fetchPublicKey($publicKey);
             if (!$publicKeyResource) {
-                throw new \InvalidArgumentException('invalid public key.');
+                throw new \DomainException('invalid public key.');
             }
             $this->publicKey = $publicKeyResource;
         }
@@ -68,6 +68,7 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
 
     /**
      * @return array
+     * @throws \Exception if private key not set yet
      * @see openssl_pkey_get_details()
      */
     public function getPrivateKeyDetail()

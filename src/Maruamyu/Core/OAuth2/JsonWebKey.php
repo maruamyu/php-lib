@@ -59,7 +59,7 @@ class JsonWebKey
 
     /**
      * @param string|array $initValue JSON or Array
-     * @throws \InvalidArgumentException if invalid data
+     * @throws \Exception if invalid data
      */
     public function __construct($initValue = null)
     {
@@ -68,7 +68,7 @@ class JsonWebKey
         } elseif (is_string($initValue)) {
             $this->setFromArray(json_decode($initValue, true));
         } elseif (isset($initValue)) {
-            throw new \InvalidArgumentException('invalid init value (expects JSON or Array)');
+            throw new \DomainException('invalid init value (expects JSON or Array)');
         } else {
             $this->data = [];
         }
@@ -76,25 +76,25 @@ class JsonWebKey
 
     /**
      * @param array $data
-     * @throws \InvalidArgumentException if invalid data
+     * @throws \Exception if invalid data
      */
     protected function setFromArray(array $data)
     {
         # key type and required parameters
         if (isset($data['kty']) == false) {
             $errorMsg = 'invalid data: kty is required';
-            throw new \InvalidArgumentException($errorMsg);
+            throw new \DomainException($errorMsg);
         }
         $keyType = strval($data['kty']);
         $keyTypesParameters = static::KEY_TYPES_PARAMETERS;
         if (isset($keyTypesParameters[$keyType]) == false) {
             $errorMsg = 'invalid data: kty=' . $keyType . ' is not supported';
-            throw new \InvalidArgumentException($errorMsg);
+            throw new \DomainException($errorMsg);
         }
         foreach ($keyTypesParameters[$keyType] as $field) {
             if (isset($data[$field]) == false) {
                 $errorMsg = 'invalid data: ' . $field . ' is required';
-                throw new \InvalidArgumentException($errorMsg);
+                throw new \DomainException($errorMsg);
             }
         }
 
@@ -103,7 +103,7 @@ class JsonWebKey
             $ecdsaCurveNames = JsonWebAlgorithms::ECDSA_CURVE_NAME;
             if (isset($ecdsaCurveNames[$data['crv']]) == false) {
                 $errorMsg = 'invalid data: crv=' . $data['crv'] . ' is not supported';
-                throw new \InvalidArgumentException($errorMsg);
+                throw new \DomainException($errorMsg);
             }
         }
 
@@ -115,7 +115,7 @@ class JsonWebKey
      * @param string $keyId
      * @param string $algorithm
      * @return static
-     * @throws \InvalidArgumentException if invalid keys
+     * @throws \Exception if invalid keys
      */
     public static function createFromEcdsaPublicKey($ecdsaPublicKey, $keyId = null, $algorithm = null)
     {
@@ -149,7 +149,7 @@ class JsonWebKey
      * @param string $keyId
      * @param string $algorithm
      * @return static
-     * @throws \InvalidArgumentException if invalid keys
+     * @throws \Exception if invalid keys
      */
     public static function createFromEcdsaPrivateKey($ecdsaPrivateKey, $passphrase = null, $keyId = null, $algorithm = null)
     {
@@ -183,7 +183,7 @@ class JsonWebKey
      * @param string $keyId
      * @param string $algorithm
      * @return static
-     * @throws \InvalidArgumentException if invalid keys
+     * @throws \Exception if invalid keys
      */
     public static function createFromRsaPublicKey($rsaPublicKey, $keyId = null, $algorithm = null)
     {
@@ -215,7 +215,7 @@ class JsonWebKey
      * @param string $keyId
      * @param string $algorithm
      * @return static
-     * @throws \InvalidArgumentException if invalid keys
+     * @throws \Exception if invalid keys
      */
     public static function createFromRsaPrivateKey($rsaPrivateKey, $passphrase = null, $keyId = null, $algorithm = null)
     {
@@ -238,7 +238,7 @@ class JsonWebKey
         ];
         foreach (static::OPENSSL_RSA_PARAMETERS_MAPPING as $openssl => $jwk) {
             if (isset($detail['rsa'][$openssl]) == false) {
-                throw new \InvalidArgumentException('invalid private key: ' . $openssl . ' is empty');
+                throw new \DomainException('invalid private key: ' . $openssl . ' is empty');
             }
             $initValue[$jwk] = Base64Url::encode($detail['rsa'][$openssl]);
         }
@@ -250,6 +250,7 @@ class JsonWebKey
      * @param string $keyId
      * @param string $algorithm
      * @return static
+     * @throws \Exception if invalid keys
      */
     public static function createFromCommonKey($commonKey, $keyId = null, $algorithm = null)
     {
@@ -380,7 +381,7 @@ class JsonWebKey
 
     /**
      * @return SignatureInterface
-     * @throws \RuntimeException if invalid kty
+     * @throws \Exception if invalid key data
      */
     public function getSignatureInterface()
     {
@@ -406,6 +407,7 @@ class JsonWebKey
 
     /**
      * @return EncryptionInterface
+     * @throws \Exception if invalid key data
      */
     public function getEncryptionInterface()
     {
@@ -433,6 +435,7 @@ class JsonWebKey
      * @param string $message
      * @param string $signature
      * @return boolean true if valid signature
+     * @throws \Exception if invalid keys
      */
     public function verifySignature($message, $signature)
     {
@@ -450,7 +453,7 @@ class JsonWebKey
     /**
      * @param string $message
      * @return string $signature
-     * @throws \RuntimeException if failed or not has private key
+     * @throws \Exception if failed or not has private key
      */
     public function makeSignature($message)
     {
@@ -563,18 +566,18 @@ class JsonWebKey
      * @param resource $ecdsaKeyResource
      * @param string $hashAlgorithm
      * @return string thumbprint
-     * @throws \InvalidArgumentException if invalid keys
+     * @throws \DomainException if invalid keys
      */
     public static function makeEcdsaKeyThumbprint($ecdsaKeyResource, $hashAlgorithm = 'sha256')
     {
         $detail = openssl_pkey_get_details($ecdsaKeyResource);
         if (!($detail) || (isset($detail['ec']) == false)) {
-            throw new \InvalidArgumentException('invalid ECDSA key');
+            throw new \DomainException('invalid ECDSA key');
         }
         $crv = static::getCrvValueFromCurveName($detail['ec']['curve_name']);
         if (strlen($crv) < 1) {
             $errorMsg = 'curve_name=' . $detail['ec']['curve_name'] . ' is not supported.';
-            throw new \InvalidArgumentException($errorMsg);
+            throw new \DomainException($errorMsg);
         }
         $message = '{"crv":"' . Base64Url::encode($crv) . '","kty":"EC","x":"' . Base64Url::encode($detail['ec']['x']) . '","y":"' . Base64Url::encode($detail['ec']['y']) . '"}';
         return hash($hashAlgorithm, $message, true);
@@ -584,13 +587,13 @@ class JsonWebKey
      * @param resource $rsaKeyResource
      * @param string $hashAlgorithm
      * @return string thumbprint
-     * @throws \InvalidArgumentException if invalid keys
+     * @throws \DomainException if invalid keys
      */
     public static function makeRsaKeyThumbprint($rsaKeyResource, $hashAlgorithm = 'sha256')
     {
         $detail = openssl_pkey_get_details($rsaKeyResource);
         if (!($detail) || (isset($detail['rsa']) == false)) {
-            throw new \InvalidArgumentException('invalid RSA key');
+            throw new \DomainException('invalid RSA key');
         }
         $message = '{"e":"' . Base64Url::encode($detail['rsa']['e']) . '","kty":"RSA","n":"' . Base64Url::encode($detail['rsa']['n']) . '"}';
         return hash($hashAlgorithm, $message, true);
@@ -600,10 +603,13 @@ class JsonWebKey
      * @param string $commonKey
      * @param string $hashAlgorithm
      * @return string thumbprint
-     * @throws \InvalidArgumentException if invalid keys
+     * @throws \DomainException if invalid keys
      */
     public static function makeCommonKeyThumbprint($commonKey, $hashAlgorithm = 'sha256')
     {
+        if (strlen($commonKey) < 1) {
+            throw new \DomainException('key is empty');
+        }
         $message = '{"k":"' . Base64Url::encode($commonKey) . '","kty":"oct"}';
         return hash($hashAlgorithm, $message, true);
     }

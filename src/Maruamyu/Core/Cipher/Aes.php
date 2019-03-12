@@ -44,7 +44,7 @@ class Aes implements EncryptionInterface
         if (in_array($keyLength, static::SUPPORTED_KEY_LENGTH) == false) {
             $errorMsg = 'unsupported key length = ' . $keyLength
                 . ' (expects: ' . join(', ', static::SUPPORTED_KEY_LENGTH) . ')';
-            throw new \InvalidArgumentException($errorMsg);
+            throw new \DomainException($errorMsg);
         }
         $this->key = $key;
         $this->keyLength = $keyLength;
@@ -52,7 +52,7 @@ class Aes implements EncryptionInterface
 
     /**
      * @param int $blockSize
-     * @throws \InvalidArgumentException if invalid block size
+     * @throws \DomainException if invalid block size
      */
     public function setBlockSize($blockSize)
     {
@@ -61,13 +61,13 @@ class Aes implements EncryptionInterface
         if (isset($supportedBlockSize[$blockSize]) == false) {
             $errorMsg = 'unsupported block size = ' . $blockSize
                 . ' (expects: ' . join(', ', array_keys($supportedBlockSize)) . ')';
-            throw new \InvalidArgumentException($errorMsg);
+            throw new \DomainException($errorMsg);
         }
 
         $usingExtension = $supportedBlockSize[$blockSize];
         if (!extension_loaded($usingExtension)) {
             $errorMsg = 'block size = ' . $blockSize . ' required ' . $usingExtension . ' extension.';
-            throw new \InvalidArgumentException($errorMsg);
+            throw new \DomainException($errorMsg);
         }
 
         $this->blockSize = $blockSize;
@@ -85,7 +85,7 @@ class Aes implements EncryptionInterface
             $ivLength = strlen($iv) * 8;
             if ($ivLength != $this->blockSize) {
                 $errorMsg = 'invalid IV length = ' . $ivLength . ' (expects: ' . $this->blockSize . ')';
-                throw new \InvalidArgumentException($errorMsg);
+                throw new \DomainException($errorMsg);
             }
         } else {
             # IV create from key (insecure!!)
@@ -116,7 +116,7 @@ class Aes implements EncryptionInterface
             $ivLength = strlen($iv) * 8;
             if ($ivLength != $this->blockSize) {
                 $errorMsg = 'invalid IV length = ' . $ivLength . ' (expects: ' . $this->blockSize . ')';
-                throw new \InvalidArgumentException($errorMsg);
+                throw new \DomainException($errorMsg);
             }
         } else {
             # IV create from key (insecure!!)
