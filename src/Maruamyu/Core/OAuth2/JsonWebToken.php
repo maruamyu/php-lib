@@ -5,7 +5,7 @@ namespace Maruamyu\Core\OAuth2;
 use Maruamyu\Core\Base64Url;
 
 /**
- * JSON Web Token
+ * JSON Web Token (RFC 7519)
  */
 class JsonWebToken
 {

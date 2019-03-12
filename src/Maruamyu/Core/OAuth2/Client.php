@@ -12,7 +12,9 @@ use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 
 /**
- * OAuth2 client
+ * The OAuth 2.0 Authorization Framework (RFC 6749)
+ * and OpenID Connect Core 1.0
+ * light-weight client
  */
 class Client
 {
@@ -90,9 +92,10 @@ class Client
 
     /**
      * @note not reload if hasValidAccessToken()
-     * @return AccessToken|null
      * @see hasValidAccessToken()
      * @see refreshAccessToken()
+     * @return AccessToken|null
+     * @throws \Exception if invalid settings
      */
     public function reloadAccessToken()
     {
@@ -118,7 +121,6 @@ class Client
 
     /**
      * @note add access_token if not include Authorization header
-     *
      * @param Request $request
      * @return Response
      */
@@ -151,15 +153,14 @@ class Client
     }
 
     /**
-     * Authorization Code Grant : get code and make auth URL
-     *
-     * @note not including "nonce" parameters
+     * Authorization Code Grant : generate Authorization URL
      *
      * @param string[] $scopes
      * @param string|UriInterface $redirectUrl
      * @param string $state
      * @param array $optionalParameters
-     * @return string goto url
+     * @return string Authorization URL
+     * @throws \Exception if invalid settings or arguments
      */
     public function startAuthorizationCodeGrant(array $scopes = [], $redirectUrl = null, $state = null, array $optionalParameters = [])
     {
@@ -187,14 +188,14 @@ class Client
     }
 
     /**
-     * Authorization Code Grant : code -> access_token
+     * Authorization Code Grant : exchange code to access_token
      *
      * @note update holding AccessToken if succeeded
-     *
      * @param string $code
      * @param string|UriInterface $redirectUrl
      * @param string $state
      * @return AccessToken|null
+     * @throws \Exception if invalid settings or arguments
      */
     public function finishAuthorizationCodeGrant($code, $redirectUrl = null, $state = null)
     {
@@ -226,10 +227,10 @@ class Client
      * Client Credentials Grant
      *
      * @note update holding AccessToken if succeeded
-     *
      * @param string[] $scopes
      * @param boolean $usingBasicAuthorization
      * @return AccessToken|null
+     * @throws \Exception if invalid settings
      */
     public function requestClientCredentialsGrant(array $scopes = [], $usingBasicAuthorization = false)
     {
@@ -272,7 +273,7 @@ class Client
      *
      * @param boolean $usingBasicAuthorization
      * @return AccessToken|null
-     * @throws \RuntimeException if not has refresh_token
+     * @throws \Exception if invalid settings or not has refresh_token
      */
     public function refreshAccessToken($usingBasicAuthorization = false)
     {

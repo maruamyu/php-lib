@@ -2,6 +2,9 @@
 
 namespace Maruamyu\Core\OAuth2;
 
+/**
+ * JSON Web Algorithms (RFC 7518)
+ */
 class JsonWebAlgorithms
 {
     const HASH_ALGORITHM = [
