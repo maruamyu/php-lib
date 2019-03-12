@@ -9,6 +9,8 @@ use Maruamyu\Core\Asn1;
  */
 class Dsa extends PublicKeyCryptography
 {
+    const DSA_OBJECT_ID = '1.2.840.10040.4.1';
+
     /**
      * @param string|resource $publicKey
      * @return resource|null
@@ -71,7 +73,7 @@ class Dsa extends PublicKeyCryptography
             . Asn1::encodeIntegerBinary($parameters['g'], true);
         $parametersSequence = chr(0x30) . Asn1::toLengthBinary(strlen($parametersSequenceValue)) . $parametersSequenceValue;
 
-        $headerSequenceValue = Asn1::encodeObjectIdentifier('1.2.840.10040.4.1') . $parametersSequence;
+        $headerSequenceValue = Asn1::encodeObjectIdentifier(static::DSA_OBJECT_ID) . $parametersSequence;
         $headerSequence = chr(0x30) . Asn1::toLengthBinary(strlen($headerSequenceValue)) . $headerSequenceValue;
 
         $pubBitStringValue = Asn1::encodeIntegerBinary($parameters['pub_key'], true);

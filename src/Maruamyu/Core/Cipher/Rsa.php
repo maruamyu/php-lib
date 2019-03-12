@@ -9,6 +9,8 @@ use Maruamyu\Core\Asn1;
  */
 class Rsa extends PublicKeyCryptography
 {
+    const RSA_ENCRYPTION_OBJECT_ID = '1.2.840.113549.1.1.1';
+
     /**
      * @param string|resource $publicKey
      * @return resource|null
@@ -68,7 +70,7 @@ class Rsa extends PublicKeyCryptography
 
         $parametersSequenceBitString = Asn1::encodeBitString($parametersSequence);
 
-        $headerSequenceValue = Asn1::encodeObjectIdentifier('1.2.840.113549.1.1.1') . Asn1::encodeNull();
+        $headerSequenceValue = Asn1::encodeObjectIdentifier(static::RSA_ENCRYPTION_OBJECT_ID) . Asn1::encodeNull();
         $headerSequence = chr(0x30) . Asn1::toLengthBinary(strlen($headerSequenceValue)) . $headerSequenceValue;
 
         $publicKeySequenceValue = $headerSequence . $parametersSequenceBitString;

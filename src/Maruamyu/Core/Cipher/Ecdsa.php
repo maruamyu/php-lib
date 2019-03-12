@@ -9,6 +9,8 @@ use Maruamyu\Core\Asn1;
  */
 class Ecdsa extends PublicKeyCryptography
 {
+    const ECDSA_PUBLIC_KEY_OBJECT_ID = '1.2.840.10045.2.1';
+
     const CURVE_OBJECT_ID = [
         'secp112r1' => '1.3.132.0.6',
         'secp112r2' => '1.3.132.0.7',
@@ -95,7 +97,7 @@ class Ecdsa extends PublicKeyCryptography
         }
         $curveObjectId = $curveObjectIds[$curveName];
 
-        $headerSequenceValue = Asn1::encodeObjectIdentifier('1.2.840.10045.2.1') . Asn1::encodeObjectIdentifier($curveObjectId);
+        $headerSequenceValue = Asn1::encodeObjectIdentifier(static::ECDSA_PUBLIC_KEY_OBJECT_ID) . Asn1::encodeObjectIdentifier($curveObjectId);
         $headerSequence = chr(0x30) . Asn1::toLengthBinary(strlen($headerSequenceValue)) . $headerSequenceValue;
 
         $xyBitString = Asn1::encodeBitString(chr(0x04) . $x . $y);
