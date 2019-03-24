@@ -39,6 +39,12 @@ __EOS__;
 
     public function test_sign_verify()
     {
+        # ECDSA required PHP >= 7.1
+        if (version_compare(PHP_VERSION, '7.1.0') < 0) {
+            $this->assertTrue(true);
+            return;
+        }
+
         $public = new Ecdsa(self::PUBLIC_KEY);
         $private = new Ecdsa(null, self::PRIVATE_KEY, self::PASSPHRASE);
 
@@ -49,6 +55,12 @@ __EOS__;
 
     public function test_sign_verify_algo()
     {
+        # ECDSA required PHP >= 7.1
+        if (version_compare(PHP_VERSION, '7.1.0') < 0) {
+            $this->assertTrue(true);
+            return;
+        }
+
         $public = new Ecdsa(self::PUBLIC_KEY);
         $private = new Ecdsa(null, self::PRIVATE_KEY, self::PASSPHRASE);
 
