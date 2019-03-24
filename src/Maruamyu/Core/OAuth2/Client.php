@@ -168,8 +168,7 @@ class Client
         $redirectUrl = null,
         $state = null,
         array $optionalParameters = []
-    )
-    {
+    ) {
         if (isset($this->settings->authorizationEndpoint) == false) {
             throw new \RuntimeException('authorizationEndpoint not set yet.');
         }
@@ -209,8 +208,7 @@ class Client
         $redirectUrl = null,
         $state = null,
         array $optionalParameters = []
-    )
-    {
+    ) {
         if (isset($this->settings->tokenEndpoint) == false) {
             throw new \RuntimeException('tokenEndpoint not set yet.');
         }
@@ -255,8 +253,7 @@ class Client
         $codeVerifier = null,
         $codeChallengeMethod = 'S256',
         array $optionalParameters = []
-    )
-    {
+    ) {
         if (isset($optionalParameters) == false) {
             $optionalParameters = [];
         }
@@ -294,8 +291,7 @@ class Client
         $redirectUrl = null,
         $codeVerifier = null,
         array $optionalParameters = []
-    )
-    {
+    ) {
         if (isset($optionalParameters) == false) {
             $optionalParameters = [];
         }
