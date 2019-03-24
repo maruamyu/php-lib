@@ -7,6 +7,8 @@ namespace Maruamyu\Core\Cipher;
  */
 class Aes implements EncryptionInterface
 {
+    const DEFAULT_MODE = 'CBC';
+
     const SUPPORTED_KEY_LENGTH = [128, 192, 256];
 
     const SUPPORTED_BLOCK_SIZE = [
@@ -18,25 +20,30 @@ class Aes implements EncryptionInterface
     /** @var string */
     protected $key;
 
-    /** @var integer */
+    /** @var integer (bit) */
     protected $keyLength;
 
+    /** @var string */
+    protected $mode = self::DEFAULT_MODE;
+
     /** @var integer */
-    protected $blockSize;
+    protected $blockSize = 128;
 
     /**
      * @param string $key
+     * @param string $mode
      * @param integer $blockSize
      */
-    public function __construct($key, $blockSize = 128)
+    public function __construct($key, $mode = self::DEFAULT_MODE, $blockSize = 128)
     {
-        $this->setKey($key);
         $this->setBlockSize($blockSize);
+        $this->setKey($key);
+        $this->setMode($mode);
     }
 
     /**
      * @param string $key
-     * @throws \InvalidArgumentException if invalid key length
+     * @throws \DomainException if invalid key length
      */
     public function setKey($key)
     {
@@ -48,6 +55,31 @@ class Aes implements EncryptionInterface
         }
         $this->key = $key;
         $this->keyLength = $keyLength;
+    }
+
+    /**
+     * @param string $mode
+     * @throws \DomainException if invalid mode
+     */
+    public function setMode($mode)
+    {
+        $mode = strtoupper($mode);
+
+        $usingExtension = $this->getUsingExtension();
+        if ($usingExtension == 'mcrypt') {
+            if (defined('MCRYPT_MODE_' . $mode) == false) {
+                $errorMsg = 'unsupported MCRYPT_MODE_' . $mode;
+                throw new \DomainException($errorMsg);
+            }
+        } else {
+            $cipherMethod = 'AES-' . $this->keyLength . '-' . $mode;
+            if (in_array($cipherMethod, openssl_get_cipher_methods()) == false) {
+                $errorMsg = 'unsupported cipher method = ' . $cipherMethod;
+                throw new \DomainException($errorMsg);
+            }
+        }
+
+        $this->mode = $mode;
     }
 
     /**
@@ -77,30 +109,25 @@ class Aes implements EncryptionInterface
      * @param string $clearText
      * @param string $iv
      * @return string encrypted
+     * @throws \Exception if invalid IV length
      */
     public function encrypt($clearText, $iv = '')
     {
-        if (strlen($iv) > 0) {
-            # check IV length
-            $ivLength = strlen($iv) * 8;
-            if ($ivLength != $this->blockSize) {
-                $errorMsg = 'invalid IV length = ' . $ivLength . ' (expects: ' . $this->blockSize . ')';
-                throw new \DomainException($errorMsg);
-            }
-        } else {
-            # IV create from key (insecure!!)
-            $iv = substr($this->key, 0, ($this->blockSize / 8));
+        # check IV length
+        $ivOctetSize = $this->getIVOctetSize();
+        if (strlen($iv) != $ivOctetSize) {
+            $errorMsg = 'invalid IV length = ' . strlen($iv) . ' octet (expects: ' . $ivOctetSize . ' octet)';
+            throw new \DomainException($errorMsg);
         }
 
-        $usingExtension = static::SUPPORTED_BLOCK_SIZE[$this->blockSize];
+        $usingExtension = $this->getUsingExtension();
         if ($usingExtension == 'mcrypt') {
-            # using mcrypt
-            $cipher = constant('MCRYPT_RIJNDAEL_' . $this->blockSize);
-            return rtrim(@mcrypt_encrypt($cipher, $this->key, $clearText, MCRYPT_MODE_CBC, $iv), "\0");
+            $mcryptCipher = $this->getMcryptCipher();
+            $mcryptMode = $this->getMcryptMode();
+            return rtrim(@mcrypt_encrypt($mcryptCipher, $this->key, $clearText, $mcryptMode, $iv), "\0");
         } else {
-            # using openssl
-            $cipherMethod = 'AES-' . $this->keyLength . '-CBC';
-            return openssl_encrypt($clearText, $cipherMethod, $this->key, OPENSSL_RAW_DATA, $iv);
+            $opensslCipherMethod = $this->getOpensslCipherMethod();
+            return openssl_encrypt($clearText, $opensslCipherMethod, $this->key, OPENSSL_RAW_DATA, $iv);
         }
     }
 
@@ -108,30 +135,103 @@ class Aes implements EncryptionInterface
      * @param string $encrypted
      * @param string $iv
      * @return string clearText
+     * @throws \Exception if invalid IV length
      */
     public function decrypt($encrypted, $iv = '')
     {
-        if (strlen($iv) > 0) {
-            # check IV length
-            $ivLength = strlen($iv) * 8;
-            if ($ivLength != $this->blockSize) {
-                $errorMsg = 'invalid IV length = ' . $ivLength . ' (expects: ' . $this->blockSize . ')';
-                throw new \DomainException($errorMsg);
-            }
-        } else {
-            # IV create from key (insecure!!)
-            $iv = substr($this->key, 0, ($this->blockSize / 8));
+        # check IV length
+        $ivOctetSize = $this->getIVOctetSize();
+        if (strlen($iv) != $ivOctetSize) {
+            $errorMsg = 'invalid IV length = ' . strlen($iv) . ' octet (expects: ' . $ivOctetSize . ' octet)';
+            throw new \DomainException($errorMsg);
         }
 
-        $usingExtension = static::SUPPORTED_BLOCK_SIZE[$this->blockSize];
+        $usingExtension = $this->getUsingExtension();
         if ($usingExtension == 'mcrypt') {
-            # using mcrypt
-            $cipher = constant('MCRYPT_RIJNDAEL_' . $this->blockSize);
-            return rtrim(@mcrypt_decrypt($cipher, $this->key, $encrypted, MCRYPT_MODE_CBC, $iv), "\0");
+            $mcryptCipher = $this->getMcryptCipher();
+            $mcryptMode = $this->getMcryptMode();
+            return rtrim(@mcrypt_decrypt($mcryptCipher, $this->key, $encrypted, $mcryptMode, $iv), "\0");
         } else {
-            # using openssl
-            $cipherMethod = 'AES-' . $this->keyLength . '-CBC';
-            return openssl_decrypt($encrypted, $cipherMethod, $this->key, OPENSSL_RAW_DATA, $iv);
+            $opensslCipherMethod = $this->getOpensslCipherMethod();
+            return openssl_decrypt($encrypted, $opensslCipherMethod, $this->key, OPENSSL_RAW_DATA, $iv);
         }
+    }
+
+    /**
+     * @return string
+     */
+    public function makeIV()
+    {
+        $ivOctetSize = $this->getIVOctetSize();
+
+        # using random_bytes() (for PHP7)
+        if (function_exists('random_bytes')) {
+            try {
+                return random_bytes($ivOctetSize);
+            } catch (\Exception $exception) {
+                ;
+            }
+        }
+
+        # using extension's function (for PHP5)
+        $usingExtension = $this->getUsingExtension();
+        if ($usingExtension == 'mcrypt') {
+            return @mcrypt_create_iv($ivOctetSize);
+        } else {
+            return openssl_random_pseudo_bytes($ivOctetSize);
+        }
+    }
+
+    /**
+     * @internal
+     * @return string 'openssl' or 'mcrypt'
+     */
+    protected function getUsingExtension()
+    {
+        return static::SUPPORTED_BLOCK_SIZE[$this->blockSize];
+    }
+
+    /**
+     * @internal
+     * @return integer
+     */
+    protected function getIVOctetSize()
+    {
+        $usingExtension = $this->getUsingExtension();
+        if ($usingExtension == 'mcrypt') {
+            $mcryptCipher = $this->getMcryptCipher();
+            $mcryptMode = $this->getMcryptMode();
+            return @mcrypt_get_iv_size($mcryptCipher, $mcryptMode);
+        } else {
+            $opensslCipherMethod = $this->getOpensslCipherMethod();
+            return openssl_cipher_iv_length($opensslCipherMethod);
+        }
+    }
+
+    /**
+     * @internal
+     * @return string (example: 'AES-128-CBC')
+     */
+    protected function getOpensslCipherMethod()
+    {
+        return 'AES-' . $this->keyLength . '-' . $this->mode;
+    }
+
+    /**
+     * @internal
+     * @return string MCRYPT_RIJNDAEL_*
+     */
+    protected function getMcryptCipher()
+    {
+        return constant('MCRYPT_RIJNDAEL_' . $this->blockSize);
+    }
+
+    /**
+     * @internal
+     * @return string MCRYPT_MODE_*
+     */
+    protected function getMcryptMode()
+    {
+        return constant('MCRYPT_MODE_' . $this->mode);
     }
 }

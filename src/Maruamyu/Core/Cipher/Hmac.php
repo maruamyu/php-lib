@@ -47,4 +47,40 @@ class Hmac implements SignatureInterface
     {
         return (strcmp($signature, $this->makeSignature($message, $hashAlgorithm)) == 0);
     }
+
+    /**
+     * shorthand of HMAC-SHA1
+     *
+     * @param string $message
+     * @param string $salt
+     * @return string
+     */
+    public static function sha1($message, $salt)
+    {
+        return hash_hmac('sha1', $message, $salt, true);
+    }
+
+    /**
+     * shorthand of HMAC-SHA256
+     *
+     * @param string $message
+     * @param string $salt
+     * @return string
+     */
+    public static function sha256($message, $salt)
+    {
+        return hash_hmac('sha256', $message, $salt, true);
+    }
+
+    /**
+     * shorthand of HMAC-SHA512
+     *
+     * @param string $message
+     * @param string $salt
+     * @return string
+     */
+    public static function sha512($message, $salt)
+    {
+        return hash_hmac('sha512', $message, $salt, true);
+    }
 }
