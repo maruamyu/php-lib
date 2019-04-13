@@ -87,4 +87,51 @@ __EOS__;
         $signature = $private->makeSignature($message, OPENSSL_ALGO_SHA512);
         $this->assertTrue($public->verifySignature($message, $signature, OPENSSL_ALGO_SHA512));
     }
+
+    public function test_invalid_key()
+    {
+        # wrong format (public)
+        try {
+            $public = new Dsa(RsaTest::PUBLIC_KEY);
+            $this->assertTrue(false);
+        } catch (\Exception $exception) {
+            $this->assertTrue(true);
+        }
+
+        # wrong format (private)
+        try {
+            $private = new Dsa(RsaTest::PRIVATE_KEY, RsaTest::PASSPHRASE);
+            $this->assertTrue(false);
+        } catch (\Exception $exception) {
+            $this->assertTrue(true);
+        }
+
+        # wrong passphrase
+        try {
+            $private = new Dsa(self::PRIVATE_KEY);
+            $this->assertTrue(false);
+        } catch (\Exception $exception) {
+            $this->assertTrue(true);
+        }
+    }
+
+    public function test_publicKeyFromParameters()
+    {
+        $publicKey = openssl_pkey_get_public(self::PUBLIC_KEY);
+        $publicKeyDetails = openssl_pkey_get_details($publicKey);
+
+        $genPublicKey = Dsa::publicKeyFromParameters($publicKeyDetails['dsa']);
+        $genDetails = openssl_pkey_get_details($genPublicKey);
+        $this->assertEquals($publicKeyDetails, $genDetails);
+    }
+
+    public function test_privateKeyFromParameters()
+    {
+        $privateKey = openssl_pkey_get_private(self::PRIVATE_KEY, self::PASSPHRASE);
+        $privateKeyDetails = openssl_pkey_get_details($privateKey);
+
+        $genPrivateKey = Dsa::privateKeyFromParameters($privateKeyDetails['dsa']);
+        $genDetails = openssl_pkey_get_details($genPrivateKey);
+        $this->assertEquals($privateKeyDetails, $genDetails);
+    }
 }

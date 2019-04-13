@@ -59,6 +59,10 @@ __EOS__;
         $cleartext = '秘密のメモリーズ / 四条貴音, 豊川風花';
         $encrypted = $public->encrypt($cleartext);
         $this->assertEquals($cleartext, $private->decrypt($encrypted));
+
+        $rawPrivateKey = openssl_pkey_get_private(self::PRIVATE_KEY, self::PASSPHRASE);
+        $privateFromRawKey = new Rsa(null, $rawPrivateKey);
+        $this->assertEquals($cleartext, $privateFromRawKey->decrypt($encrypted));
     }
 
     public function test_sign_verify()
@@ -69,6 +73,11 @@ __EOS__;
         $message = '虹色letters / Cleasky';
         $signature = $private->makeSignature($message);
         $this->assertTrue($public->verifySignature($message, $signature));
+
+        $rawPrivateKey = openssl_pkey_get_private(self::PRIVATE_KEY, self::PASSPHRASE);
+        $privateFromRawKey = new Rsa(null, $rawPrivateKey);
+        $signature = $privateFromRawKey->makeSignature($message);
+        $this->assertTrue($public->verifySignature($message, $signature));
     }
 
     public function test_sign_verify_algo()
@@ -76,8 +85,159 @@ __EOS__;
         $public = new Rsa(self::PUBLIC_KEY);
         $private = new Rsa(null, self::PRIVATE_KEY, self::PASSPHRASE);
 
+        $hashAlgorithm = OPENSSL_ALGO_SHA512;
+
         $message = '虹色letters / Cleasky';
-        $signature = $private->makeSignature($message, OPENSSL_ALGO_SHA512);
-        $this->assertTrue($public->verifySignature($message, $signature, OPENSSL_ALGO_SHA512));
+        $signature = $private->makeSignature($message, $hashAlgorithm);
+        $this->assertTrue($public->verifySignature($message, $signature, $hashAlgorithm));
+
+        $rawPrivateKey = openssl_pkey_get_private(self::PRIVATE_KEY, self::PASSPHRASE);
+        $privateFromRawKey = new Rsa(null, $rawPrivateKey);
+        $signature = $privateFromRawKey->makeSignature($message, $hashAlgorithm);
+        $this->assertTrue($public->verifySignature($message, $signature, $hashAlgorithm));
+    }
+
+    public function test_hasPrivateKey()
+    {
+        $public = new Rsa(self::PUBLIC_KEY);
+        $this->assertFalse($public->hasPrivateKey());
+
+        $private = new Rsa(null, self::PRIVATE_KEY, self::PASSPHRASE);
+        $this->assertTrue($private->hasPrivateKey());
+    }
+
+    public function test_getPublicKeyDetail_public()
+    {
+        $publicKey = openssl_pkey_get_public(self::PUBLIC_KEY);
+        $expects = openssl_pkey_get_details($publicKey);
+
+        $public = new Rsa(self::PUBLIC_KEY);
+        $this->assertEquals($expects, $public->getPublicKeyDetail());
+
+        $publicFromRawKey = new Rsa($publicKey);
+        $this->assertEquals($expects, $publicFromRawKey->getPublicKeyDetail());
+    }
+
+    public function test_getPublicKeyDetail_private()
+    {
+        $publicKey = openssl_pkey_get_public(self::PUBLIC_KEY);
+        $expects = openssl_pkey_get_details($publicKey);
+
+        $private = new Rsa(null, self::PRIVATE_KEY, self::PASSPHRASE);
+        $this->assertEquals($expects, $private->getPublicKeyDetail());
+
+        $privateKey = openssl_pkey_get_private(self::PRIVATE_KEY, self::PASSPHRASE);
+        $privateFromRawKey = new Rsa(null, $privateKey);
+        $this->assertEquals($expects, $privateFromRawKey->getPublicKeyDetail());
+    }
+
+    public function test_getPrivateKeyDetail()
+    {
+        $public = new Rsa(self::PUBLIC_KEY);
+        try {
+            $public->getPrivateKeyDetail();
+            $this->assertTrue(false);
+        } catch (\Exception $exception) {
+            $this->assertTrue(true);
+        }
+
+        $publicKey = openssl_pkey_get_public(self::PUBLIC_KEY);
+        $publicFromRawKey = new Rsa($publicKey);
+        try {
+            $publicFromRawKey->getPrivateKeyDetail();
+            $this->assertTrue(false);
+        } catch (\Exception $exception) {
+            $this->assertTrue(true);
+        }
+
+        $privateKey = openssl_pkey_get_private(self::PRIVATE_KEY, self::PASSPHRASE);
+        $expects = openssl_pkey_get_details($privateKey);
+
+        $private = new Rsa(null, self::PRIVATE_KEY, self::PASSPHRASE);
+        $this->assertEquals($expects, $private->getPrivateKeyDetail());
+
+        $privateFromRawKey = new Rsa(null, $privateKey);
+        $this->assertEquals($expects, $privateFromRawKey->getPrivateKeyDetail());
+    }
+
+    public function test_getPrivateKeyDetail_public()
+    {
+        $public = new Rsa(self::PUBLIC_KEY);
+        try {
+            $public->getPrivateKeyDetail();
+            $this->assertTrue(false);
+        } catch (\Exception $exception) {
+            $this->assertTrue(true);
+        }
+
+        $publicKey = openssl_pkey_get_public(self::PUBLIC_KEY);
+        $publicFromRawKey = new Rsa($publicKey);
+        try {
+            $publicFromRawKey->getPrivateKeyDetail();
+            $this->assertTrue(false);
+        } catch (\Exception $exception) {
+            $this->assertTrue(true);
+        }
+    }
+
+    public function test_getPrivateKeyDetail_private()
+    {
+        $privateKey = openssl_pkey_get_private(self::PRIVATE_KEY, self::PASSPHRASE);
+        $expects = openssl_pkey_get_details($privateKey);
+
+        $private = new Rsa(null, self::PRIVATE_KEY, self::PASSPHRASE);
+        $this->assertEquals($expects, $private->getPrivateKeyDetail());
+
+        $privateFromRawKey = new Rsa(null, $privateKey);
+        $this->assertEquals($expects, $privateFromRawKey->getPrivateKeyDetail());
+    }
+
+    public function test_invalid_key()
+    {
+        # wrong format (public)
+        try {
+            $public = new Rsa(DsaTest::PUBLIC_KEY);
+            $this->assertTrue(false);
+        } catch (\Exception $exception) {
+            $this->assertTrue(true);
+        }
+
+        # wrong format (private)
+        try {
+            $private = new Rsa(DsaTest::PRIVATE_KEY, DsaTest::PASSPHRASE);
+            $this->assertTrue(false);
+        } catch (\Exception $exception) {
+            $this->assertTrue(true);
+        }
+
+        # wrong passphrase
+        try {
+            $private = new Rsa(self::PRIVATE_KEY);
+            $this->assertTrue(false);
+        } catch (\Exception $exception) {
+            $this->assertTrue(true);
+        }
+    }
+
+    public function test_publicKeyFromModulusAndExponent()
+    {
+        $publicKey = openssl_pkey_get_public(self::PUBLIC_KEY);
+        $publicKeyDetails = openssl_pkey_get_details($publicKey);
+
+        $modulus = $publicKeyDetails['rsa']['n'];
+        $exponent = $publicKeyDetails['rsa']['e'];
+        $genPublicKey = Rsa::publicKeyFromModulusAndExponent($modulus, $exponent);
+        $genDetails = openssl_pkey_get_details($genPublicKey);
+        $this->assertEquals($publicKeyDetails, $genDetails);
+    }
+
+    public function test_privateKeyFromParameters()
+    {
+        $privateKey = openssl_pkey_get_private(self::PRIVATE_KEY, self::PASSPHRASE);
+        $privateKeyDetails = openssl_pkey_get_details($privateKey);
+
+        $genPrivateKey = Rsa::privateKeyFromParameters($privateKeyDetails['rsa']);
+        $genDetails = openssl_pkey_get_details($genPrivateKey);
+        $this->assertEquals($privateKeyDetails, $genDetails);
     }
 }
