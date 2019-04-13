@@ -19,6 +19,9 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
     /** @var resource */
     protected $publicKey;
 
+    /** @var string */
+    protected $passphrase;
+
     /**
      * @param string|resource $publicKey
      * @param string|resource $privateKey
@@ -35,6 +38,7 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
                 throw new \DomainException('invalid private key.');
             }
             $this->privateKey = $privateKeyResource;
+            $this->passphrase = $passphrase;
             # if given private key, then get public key from private key
             $detail = openssl_pkey_get_details($privateKeyResource);
             $this->publicKey = static::fetchPublicKey($detail['key']);
@@ -46,6 +50,25 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
                 throw new \DomainException('invalid public key.');
             }
             $this->publicKey = $publicKeyResource;
+        }
+    }
+
+    /**
+     * @return string PEM
+     */
+    public function __toString()
+    {
+        if ($this->privateKey) {
+            $privateKeyPem = '';
+            $succeeded = openssl_pkey_export($this->privateKey, $privateKeyPem, $this->passphrase);
+            if ($succeeded) {
+                return $privateKeyPem;
+            } else {
+                return '';
+            }
+        } else {
+            $detail = $this->getPublicKeyDetail();
+            return strval($detail['key']);
         }
     }
 

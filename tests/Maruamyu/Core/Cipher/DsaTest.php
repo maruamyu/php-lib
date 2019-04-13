@@ -88,6 +88,28 @@ __EOS__;
         $this->assertTrue($public->verifySignature($message, $signature, OPENSSL_ALGO_SHA512));
     }
 
+    public function test_public_key_toString()
+    {
+        $public = new Dsa(self::PUBLIC_KEY);
+        $publicKeyPem = strval($public);
+
+        $expects = trim(self::PUBLIC_KEY);
+        $actual = trim($publicKeyPem);
+        $this->assertEquals($expects, $actual);
+    }
+
+    public function test_private_key_toString()
+    {
+        $private = new Dsa(null, self::PRIVATE_KEY, self::PASSPHRASE);
+
+        # compare old format - new format
+        $privateKeyPem = strval($private);
+        $privateKey = openssl_pkey_get_private($privateKeyPem, self::PASSPHRASE);
+        $privateKeyDetail = openssl_pkey_get_details($privateKey);
+
+        $this->assertEquals($private->getPrivateKeyDetail(), $privateKeyDetail);
+    }
+
     public function test_invalid_key()
     {
         # wrong format (public)

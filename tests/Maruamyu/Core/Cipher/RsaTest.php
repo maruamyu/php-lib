@@ -192,6 +192,39 @@ __EOS__;
         $this->assertEquals($expects, $privateFromRawKey->getPrivateKeyDetail());
     }
 
+    public function test_public_key_toString()
+    {
+        $expects = trim(self::PUBLIC_KEY);
+
+        $instance = new Rsa(self::PUBLIC_KEY);
+        $actual = trim(strval($instance));
+        $this->assertEquals($expects, $actual);
+
+        $rawPublicKey = openssl_pkey_get_public(self::PUBLIC_KEY);
+        $instanceFromRawKey = new Rsa($rawPublicKey);
+        $actual = trim(strval($instanceFromRawKey));
+        $this->assertEquals($expects, $actual);
+    }
+
+    public function test_private_key_toString()
+    {
+        $privateKey = openssl_pkey_get_private(self::PRIVATE_KEY, self::PASSPHRASE);
+        $expects = openssl_pkey_get_details($privateKey);
+
+        # compare old format - new format
+        $instance = new Rsa(null, self::PRIVATE_KEY, self::PASSPHRASE);
+        $actualPem = strval($instance);
+        $actualKey = openssl_pkey_get_private($actualPem, self::PASSPHRASE);
+        $actual = openssl_pkey_get_details($actualKey);
+        $this->assertEquals($expects, $actual);
+
+        $instanceFromRawKey = new Rsa(null, $privateKey);
+        $actualPem = strval($instanceFromRawKey);
+        $actualKey = openssl_pkey_get_private($actualPem);
+        $actual = openssl_pkey_get_details($actualKey);
+        $this->assertEquals($expects, $actual);
+    }
+
     public function test_invalid_key()
     {
         # wrong format (public)
