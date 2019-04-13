@@ -2,45 +2,25 @@
 
 namespace Maruamyu\Core\Http\Message;
 
-use Maruamyu\Core\ArrayDetectionTrait;
-use Maruamyu\Core\KeyValueStore;
-
 /**
- * QUERY_STRING形式データを扱うクラス
+ * QUERY_STRING 処理クラス
  */
-class QueryString extends KeyValueStore
+class QueryString
 {
-    use ArrayDetectionTrait;
+    /** @var string[][] ['key' => ['value1', 'value2', ...], ...] */
+    private $data;
 
     /**
-     * コンストラクタ
-     *
-     * @param mixed $initValue 初期値
+     * @param string|array|self $initValue 初期値
      */
     public function __construct($initValue = null)
     {
-        parent::__construct();
+        $this->data = [];
 
-        if (is_array($initValue)) {
-            foreach ($initValue as $key => $value) {
-                if (static::isVector($value)) {
-                    foreach ($value as $valueElem) {
-                        $this->add($key, $valueElem);
-                    }
-                } else {
-                    $this->add($key, $value);
-                }
-            }
+        if (($initValue instanceof self) || is_array($initValue)) {
+            $this->merge($initValue);
         } elseif (is_string($initValue)) {
-            # parse_str($initValue, $parsed);
-            # では, hoge=hoge&hoge=hogehoge を解釈できない.
-            # そのため, 独自のパーサを利用する.
-            $parsed = static::parse($initValue);
-            foreach ($parsed as $key => $values) {
-                foreach ($values as $value) {
-                    $this->add($key, $value);
-                }
-            }
+            $this->data = static::parse($initValue);
         }
     }
 
@@ -59,35 +39,7 @@ class QueryString extends KeyValueStore
      */
     public function toString()
     {
-        $kvpairs = [];
-        $keys = $this->keys();
-        foreach ($keys as $key) {
-            $values = $this->get($key);
-            if (empty($values)) {
-                continue;
-            }
-            $encodedKey = rawurlencode($key);
-            foreach ($values as $value) {
-                $value = strval($value);
-                $kvpairs[] = $encodedKey . '=' . rawurlencode($value);
-            }
-        }
-        return join('&', $kvpairs);
-    }
-
-    /**
-     * @param string $key
-     * @param string $glue
-     * @return string
-     */
-    public function getString($key, $glue = '')
-    {
-        $values = $this->get($key);
-        if (isset($values)) {
-            return join($glue, $values);
-        } else {
-            return '';
-        }
+        return static::build($this->data);
     }
 
     /**
@@ -96,22 +48,7 @@ class QueryString extends KeyValueStore
      */
     public function toOAuthQueryString()
     {
-        $kvpairs = [];
-        $keys = $this->keys();
-        sort($keys, SORT_STRING);
-        foreach ($keys as $key) {
-            $values = $this->get($key);
-            if (empty($values)) {
-                continue;
-            }
-            sort($values, SORT_STRING);
-            $encodedKey = rawurlencode($key);
-            foreach ($values as $value) {
-                $value = strval($value);
-                $kvpairs[] = $encodedKey . '=' . rawurlencode($value);
-            }
-        }
-        return join('&', $kvpairs);
+        return static::buildForOAuth1($this->data);
     }
 
     /**
@@ -134,9 +71,8 @@ class QueryString extends KeyValueStore
         if (strlen($lineEnd) < 1) {
             $lineEnd = "\r\n";
         }
-        foreach ($this->keys() as $key) {
+        foreach ($this->data as $key => $values) {
             $escapedKey = str_replace('"', '\\"', $key);
-            $values = $this->get($key);
             foreach ($values as $value) {
                 $multipartFormData .= '--' . $boundary . $lineEnd;
                 $multipartFormData .= 'Content-Disposition: form-data; name="' . $escapedKey . '"' . $lineEnd;
@@ -148,39 +84,254 @@ class QueryString extends KeyValueStore
     }
 
     /**
+     * @return array
+     */
+    public function toArray()
+    {
+        $dst = [];
+        foreach ($this->data as $key => $values) {
+            if (empty($values)) {
+                continue;
+            }
+            if (count($values) >= 2) {
+                $dst[$key] = $values;
+            } else {
+                $dst[$key] = $values[0];
+            }
+        }
+        return $dst;
+    }
+
+    /**
+     * JSON文字列の生成
+     *
+     * @return string JSON文字列
+     */
+    public function toJson()
+    {
+        return json_encode($this->toArray());
+    }
+
+    /**
+     * @param string $key キー
+     * @return boolean 値が存在するならtrue, 存在しないならfalse
+     */
+    public function has($key)
+    {
+        return isset($this->data[$key]);
+    }
+
+    /**
+     * キーの一覧を取得する.
+     *
+     * @return string[] キーの一覧
+     */
+    public function keys()
+    {
+        return array_keys($this->data);
+    }
+
+    /**
+     * サイズ(キーの個数)を取得する.
+     *
+     * @return int サイズ(キーの個数)
+     */
+    public function count()
+    {
+        return count($this->data);
+    }
+
+    /**
+     * 空(サイズが0)かどうか判定する.
+     *
+     * @return boolean 空(サイズが0)ならtrue, それ以外はfalse
+     * @see hasAny()
+     */
+    public function isEmpty()
+    {
+        return ($this->count() == 0);
+    }
+
+    /**
+     * 空でない(サイズが0でない)かどうか判定する.
+     *
+     * @return boolean 空でないならtrue, それ以外はfalse
+     * @see isEmpty()
+     */
+    public function hasAny()
+    {
+        return !($this->isEmpty());
+    }
+
+    /**
+     * キーに対する値を取得する.
+     *
+     * @param string $key キー
+     * @return string[] キーに対する値のリスト (存在しなかったときは空)
+     * @throws \InvalidArgumentException 空のキーを指定したとき
+     */
+    public function get($key)
+    {
+        $key = static::validateKey($key);
+        if (isset($this->data[$key])) {
+            return $this->data[$key];
+        } else {
+            return [];
+        }
+    }
+
+    /**
+     * @param string $key
+     * @param string $glue
+     * @return string
+     */
+    public function getString($key, $glue = '')
+    {
+        if (isset($this->data[$key])) {
+            return join($glue, $this->data[$key]);
+        } else {
+            return '';
+        }
+    }
+
+    /**
+     * キーに対する値を設定する.
+     * すでに同じキーが存在している場合は, 上書きされる.
+     *
+     * @param string $key キー
+     * @param string|string[] $values キーに対する値
+     * @throws \InvalidArgumentException 空のキーを指定したとき
+     */
+    public function set($key, $values)
+    {
+        $key = static::validateKey($key);
+        if (is_array($values)) {
+            $this->data[$key] = $values;
+        } else {
+            $this->data[$key] = [$values];
+        }
+    }
+
+    /**
+     * キーに対する値を追加する.
+     * 同じキーが存在する場合でも上書きされない. (以前の値も保持される.)
+     *
+     * @param string $key キー
+     * @param string|string[] $values キーに対する値
+     * @return int 設定後のキーに対する値の数
+     * @throws \InvalidArgumentException 空のキーを指定したとき
+     */
+    public function add($key, $values)
+    {
+        $key = static::validateKey($key);
+        if (!(isset($this->data[$key]))) {
+            $this->data[$key] = [];
+        }
+        if (is_array($values)) {
+            $this->data[$key] = array_merge($this->data[$key], $values);
+        } else {
+            $this->data[$key][] = $values;
+        }
+        return count($this->data[$key]);
+    }
+
+    /**
+     * キーに対する値を全て削除する.
+     *
+     * @param string $key キー
+     * @return mixed[] 削除したキーに対する値のリスト (存在しなかったときは空)
+     * @throws \InvalidArgumentException 空のキーを指定したとき
+     */
+    public function delete($key)
+    {
+        $key = static::validateKey($key);
+        $deleted = [];
+        if (isset($this->data[$key])) {
+            $deleted = $this->data[$key];
+            unset($this->data[$key]);
+        }
+        return $deleted;
+    }
+
+    /**
+     * データの統合
+     * 同じキーが存在した場合は, 引数で渡されたデータの値で上書きされる.
+     *
+     * @param array|self $parameters
+     * @return int 統合後のデータサイズ
+     * @throws \InvalidArgumentException 指定されたKVSデータの形式が正しくないとき
+     */
+    public function merge($parameters)
+    {
+        if ($parameters instanceof self) {
+            foreach ($parameters->data as $key => $values) {
+                $this->set($key, $values);
+            }
+        } elseif (is_array($parameters)) {
+            foreach ($parameters as $key => $values) {
+                $this->set($key, $values);
+            }
+        } else {
+            throw new \InvalidArgumentException('invalid data type.');
+        }
+        return $this->count();
+    }
+
+    /**
+     * データの結合
+     * 同じキーが存在する場合でも上書きされない. (以前の値も保持される.)
+     *
+     * @param array|self $parameters
+     * @return int 統合後のデータサイズ
+     * @throws \InvalidArgumentException 指定されたKVSデータの形式が正しくないとき
+     */
+    public function append($parameters)
+    {
+        if ($parameters instanceof self) {
+            foreach ($parameters->data as $key => $values) {
+                $this->add($key, $values);
+            }
+        } elseif (is_array($parameters)) {
+            foreach ($parameters as $key => $values) {
+                $this->add($key, $values);
+            }
+        } else {
+            throw new \InvalidArgumentException('invalid data type.');
+        }
+        return $this->count();
+    }
+
+    /**
      * @param string $queryString QUERY_STRING形式の文字列
      *   注意: PHPの独自拡張形式は(意図的に)解釈しません
      *   (例: "key[]=value" は ['key[]' => ['value']] となります)
-     * @return array パースした配列
+     * @return string[][] パースした配列
      */
     public static function parse($queryString)
     {
-        if (strlen($queryString) < 1) {
-            return [];
-        }
-        $parsed = [];
-        $queryString = str_replace('&amp;', '&', $queryString);
-        $queryString = str_replace(';', '&', $queryString);
+        $parameters = [];
         $kvpairs = explode('&', $queryString);
         foreach ($kvpairs as $kvpair) {
+            if (strlen($kvpair) < 1) {
+                continue;
+            }
             $delimiterPos = strpos($kvpair, '=');
             if ($delimiterPos === false) {
-                $key = $kvpair;
+                $key = rawurldecode($kvpair);
                 $value = '';
             } else {
-                $key = substr($kvpair, 0, $delimiterPos);
-                $value = substr($kvpair, ($delimiterPos + 1));  # strlen('=') = 1
+                $key = rawurldecode(substr($kvpair, 0, $delimiterPos));
+                $value = rawurldecode(substr($kvpair, ($delimiterPos + 1)));
             }
-            $key = rawurldecode($key);
             if (strlen($key) < 1) {
                 continue;
             }
-            if (!(isset($parsed[$key]))) {
-                $parsed[$key] = [];
+            if (!isset($parameters[$key])) {
+                $parameters[$key] = [];
             }
-            $parsed[$key][] = rawurldecode($value);
+            $parameters[$key][] = $value;
         }
-        return $parsed;
+        return $parameters;
     }
 
     /**
@@ -227,5 +378,19 @@ class QueryString extends KeyValueStore
             }
         }
         return join('&', $kvpairs);
+    }
+
+    /**
+     * @param string $key
+     * @return string $key
+     * @throws \InvalidArgumentException if empty
+     */
+    protected static function validateKey($key)
+    {
+        $key = strval($key);
+        if (strlen($key) < 1) {
+            throw new \InvalidArgumentException('key is empty.');
+        }
+        return $key;
     }
 }

@@ -31,7 +31,7 @@ class ServiceProvider extends CoreLogic
         $signatureMethod = $this->getSignatureMethod();
         if (isset($authParams['oauth_signature_method'])) {
             $signatureMethod = $authParams['oauth_signature_method'];
-        } elseif ($params && $params->hasKey('oauth_signature_method')) {
+        } elseif ($params && $params->has('oauth_signature_method')) {
             list($signatureMethod) = $params->get('oauth_signature_method');
         }
 
