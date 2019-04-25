@@ -4,6 +4,12 @@ namespace Maruamyu\Core\Cipher;
 
 class HmacTest extends \PHPUnit\Framework\TestCase
 {
+    public function test_canMakeSignature()
+    {
+        $hmac = new Hmac('思い出の鍵');
+        $this->assertTrue($hmac->canMakeSignature());
+    }
+
     public function test_sign_verify()
     {
         $hmac = new Hmac('思い出の鍵');

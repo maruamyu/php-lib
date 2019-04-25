@@ -65,6 +65,15 @@ __EOS__;
         $this->assertEquals($cleartext, $privateFromRawKey->decrypt($encrypted));
     }
 
+    public function test_canMakeSignature()
+    {
+        $public = new Rsa(self::PUBLIC_KEY);
+        $private = new Rsa(null, self::PRIVATE_KEY, self::PASSPHRASE);
+
+        $this->assertFalse($public->canMakeSignature());
+        $this->assertTrue($private->canMakeSignature());
+    }
+
     public function test_sign_verify()
     {
         $public = new Rsa(self::PUBLIC_KEY);

@@ -103,6 +103,14 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
     }
 
     /**
+     * @return boolean true if enable makeSignature()
+     */
+    public function canMakeSignature()
+    {
+        return $this->hasPrivateKey();
+    }
+
+    /**
      * @param string $message
      * @param integer|null $hashAlgorithm OPENSSL_ALGO_*
      *   (if null, using DEFAULT_HASH_ALGORITHM)
@@ -111,7 +119,7 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
      */
     public function makeSignature($message, $hashAlgorithm = null)
     {
-        if (!($this->hasPrivateKey())) {
+        if (!($this->canMakeSignature())) {
             throw new \RuntimeException('private key required.');
         }
         if (is_null($hashAlgorithm)) {

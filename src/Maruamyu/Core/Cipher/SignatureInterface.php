@@ -8,6 +8,11 @@ namespace Maruamyu\Core\Cipher;
 interface SignatureInterface
 {
     /**
+     * @return boolean true if enable makeSignature()
+     */
+    public function canMakeSignature();
+
+    /**
      * @param string $message
      * @param mixed $hashAlgorithm
      * @return string signature

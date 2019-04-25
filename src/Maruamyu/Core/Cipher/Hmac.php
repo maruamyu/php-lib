@@ -25,6 +25,14 @@ class Hmac implements SignatureInterface
     }
 
     /**
+     * @return boolean true if enable makeSignature()
+     */
+    public function canMakeSignature()
+    {
+        return true;
+    }
+
+    /**
      * @param string $message
      * @param string|null $hashAlgorithm
      * @return string signature
