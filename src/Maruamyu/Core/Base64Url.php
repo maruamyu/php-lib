@@ -9,15 +9,17 @@ class Base64Url
 {
     /**
      * @param string $src source string
+     * @param boolean $strict true if padding
      * @return string Base64-URL encoded string
      */
-    public static function encode($src)
+    public static function encode($src, $strict = false)
     {
-        return str_replace(
-            ['+', '/', '=', "\r", "\n"],
-            ['-', '_', '', '', ''],
-            base64_encode($src)
-        );
+        $padded = str_replace(['+', '/'], ['-', '_'], base64_encode($src));
+        if ($strict) {
+            return $padded;
+        } else {
+            return rtrim($padded, '=');
+        }
     }
 
     /**
@@ -26,6 +28,7 @@ class Base64Url
      */
     public static function decode($src)
     {
+        $src .= str_repeat('=', (strlen($src) % 4));
         return base64_decode(str_replace(['-', '_'], ['+', '/'], $src));
     }
 
