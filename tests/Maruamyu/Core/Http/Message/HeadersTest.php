@@ -62,21 +62,21 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * hasName()
+     * has()
      */
-    public function test_hasName()
+    public function test_has()
     {
         $headers = new Headers();
 
-        $this->assertFalse($headers->hasName('Content-Type'));
+        $this->assertFalse($headers->has('Content-Type'));
 
         $headers->set('content-type', 'text/html');
-        $this->assertTrue($headers->hasName('Content-Type'));
-        $this->assertTrue($headers->hasName('content-type'));
+        $this->assertTrue($headers->has('Content-Type'));
+        $this->assertTrue($headers->has('content-type'));
 
         $headers->delete('Content-Type');
-        $this->assertFalse($headers->hasName('Content-Type'));
-        $this->assertFalse($headers->hasName('content-type'));
+        $this->assertFalse($headers->has('Content-Type'));
+        $this->assertFalse($headers->has('content-type'));
     }
 
     /**

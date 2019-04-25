@@ -84,7 +84,7 @@ abstract class MessageAbstract implements MessageInterface
      */
     public function hasHeader($name)
     {
-        return $this->headers->hasName($name);
+        return $this->headers->has($name);
     }
 
     /**

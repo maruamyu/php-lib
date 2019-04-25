@@ -2,15 +2,11 @@
 
 namespace Maruamyu\Core\Http\Message;
 
-use Maruamyu\Core\ArrayDetectionTrait;
-
 /**
  * 独自実装 HTTPヘッダ 処理クラス
  */
 class Headers
 {
-    use ArrayDetectionTrait;
-
     const LINE_END = "\r\n";
 
     private $data;
@@ -18,23 +14,22 @@ class Headers
     /**
      * コンストラクタ
      *
-     * @param mixed $initValue 初期値
+     * @param string|array $initValue 初期値
      */
     public function __construct($initValue = null)
     {
         $this->data = [];
 
         if (is_array($initValue)) {
-            if (static::isVector($initValue)) {
-                foreach ($initValue as $field) {
-                    $this->addFromField($field);
-                }
-            } else {
-                foreach ($initValue as $name => $value) {
-                    $this->add($name, $value);
+            foreach ($initValue as $key => $value) {
+                if (is_string($key)) {  # assoc of name => values
+                    $this->add($key, $value);
+                } else {  # vector of fields
+                    $this->addFromField($value);
                 }
             }
         } elseif (is_string($initValue)) {
+            # header string
             $fields = explode(static::LINE_END, $initValue);
             foreach ($fields as $field) {
                 $this->addFromField($field);
@@ -49,11 +44,7 @@ class Headers
      */
     public function __toString()
     {
-        $fields = $this->fields();
-        if (empty($fields)) {
-            return '';
-        }
-        return join(static::LINE_END, $this->fields()) . static::LINE_END;
+        return $this->toString();
     }
 
     /**
@@ -63,7 +54,11 @@ class Headers
      */
     public function toString()
     {
-        return $this->__toString();
+        $fields = $this->fields();
+        if (empty($fields)) {
+            return '';
+        }
+        return join(static::LINE_END, $fields) . static::LINE_END;
     }
 
     /**
@@ -113,14 +108,14 @@ class Headers
      * すでに同じ名前の値が存在している場合は, 上書きされる.
      *
      * @param string $name 名前
-     * @param mixed $value 名前に対する値
+     * @param mixed $values 名前に対する値
      * @throws \InvalidArgumentException 空の名前を指定したとき
      */
-    public function set($name, $value)
+    public function set($name, $values)
     {
         $lowerName = strtolower($name);
         $this->data[$lowerName] = [];
-        $this->add($name, $value);
+        $this->add($name, $values);
     }
 
     /**
@@ -134,11 +129,12 @@ class Headers
     public function setFromField($field)
     {
         list($name, $value) = static::parseField($field);
-        if (!$name) {
+        if (strlen($name) > 0) {
+            $this->set($name, $value);
+            return true;
+        } else {
             return false;
         }
-        $this->set($name, $value);
-        return true;
     }
 
     /**
@@ -146,22 +142,22 @@ class Headers
      * 同じ名前が存在する場合でも上書きされない. (以前の値も保持される.)
      *
      * @param string $name 名前
-     * @param mixed $value 名前に対する値
+     * @param string|string[] $values 名前に対する値
      * @return int count of elemets
      * @throws \InvalidArgumentException 空の名前を指定したとき
      */
-    public function add($name, $value)
+    public function add($name, $values)
     {
         $lowerName = strtolower($name);
         if (!isset($this->data[$lowerName])) {
             $this->data[$lowerName] = [];
         }
-        if (static::isVector($value)) {
-            foreach ($value as $vv) {
-                $this->data[$lowerName][] = [$vv, $name];
+        if (is_array($values)) {
+            foreach ($values as $value) {
+                $this->data[$lowerName][] = [$value, $name];
             }
         } else {
-            $this->data[$lowerName][] = [$value, $name];
+            $this->data[$lowerName][] = [$values, $name];
         }
         return count($this->data[$lowerName]);
     }
@@ -177,10 +173,11 @@ class Headers
     public function addFromField($field)
     {
         list($name, $value) = static::parseField($field);
-        if (!$name) {
+        if (strlen($name) > 0) {
+            return $this->add($name, $value);
+        } else {
             return false;
         }
-        return $this->add($name, $value);
     }
 
     /**
@@ -210,7 +207,7 @@ class Headers
      * @param string $name 名前
      * @return boolean 存在するならtrue, それ以外はfalse
      */
-    public function hasName($name)
+    public function has($name)
     {
         $lowerName = strtolower($name);
         return isset($this->data[$lowerName]);
@@ -235,7 +232,6 @@ class Headers
 
     /**
      * メッセージヘッダのフィールド一覧を取得する.
-     *
      * ("ヘッダ名: 値" の配列が返る)
      *
      * @return string[] ヘッダのフィールド一覧
@@ -289,19 +285,6 @@ class Headers
     }
 
     /**
-     * 名前に対する値の数を取得する.
-     *
-     * @param string $name 名前
-     * @return int 名前に対する値の数
-     * @throws \InvalidArgumentException 空の名前を指定したとき
-     */
-    public function valueCount($name)
-    {
-        $lowerName = strtolower($name);
-        return count($this->data[$lowerName]);
-    }
-
-    /**
      * データの統合
      * 同じ名前のヘッダ値が存在した場合は, 引数で渡されたヘッダデータの値で上書きされる.
      *
@@ -345,15 +328,14 @@ class Headers
     /**
      * ヘッダのフィールドを名前と値に分割する.
      *
-     * @param string $field ヘッダのフィールド("ヘッダ名: 値")
-     * @return array|null [ヘッダ名, 値] (不正なデータのときはnull)
+     * @param string $field "name: value"
+     * @return array [name, value]
      */
     public static function parseField($field)
     {
-        $field = trim($field);
         $delimiterPos = strpos($field, ': ', 0);
         if ($delimiterPos === false) {
-            return null;
+            return ['', ''];
         }
         $name = trim(substr($field, 0, $delimiterPos));
         $value = trim(substr($field, ($delimiterPos + 2)));  # strlen(': ') = 2
