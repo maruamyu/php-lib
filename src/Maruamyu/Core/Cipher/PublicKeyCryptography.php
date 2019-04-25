@@ -58,17 +58,10 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
      */
     public function __toString()
     {
-        if ($this->privateKey) {
-            $privateKeyPem = '';
-            $succeeded = openssl_pkey_export($this->privateKey, $privateKeyPem, $this->passphrase);
-            if ($succeeded) {
-                return $privateKeyPem;
-            } else {
-                return '';
-            }
+        if ($this->hasPrivateKey()) {
+            return $this->exportPrivateKey();
         } else {
-            $detail = $this->getPublicKeyDetail();
-            return strval($detail['key']);
+            return $this->exportPublicKey();
         }
     }
 
@@ -78,6 +71,29 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
     public function hasPrivateKey()
     {
         return isset($this->privateKey);
+    }
+
+    /**
+     * @return string PEM of public key
+     */
+    public function exportPublicKey()
+    {
+        $detail = $this->getPublicKeyDetail();
+        return strval($detail['key']);
+    }
+
+    /**
+     * @return string PEM of private key
+     */
+    public function exportPrivateKey()
+    {
+        $privateKeyPem = '';
+        $succeeded = openssl_pkey_export($this->privateKey, $privateKeyPem, $this->passphrase);
+        if ($succeeded) {
+            return $privateKeyPem;
+        } else {
+            return '';
+        }
     }
 
     /**
