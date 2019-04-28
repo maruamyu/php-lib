@@ -23,16 +23,10 @@ abstract class DriverAbstract implements DriverInterface
         'https' => true,
     ];
 
-    /**
-     * 通信に利用するリクエスト
-     * @var Request
-     */
+    /** @var Request */
     protected $request = null;
 
-    /**
-     * 最後に通信した結果のレスポンス
-     * @var Response
-     */
+    /** @var Response */
     protected $response = null;
 
     /**

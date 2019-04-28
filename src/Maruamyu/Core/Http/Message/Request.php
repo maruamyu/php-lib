@@ -13,22 +13,13 @@ class Request extends MessageAbstract implements RequestInterface
 {
     use NormalizeMessageTrait;
 
-    /**
-     * リクエストメソッド
-     * @var string
-     */
+    /** @var string */
     protected $method = 'GET';
 
-    /**
-     * リクエストURIオブジェクト
-     * @var PsrUriInterface
-     */
+    /** @var PsrUriInterface */
     protected $uri;
 
-    /**
-     * multipart/form-data
-     * @var MultipartData[]
-     */
+    /** @var MultipartData[] */
     protected $multipartDataList = [];
 
     /**

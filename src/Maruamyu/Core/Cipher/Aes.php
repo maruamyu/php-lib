@@ -183,8 +183,8 @@ class Aes implements EncryptionInterface
     }
 
     /**
-     * @internal
      * @return string 'openssl' or 'mcrypt'
+     * @internal
      */
     protected function getUsingExtension()
     {
@@ -192,8 +192,8 @@ class Aes implements EncryptionInterface
     }
 
     /**
-     * @internal
      * @return integer
+     * @internal
      */
     protected function getIVOctetSize()
     {
@@ -209,8 +209,8 @@ class Aes implements EncryptionInterface
     }
 
     /**
-     * @internal
      * @return string (example: 'AES-128-CBC')
+     * @internal
      */
     protected function getOpensslCipherMethod()
     {
@@ -218,8 +218,8 @@ class Aes implements EncryptionInterface
     }
 
     /**
-     * @internal
      * @return string MCRYPT_RIJNDAEL_*
+     * @internal
      */
     protected function getMcryptCipher()
     {
@@ -227,8 +227,8 @@ class Aes implements EncryptionInterface
     }
 
     /**
-     * @internal
      * @return string MCRYPT_MODE_*
+     * @internal
      */
     protected function getMcryptMode()
     {

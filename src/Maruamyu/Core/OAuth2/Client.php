@@ -93,10 +93,10 @@ class Client
 
     /**
      * @note not reload if hasValidAccessToken()
-     * @see hasValidAccessToken()
-     * @see refreshAccessToken()
      * @return AccessToken|null
      * @throws \Exception if invalid settings
+     * @see hasValidAccessToken()
+     * @see refreshAccessToken()
      */
     public function reloadAccessToken()
     {
@@ -477,11 +477,11 @@ class Client
     /**
      * token revocation request (RFC 7009)
      *
-     * @internal
      * @param string $token
      * @param string $tokenTypeHint 'access_token' or 'refresh_token'
      * @return boolean true if revoked
      * @throws \Exception if invalid settings
+     * @internal
      */
     protected function requestTokenRevocation($token, $tokenTypeHint = '')
     {
@@ -550,10 +550,10 @@ class Client
     }
 
     /**
-     * @internal
      * @param string|UriInterface $url
      * @param array $parameters
      * @return Request
+     * @internal
      */
     protected function makePostRequestWithClientCredentials($url, array $parameters = [])
     {

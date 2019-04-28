@@ -12,22 +12,13 @@ abstract class MessageAbstract implements MessageInterface
 {
     const DEFAULT_HTTP_VERSION = '1.1';
 
-    /**
-     * プロトコルバージョン
-     * @var string
-     */
+    /** @var string */
     protected $protocolVersion;
 
-    /**
-     * メッセージヘッダ
-     * @var Headers
-     */
+    /** @var Headers */
     protected $headers;
 
-    /**
-     * メッセージ本文(ストリームインスタンス)
-     * @var StreamInterface
-     */
+    /** @var StreamInterface */
     protected $body;
 
     /**

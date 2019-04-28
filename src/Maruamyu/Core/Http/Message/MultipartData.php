@@ -11,28 +11,16 @@ class MultipartData
 {
     const DEFAULT_MIME_TYPE = 'application/octet-stream';
 
-    /**
-     * パラメータ名
-     * @var string
-     */
+    /** @var string */
     private $name;
 
-    /**
-     * データストリーム
-     * @var PsrStreamInterface
-     */
+    /** @var PsrStreamInterface */
     private $stream;
 
-    /**
-     * Content-Type
-     * @var string
-     */
+    /** @var string */
     private $contentType;
 
-    /**
-     * ファイル名
-     * @var string
-     */
+    /** @var string */
     private $fileName;
 
     /**

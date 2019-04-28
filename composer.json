@@ -28,6 +28,9 @@
     "require-dev": {
         "phpunit/phpunit": "5.7.*"
     },
+    "suggest": {
+        "ext-mcrypt": "Needed to support Rijndael in class Cipher\\Aes"
+    },
     "autoload": {
         "psr-4": {
             "Maruamyu\\Core\\": "src/Maruamyu/Core/"
