@@ -3,6 +3,7 @@
 namespace Maruamyu\Core\OAuth2;
 
 use Maruamyu\Core\Base64Url;
+use Maruamyu\Core\Http\Message\QueryString;
 use Maruamyu\Core\Http\Message\Uri;
 
 class ClientTest extends \PHPUnit\Framework\TestCase
@@ -86,6 +87,38 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(['Bearer access_token'], $request->getHeader('Authorization'));
     }
 
+    public function test_makeJwtBearerGrantRequest()
+    {
+        $settings = $this->getSettings();
+
+        $jsonWebKey = $this->getJsonWebKey();
+
+        $nowTimestamp = time();
+        $expireAtTimestamp = $nowTimestamp + 3600;
+        $scopes = ['hoge', 'fuga', 'piyo'];
+
+        $client = new Client($settings);
+        $request = $client->makeJwtBearerGrantRequest($jsonWebKey, 'issuer@example.jp',
+            'subject@example.jp', $expireAtTimestamp, $scopes, ['iat' => $nowTimestamp]);
+        $this->assertEquals('POST', $request->getMethod());
+        $this->assertEquals('https://example.jp/oauth2/token', strval($request->getUri()));
+
+        $requestBody = $request->getBody()->getContents();
+        $parameters = new QueryString($requestBody);
+        $grantType = $parameters->getString('grant_type');
+        $assertion = $parameters->getString('assertion');
+
+        $this->assertEquals('urn:ietf:params:oauth:grant-type:jwt-bearer', $grantType);
+
+        $jwtPayload = JsonWebToken::parse($assertion, [$jsonWebKey->getKeyId() => $jsonWebKey]);
+        $this->assertEquals('issuer@example.jp', $jwtPayload['iss']);
+        $this->assertEquals('subject@example.jp', $jwtPayload['sub']);
+        $this->assertEquals('https://example.jp/oauth2/token', $jwtPayload['aud']);
+        $this->assertEquals($expireAtTimestamp, $jwtPayload['exp']);
+        $this->assertEquals($nowTimestamp, $jwtPayload['iat']);
+        $this->assertEquals('hoge fuga piyo', $jwtPayload['scope']);
+    }
+
     /**
      * @return Settings
      */
@@ -95,6 +128,48 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         $settings->clientId = 'client_id';
         $settings->clientSecret = 'client_secret';
         $settings->authorizationEndpoint = 'https://example.jp/oauth2/authorization';
+        $settings->tokenEndpoint = 'https://example.jp/oauth2/token';
         return $settings;
+    }
+
+    /**
+     * @return JsonWebKey
+     * @throws \Exception
+     */
+    private function getJsonWebKey()
+    {
+        $privateKey = <<<__EOS__
+-----BEGIN RSA PRIVATE KEY-----
+Proc-Type: 4,ENCRYPTED
+DEK-Info: DES-CBC,801A15CFA3CA5D28
+
+AF+y0kJOMEcQJefHMGvwds8Wgy5a3eLDY4FAxEG4d7uWGkVRaPPSqATBhBFMrvId
+43fAv0BDUHq/DpEq5HIjqalPr+xKGpcigCzeiZMRnpK984FFSAYVOH6B0z/QdU2a
+BiPv/PuRG1/tLF6xQufTzoM09E7F1a3Paei1oTJkPVZ04paekgoJBBVTAfVAc1Vt
+rLNOKcV6UiHtQVob43c+AzzBYxrPqGi6m6Tk+LaR78WCRq81PC0ib6t85VjtdbDX
+qRZqEjozsBYwITuyYu64qjWebEwPszIISCl2yzsPE4w6V0CQ3PSAZnXpJ/NdDDXD
+SPkDssKVisGtXTIOtatjpDbRFNDy69MT9C3BVQJiBWoWUPeI3ze68j0EOwXQOlng
+Yr6AzLN+YoSYoU/RJbMGpXHW0Cht4XSZ19gRKIkg/WJqBhslReWASik1obBRJBTL
+Jfar3+IG1usUX40e4/s7VfiAH3+BsfBmiId/esbVdwMSMnRYikNWWl6ALdqRFDU9
+C54NpoM5xMGqCmxZ0JccNS7/+dCQvfHtk382KzX376eOunuzPwA0hDRn4KZblR3Z
+Zzrlu1/za21wmbQKzXsGWHsOX7GecQq32enjWytQ7N9ElYYe1fws7vli0t+DopqS
+WCWgjFr1aRCavQjFGnfIQ5XQgaHmwQm4VYGIYK7jjACOTdKF3cg9RcBYdg12OF2X
+N06MitxISY6Sxr++51fEvln/XookTrOXf24wiop5kEURJtk1PF4sUePL0pzKmRbJ
+ipxUU8aGKxAt87cFeyVCncE+nRj6lUkddkLAe/c0dLftOddYh2vAdAq5M2nWrg4f
+EJzRAFl3M6JUGmK3HqoHofoeccDg5/+T9TzfTFKtChFbinYWQs2LrEjNyR4mVSNg
+vC/1xRmQzVJbRT6io3lkGpGxu6doxUKn15fVZhNjlo5UnbmQrh95n5f3fh46Ix5B
+rR7U65VpXRuxuutVbpHfHvOl6zhAoVsE2+rVPbXnGLSDNz/3qea/0jN33K7Oea1y
+AiNryf1A4wgAl9VU1aPMaLjHN2WTrXpAm0Na9pcQxN6fez6Dw9zrVhgiGnPsuCC2
+u/jKWLcZt6e7/pEPr5oMvwBb85GBBUn78oRdU5F1zyvQR2Mx3qsow628XBe/5Qxt
+Cm6bpUu2nr91ZSZANscXOrr42X0F71f7GohbjjrVWd6C8edHD8Ir13IhS7dhX+Ao
+bcbRVP43fCUhWb7fhjfYRLoCuDTVjKuKSRJ36alOj8uTpd2jYgQj9ca/2S46/vhO
+zcdyj7Ud7Zxpn7jXhGnRkC4iJZWBVxCtrTOZQVBj6R70UpWqh66XYqhdUDro+ywZ
+If6lATgFujeqzpW4nJAbgjC2I9Fn/mSW0EsE1AQwy5XM627ygOHWBaS/MPX/Z6o9
+T6iKJjyzqB5blC3iI1TflQhU2dHekkeGc55NJJNoGQScYugItg0RZ3gMvhQrHzFk
+ZNw9va2tSMixmUf3bqCIrBqpDDcuMZUDoDT4fwdjhe0P50Rsluvu6aDxNmdslm+C
+NwoQy95fYmijKnII6223djt2rf/Re0Ty23695kn/tsBaOW0ymR3KJi1QvDHHFquP
+-----END RSA PRIVATE KEY-----
+__EOS__;
+        return JsonWebKey::createFromRsaPrivateKey($privateKey, 'passphrase');
     }
 }

@@ -407,6 +407,85 @@ class Client
     }
 
     /**
+     * HTTP Request of
+     * JSON Web Token Profile Authorization Grants (RFC 7523)
+     *
+     * @param JsonWebKey $jsonWebKey private key
+     * @param string $iss
+     * @param string $sub
+     * @param int $expireSec expire(seconds)
+     * @param string[] $scopes list of scopes
+     * @return AccessToken|null
+     * @throws \Exception if failed
+     */
+    public function requestJwtBearerGrant(
+        JsonWebKey $jsonWebKey,
+        $issuer,
+        $subject,
+        $expireAtTimestamp,
+        array $scopes = [],
+        array $optionalParameters = []
+    ) {
+        $request = $this->makeJwtBearerGrantRequest($jsonWebKey, $issuer, $subject, $expireAtTimestamp, $scopes, $optionalParameters);
+        $response = $this->httpClient->send($request);
+        if ($response->statusCodeIsOk() == false) {
+            return null;
+        }
+        $tokenData = json_decode($response->getBody(), true);
+        $accessToken = new AccessToken($tokenData);
+        $this->setAccessToken($accessToken);
+        return $this->getAccessToken();
+    }
+
+
+    /**
+     * make HTTP Request of
+     * JSON Web Token Profile Authorization Grants (RFC 7523)
+     *
+     * @param JsonWebKey $jsonWebKey private key
+     * @param string $issuer
+     * @param string $subject
+     * @param int $expireAtTimestamp
+     * @param string[] $scopes
+     * @param string[] $optionalParameters
+     * @return Request
+     * @throws \Exception if failed
+     */
+    public function makeJwtBearerGrantRequest(
+        JsonWebKey $jsonWebKey,
+        $issuer,
+        $subject,
+        $expireAtTimestamp,
+        array $scopes = [],
+        array $optionalParameters = []
+    ) {
+        if (!($jsonWebKey->hasPrivateKey())) {
+            throw new \RuntimeException('not has private key.');
+        }
+
+        $jwtClaimSet = [
+            'iss' => $issuer,
+            'sub' => $subject,
+            'aud' => $this->settings->tokenEndpoint,
+            'exp' => $expireAtTimestamp,
+        ];
+        if ($scopes) {
+            $jwtClaimSet['scope'] = join(' ', $scopes);
+        }
+        if ($optionalParameters) {
+            $jwtClaimSet = array_merge($jwtClaimSet, $optionalParameters);
+        }
+
+        $queryParameters = [
+            'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+            'assertion' => JsonWebToken::build($jwtClaimSet, $jsonWebKey),
+        ];
+        $requestBody = QueryString::build($queryParameters);
+
+        return new Request('POST', $this->settings->tokenEndpoint, $requestBody);
+    }
+
+    /**
      * refresh access_token by refresh_token
      *
      * @return AccessToken|null
