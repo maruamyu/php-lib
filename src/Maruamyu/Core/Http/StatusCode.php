@@ -76,7 +76,7 @@ class StatusCode
         422 => 'Unprocessable Entity',
         423 => 'Locked',
         424 => 'Failed Dependency',
-        425 => 'Unordered Collection',
+        425 => 'Too Early',
         426 => 'Upgrade Required',
         428 => 'Precondition Required',
         429 => 'Too Many Requests',
