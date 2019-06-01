@@ -6,10 +6,13 @@ class JsonWebKeyTest extends \PHPUnit\Framework\TestCase
 {
     public function test_createFromPublicKey()
     {
-        $ecdsaJsonWebKey = JsonWebKey::createFromPublicKey(self::ECDSA_PUBLIC_KEY);
-        $this->assertEquals('EC', $ecdsaJsonWebKey->getKeyType());
-        $this->assertFalse($ecdsaJsonWebKey->hasPrivateKey());
-        $this->assertFalse($ecdsaJsonWebKey->canMakeSignature());
+        # ECDSA required PHP >= 7.1
+        if (version_compare(PHP_VERSION, '7.1.0') >= 0) {
+            $ecdsaJsonWebKey = JsonWebKey::createFromPublicKey(self::ECDSA_PUBLIC_KEY);
+            $this->assertEquals('EC', $ecdsaJsonWebKey->getKeyType());
+            $this->assertFalse($ecdsaJsonWebKey->hasPrivateKey());
+            $this->assertFalse($ecdsaJsonWebKey->canMakeSignature());
+        }
 
         $rsaJsonWebKey = JsonWebKey::createFromPublicKey(self::RSA_PUBLIC_KEY);
         $this->assertEquals('RSA', $rsaJsonWebKey->getKeyType());
@@ -19,10 +22,13 @@ class JsonWebKeyTest extends \PHPUnit\Framework\TestCase
 
     public function test_createFromPrivateKey()
     {
-        $ecdsaJsonWebKey = JsonWebKey::createFromPrivateKey(self::ECDSA_PRIVATE_KEY);
-        $this->assertEquals('EC', $ecdsaJsonWebKey->getKeyType());
-        $this->assertTrue($ecdsaJsonWebKey->hasPrivateKey());
-        $this->assertTrue($ecdsaJsonWebKey->canMakeSignature());
+        # ECDSA required PHP >= 7.1
+        if (version_compare(PHP_VERSION, '7.1.0') >= 0) {
+            $ecdsaJsonWebKey = JsonWebKey::createFromPrivateKey(self::ECDSA_PRIVATE_KEY);
+            $this->assertEquals('EC', $ecdsaJsonWebKey->getKeyType());
+            $this->assertTrue($ecdsaJsonWebKey->hasPrivateKey());
+            $this->assertTrue($ecdsaJsonWebKey->canMakeSignature());
+        }
 
         $rsaJsonWebKey = JsonWebKey::createFromPrivateKey(self::RSA_PRIVATE_KEY);
         $this->assertEquals('RSA', $rsaJsonWebKey->getKeyType());
