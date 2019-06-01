@@ -365,8 +365,8 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
      */
     public function test_initialize_by_string()
     {
-        $initValue  = 'Host: example.jp' ."\r\n";
-        $initValue .= 'Content-Type: text/html' ."\r\n";
+        $initValue  = 'Host: example.jp' . "\r\n";
+        $initValue .= 'Content-Type: text/html' . "\r\n";
 
         $headers = new Headers($initValue);
         $this->assertEquals(['example.jp'], $headers->get('Host'));

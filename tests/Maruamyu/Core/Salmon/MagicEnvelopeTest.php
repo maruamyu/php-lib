@@ -2,7 +2,6 @@
 
 namespace Maruamyu\Core\Salmon;
 
-
 use Maruamyu\Core\Cipher\Hmac;
 use Maruamyu\Core\Cipher\Rsa;
 
