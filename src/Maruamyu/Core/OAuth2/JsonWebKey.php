@@ -7,13 +7,14 @@ use Maruamyu\Core\Cipher\Aes;
 use Maruamyu\Core\Cipher\Ecdsa;
 use Maruamyu\Core\Cipher\EncryptionInterface;
 use Maruamyu\Core\Cipher\Hmac;
+use Maruamyu\Core\Cipher\PublicKeyCryptography;
 use Maruamyu\Core\Cipher\Rsa;
 use Maruamyu\Core\Cipher\SignatureInterface;
 
 /**
  * JSON Web Key (RFC7517)
  */
-class JsonWebKey
+class JsonWebKey implements SignatureInterface
 {
     const MEDIA_TYPE = 'application/jwk+json';
 
@@ -100,14 +101,77 @@ class JsonWebKey
 
         # check EC curve_name
         if ($data['kty'] === 'EC') {
-            $ecdsaCurveNames = JsonWebAlgorithms::ECDSA_CURVE_NAME;
-            if (isset($ecdsaCurveNames[$data['crv']]) == false) {
+            $ecdsaCurveName = JsonWebAlgorithms::getCurveNameFromCrvValue($data['crv']);
+            if (strlen($ecdsaCurveName) < 1) {
                 $errorMsg = 'invalid data: crv=' . $data['crv'] . ' is not supported';
                 throw new \DomainException($errorMsg);
             }
         }
 
+        # check alg
+        if (isset($data['alg']) == false) {
+            $errorMsg = 'invalid data: alg is required';
+            throw new \DomainException($errorMsg);
+        }
+        if (JsonWebAlgorithms::isSupportedHashAlgorithm($data['alg']) == false) {
+            $errorMsg = 'invalid data: alg=' . $data['alg'] . ' is not supported';
+            throw new \DomainException($errorMsg);
+        }
+
         $this->data = $data;
+    }
+
+    /**
+     * create from general PublicKeyCryptography public key (auto detect key type)
+     *
+     * @param string|resource $publicKey
+     * @param string $keyId
+     * @param string $algorithm
+     * @return static
+     * @throws \Exception if invalid keys
+     */
+    public static function createFromPublicKey($publicKey, $keyId = null, $algorithm = null)
+    {
+        $publicKey = PublicKeyCryptography::fetchPublicKey($publicKey);
+        if (!($publicKey)) {
+            throw new \RuntimeException('invalid public key.');
+        }
+        $details = openssl_pkey_get_details($publicKey);
+        switch ($details['type']) {
+            case OPENSSL_KEYTYPE_RSA:
+                return static::createFromRsaPublicKey($publicKey, $keyId, $algorithm);
+            case OPENSSL_KEYTYPE_EC:
+                return static::createFromEcdsaPublicKey($publicKey, $keyId, $algorithm);
+            default:
+                throw new \RuntimeException('invalid public key type = ' . $details['type']);
+        }
+    }
+
+    /**
+     * create from general PublicKeyCryptography private key (auto detect key type)
+     *
+     * @param string|resource $privateKey
+     * @param string $passphrase
+     * @param string $keyId
+     * @param string $algorithm
+     * @return static
+     * @throws \Exception if invalid keys
+     */
+    public static function createFromPrivateKey($privateKey, $passphrase = null, $keyId = null, $algorithm = null)
+    {
+        $gotPrivateKey = PublicKeyCryptography::fetchPrivateKey($privateKey, $passphrase);
+        if (!($gotPrivateKey)) {
+            throw new \RuntimeException('invalid private key.');
+        }
+        $details = openssl_pkey_get_details($gotPrivateKey);
+        switch ($details['type']) {
+            case OPENSSL_KEYTYPE_RSA:
+                return static::createFromRsaPrivateKey($privateKey, $passphrase, $keyId, $algorithm);
+            case OPENSSL_KEYTYPE_EC:
+                return static::createFromEcdsaPrivateKey($privateKey, $passphrase, $keyId, $algorithm);
+            default:
+                throw new \RuntimeException('invalid private key type = ' . $details['type']);
+        }
     }
 
     /**
@@ -130,10 +194,9 @@ class JsonWebKey
         }
 
         $detail = openssl_pkey_get_details($ecdsaPublicKey);
-        $crvValue = self::getCrvValueFromCurveName($detail['ec']['curve_name']);
         $initValue = [
             'kty' => 'EC',
-            'crv' => $crvValue,
+            'crv' => JsonWebAlgorithms::getCrvValueFromCurveName($detail['ec']['curve_name']),
             'x' => Base64Url::encode($detail['ec']['x']),
             'y' => Base64Url::encode($detail['ec']['y']),
             'kid' => $keyId,
@@ -164,10 +227,9 @@ class JsonWebKey
         }
 
         $detail = openssl_pkey_get_details($ecdsaPrivateKey);
-        $crvValue = self::getCrvValueFromCurveName($detail['ec']['curve_name']);
         $initValue = [
             'kty' => 'EC',
-            'crv' => $crvValue,
+            'crv' => JsonWebAlgorithms::getCrvValueFromCurveName($detail['ec']['curve_name']),
             'x' => Base64Url::encode($detail['ec']['x']),
             'y' => Base64Url::encode($detail['ec']['y']),
             'd' => Base64Url::encode($detail['ec']['d']),
@@ -432,41 +494,57 @@ class JsonWebKey
     }
 
     /**
+     * @return boolean true if enable makeSignature()
+     */
+    public function canMakeSignature()
+    {
+        return $this->hasPrivateKey();
+    }
+
+    /**
      * @param string $message
      * @param string $signature
+     * @param mixed $forceHashAlgorithm
      * @return boolean true if valid signature
      * @throws \Exception if invalid keys
      */
-    public function verifySignature($message, $signature)
+    public function verifySignature($message, $signature, $forceHashAlgorithm = null)
     {
-        $alg = $this->getAlgorithm();
-        $hashAlgorithms = JsonWebAlgorithms::HASH_ALGORITHM;
-        if (isset($hashAlgorithms[$alg]) == false) {
-            throw new \RuntimeException('alg=' . $alg . ' is not supported');
+        if ($forceHashAlgorithm) {
+            $hashAlgorithm = $forceHashAlgorithm;
+        } else {
+            $alg = $this->getAlgorithm();
+            $hashAlgorithms = JsonWebAlgorithms::HASH_ALGORITHM;
+            if (isset($hashAlgorithms[$alg]) == false) {
+                throw new \RuntimeException('alg=' . $alg . ' is not supported');
+            }
+            list(, $hashAlgorithm) = $hashAlgorithms[$alg];
         }
-        list(, $hashAlgorithm) = $hashAlgorithms[$alg];
-
         $signatureInterface = $this->getSignatureInterface();
         return $signatureInterface->verifySignature($message, $signature, $hashAlgorithm);
     }
 
     /**
      * @param string $message
+     * @param mixed $forceHashAlgorithm
      * @return string $signature
      * @throws \Exception if failed or not has private key
      */
-    public function makeSignature($message)
+    public function makeSignature($message, $forceHashAlgorithm = null)
     {
-        if (!($this->hasPrivateKey())) {
+        if (!($this->canMakeSignature())) {
             throw new \RuntimeException('not has private key');
         }
-        $alg = $this->getAlgorithm();
-        $hashAlgorithms = JsonWebAlgorithms::HASH_ALGORITHM;
-        if (isset($hashAlgorithms[$alg]) == false) {
-            throw new \RuntimeException('alg=' . $alg . ' is not supported');
+        if ($forceHashAlgorithm) {
+            $hashAlgorithm = $forceHashAlgorithm;
+        } else {
+            $alg = $this->getAlgorithm();
+            $hashAlgorithms = JsonWebAlgorithms::HASH_ALGORITHM;
+            if (isset($hashAlgorithms[$alg]) == false) {
+                throw new \RuntimeException('alg=' . $alg . ' is not supported');
+            }
+            list(, $hashAlgorithm) = $hashAlgorithms[$alg];
         }
-        list(, $hashAlgorithm) = $hashAlgorithms[$alg];
-
         $signatureInterface = $this->getSignatureInterface();
         return $signatureInterface->makeSignature($message, $hashAlgorithm);
     }
@@ -480,7 +558,7 @@ class JsonWebKey
         if ($this->getKeyType() !== 'EC') {
             throw new \RuntimeException('not has ECDSA public key');
         }
-        $curveName = JsonWebAlgorithms::ECDSA_CURVE_NAME[$this->data['crv']];
+        $curveName = JsonWebAlgorithms::getCurveNameFromCrvValue($this->data['crv']);
         $xCoordinate = Base64Url::decode($this->data['x']);
         $yCoordinate = Base64Url::decode($this->data['y']);
         return Ecdsa::publicKeyFromCurveXY($curveName, $xCoordinate, $yCoordinate);
@@ -495,7 +573,7 @@ class JsonWebKey
         if ($this->getKeyType() !== 'EC' || isset($this->data['d']) == false) {
             throw new \RuntimeException('not has ECDSA private key');
         }
-        $curveName = JsonWebAlgorithms::ECDSA_CURVE_NAME[$this->data['crv']];
+        $curveName = JsonWebAlgorithms::getCurveNameFromCrvValue($this->data['crv']);
         $xCoordinate = Base64Url::decode($this->data['x']);
         $yCoordinate = Base64Url::decode($this->data['y']);
         $eccPrivate = Base64Url::decode($this->data['d']);
@@ -549,20 +627,6 @@ class JsonWebKey
     }
 
     /**
-     * @param string $curveName (example: "secp256r1")
-     * @return string `crv` value (example: "P-256") or empty (if not found)
-     */
-    public static function getCrvValueFromCurveName($curveName)
-    {
-        $curveNameToCrvValue = array_flip(JsonWebAlgorithms::ECDSA_CURVE_NAME);
-        if (isset($curveNameToCrvValue[$curveName])) {
-            return $curveNameToCrvValue[$curveName];
-        } else {
-            return '';
-        }
-    }
-
-    /**
      * @param resource $ecdsaKeyResource
      * @param string $hashAlgorithm
      * @return string thumbprint
@@ -574,7 +638,7 @@ class JsonWebKey
         if (!($detail) || (isset($detail['ec']) == false)) {
             throw new \DomainException('invalid ECDSA key');
         }
-        $crv = static::getCrvValueFromCurveName($detail['ec']['curve_name']);
+        $crv = JsonWebAlgorithms::getCrvValueFromCurveName($detail['ec']['curve_name']);
         if (strlen($crv) < 1) {
             $errorMsg = 'curve_name=' . $detail['ec']['curve_name'] . ' is not supported.';
             throw new \DomainException($errorMsg);

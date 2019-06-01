@@ -53,8 +53,7 @@ class JsonWebToken
             $jsonWebkey = $jwks[$keyId];
 
             $alg = $jsonWebkey->getAlgorithm();
-            $hashAlgorithms = JsonWebAlgorithms::HASH_ALGORITHM;
-            if (isset($hashAlgorithms[$alg]) == false) {
+            if (JsonWebAlgorithms::isSupportedHashAlgorithm($alg) == false) {
                 throw new \DomainException('alg=' . $alg . ' is not supported');
             }
             if (isset($header['alg'])) {
