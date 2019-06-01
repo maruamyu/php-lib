@@ -497,6 +497,9 @@ class MagicEnvelope
      */
     protected static function detectAlgBySignatureInterface(SignatureInterface $signatureInterface)
     {
+        if ($signatureInterface instanceof MagicPublicKey) {
+            return 'RSA-SHA256';
+        }
         if ($signatureInterface instanceof Rsa) {
             return 'RSA-SHA256';
         }
