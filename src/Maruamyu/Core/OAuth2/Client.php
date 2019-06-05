@@ -19,6 +19,9 @@ use Psr\Http\Message\UriInterface;
  */
 class Client
 {
+    /** OpenID Connect Core 1.0 implements */
+    use OpenIDExtendsTrait;
+
     /** @var Settings */
     protected $settings;
 
@@ -38,7 +41,7 @@ class Client
         if ($accessToken) {
             $this->setAccessToken($accessToken);
         }
-        $this->httpClient = new HttpClient();
+        $this->httpClient = null;  # see getHttpClient()
     }
 
     /**
@@ -117,7 +120,7 @@ class Client
     public function request($method, $uri, $body = null, $headers = null)
     {
         $request = $this->makeRequest($method, $uri, $body, $headers);
-        return $this->httpClient->send($request);
+        return $this->getHttpClient()->send($request);
     }
 
     /**
@@ -132,7 +135,7 @@ class Client
                 $request = $request->withHeader('Authorization', $this->accessToken->getHeaderValue());
             }
         }
-        return $this->httpClient->send($request);
+        return $this->getHttpClient()->send($request);
     }
 
     /**
@@ -226,7 +229,7 @@ class Client
         }
 
         $request = $this->makePostRequestWithClientCredentials($this->settings->tokenEndpoint, $parameters);
-        $response = $this->httpClient->send($request);
+        $response = $this->getHttpClient()->send($request);
         if ($response->statusCodeIsOk() == false) {
             return null;
         }
@@ -364,7 +367,7 @@ class Client
         }
 
         $request = $this->makePostRequestWithClientCredentials($this->settings->tokenEndpoint, $parameters);
-        $response = $this->httpClient->send($request);
+        $response = $this->getHttpClient()->send($request);
         if ($response->statusCodeIsOk() == false) {
             return null;
         }
@@ -396,7 +399,7 @@ class Client
         }
 
         $request = $this->makePostRequestWithClientCredentials($this->settings->tokenEndpoint, $parameters);
-        $response = $this->httpClient->send($request);
+        $response = $this->getHttpClient()->send($request);
         if ($response->statusCodeIsOk() == false) {
             return null;
         }
@@ -427,7 +430,7 @@ class Client
         array $optionalParameters = []
     ) {
         $request = $this->makeJwtBearerGrantRequest($jsonWebKey, $issuer, $subject, $expireAtTimestamp, $scopes, $optionalParameters);
-        $response = $this->httpClient->send($request);
+        $response = $this->getHttpClient()->send($request);
         if ($response->statusCodeIsOk() == false) {
             return null;
         }
@@ -516,7 +519,7 @@ class Client
         }
 
         $request = $this->makePostRequestWithClientCredentials($this->settings->tokenEndpoint, $parameters);
-        $response = $this->httpClient->send($request);
+        $response = $this->getHttpClient()->send($request);
         if ($response->statusCodeIsOk() == false) {
             return null;
         }
@@ -581,7 +584,7 @@ class Client
             $requestHeaders = ['Content-Type' => 'application/x-www-form-urlencoded'];
             $request = new Request('POST', $this->settings->revocationEndpoint, $requestBody, $requestHeaders);
         }
-        $response = $this->httpClient->send($request);
+        $response = $this->getHttpClient()->send($request);
         if ($response->statusCodeIsOk()) {
             $this->accessToken = null;
             return true;
@@ -623,7 +626,7 @@ class Client
             $request = $this->makePostRequestWithClientCredentials($this->settings->tokenIntrospectionEndpoint, $parameters);
         }
 
-        $response = $this->httpClient->send($request);
+        $response = $this->getHttpClient()->send($request);
         $responseBody = strval($response->getBody());
         return json_decode($responseBody, true);
     }
@@ -665,6 +668,27 @@ class Client
      */
     public function getLatestResponse()
     {
-        return $this->httpClient->getLatestResponse();
+        return $this->getHttpClient()->getLatestResponse();
+    }
+
+    /**
+     * @return HttpClient
+     * @internal
+     */
+    protected function getHttpClient()
+    {
+        if (isset($this->httpClient) == false) {
+            $this->httpClient = static::createHttpClientInstance();
+        }
+        return $this->httpClient;
+    }
+
+    /**
+     * @return HttpClient
+     * @internal
+     */
+    protected static function createHttpClientInstance()
+    {
+        return new HttpClient();
     }
 }

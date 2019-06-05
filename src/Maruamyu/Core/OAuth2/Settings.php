@@ -3,7 +3,7 @@
 namespace Maruamyu\Core\OAuth2;
 
 /**
- * OAuth 2.0 (and OpenID Connect Core 1.0) settings object
+ * OAuth 2.0 settings (or OpenID Connect Core 1.0 minimum metadata) object
  */
 class Settings
 {
@@ -40,32 +40,41 @@ class Settings
         $settings = new static();
 
         # authorization_endpoint (REQUIRED)
-        $settings->authorizationEndpoint = $metadata['authorization_endpoint'];
+        $settings->authorizationEndpoint = strval($metadata['authorization_endpoint']);
 
         # token_endpoint (REQUIRED unless only the Implicit Flow is used)
         if (isset($metadata['token_endpoint'])) {
-            $settings->tokenEndpoint = $metadata['token_endpoint'];
+            $settings->tokenEndpoint = strval($metadata['token_endpoint']);
         }
 
         # revocation_endpoint (without specs, but included Google's metadata)
         if (isset($metadata['revocation_endpoint'])) {
-            $settings->revocationEndpoint = $metadata['revocation_endpoint'];
+            $settings->revocationEndpoint = strval($metadata['revocation_endpoint']);
         }
 
-        # token_endpoint_auth_methods_supported
+        # token_endpoint_auth_methods_supported (OPTIONAL)
         if (isset($metadata['token_endpoint_auth_methods_supported'])) {
-            if (in_array('client_secret_post', $metadata['token_endpoint_auth_methods_supported'])) {
-                # use POST parameters if enable client_secret_post
-                $settings->isUseBasicAuthorizationOnClientCredentialsRequest = false;
-            } elseif (in_array('client_secret_basic', $metadata['token_endpoint_auth_methods_supported'])) {
-                # use Basic Authorization if enable client_secret_basic and disable client_secret_post
-                $settings->isUseBasicAuthorizationOnClientCredentialsRequest = true;
-            } else {
-                # default use POST parameters
-                $settings->isUseBasicAuthorizationOnClientCredentialsRequest = false;
-            }
+            $settings->setClientCredentialsRequestSettings($metadata['token_endpoint_auth_methods_supported']);
         }
 
         return $settings;
+    }
+
+    /**
+     * @param array $supportedAuthMethods value of `token_endpoint_auth_methods_supported`
+     * @internal
+     */
+    protected function setClientCredentialsRequestSettings(array $supportedAuthMethods)
+    {
+        if (in_array('client_secret_post', $supportedAuthMethods)) {
+            # use POST parameters if enable client_secret_post
+            $this->isUseBasicAuthorizationOnClientCredentialsRequest = false;
+        } elseif (in_array('client_secret_basic', $supportedAuthMethods)) {
+            # use Basic Authorization if enable client_secret_basic and disable client_secret_post
+            $this->isUseBasicAuthorizationOnClientCredentialsRequest = true;
+        } else {
+            # default use POST parameters
+            $this->isUseBasicAuthorizationOnClientCredentialsRequest = false;
+        }
     }
 }
