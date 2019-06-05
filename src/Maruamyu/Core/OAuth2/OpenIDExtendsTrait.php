@@ -81,7 +81,6 @@ trait OpenIDExtendsTrait
     /**
      * @return OpenIDProviderMetadata
      * @throws \Exception if invalid settings
-     * @internal
      */
     protected function getOpenIDSettings()
     {
@@ -93,7 +92,6 @@ trait OpenIDExtendsTrait
 
     /**
      * @return HttpClient
-     * @internal
      */
     protected function getHttpClient()
     {

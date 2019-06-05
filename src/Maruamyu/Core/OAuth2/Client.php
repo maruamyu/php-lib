@@ -563,7 +563,6 @@ class Client
      * @param string $tokenTypeHint 'access_token' or 'refresh_token'
      * @return boolean true if revoked
      * @throws \Exception if invalid settings
-     * @internal
      */
     protected function requestTokenRevocation($token, $tokenTypeHint = '')
     {
@@ -673,7 +672,6 @@ class Client
 
     /**
      * @return HttpClient
-     * @internal
      */
     protected function getHttpClient()
     {
