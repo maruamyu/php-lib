@@ -24,10 +24,18 @@ class JsonWebAlgorithms
     ];
 
     # [ crv => curve_name ]
-    const ECDSA_CURVE_NAME = [
-        'P-256' => 'secp256r1',
+    const EC_CURVE_NAME = [
+        'P-256' => 'secp256r1',  # or 'prime256v1'
         'P-384' => 'secp384r1',
         'P-521' => 'secp521r1',
+    ];
+
+    # [ curve_name => crv ]
+    const EC_CURVE_NAME_TO_CRV = [
+        'prime256v1' => 'P-256',
+        'secp256r1' => 'P-256',
+        'secp384r1' => 'P-384',
+        'secp521r1' => 'P-521',
     ];
 
     /**
@@ -46,7 +54,7 @@ class JsonWebAlgorithms
      */
     public static function getCrvValueFromCurveName($curveName)
     {
-        $curveNameToCrvValue = array_flip(static::ECDSA_CURVE_NAME);
+        $curveNameToCrvValue = static::EC_CURVE_NAME_TO_CRV;
         if (isset($curveNameToCrvValue[$curveName])) {
             return $curveNameToCrvValue[$curveName];
         } else {
@@ -60,7 +68,7 @@ class JsonWebAlgorithms
      */
     public static function getCurveNameFromCrvValue($crv)
     {
-        $curveNames = JsonWebAlgorithms::ECDSA_CURVE_NAME;
+        $curveNames = JsonWebAlgorithms::EC_CURVE_NAME;
         if (isset($curveNames[$crv])) {
             return $curveNames[$crv];
         } else {

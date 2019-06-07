@@ -194,9 +194,16 @@ class JsonWebKey implements SignatureInterface
         }
 
         $detail = openssl_pkey_get_details($ecdsaPublicKey);
+
+        $curveName = $detail['ec']['curve_name'];
+        $crvValue = JsonWebAlgorithms::getCrvValueFromCurveName($curveName);
+        if (strlen($crvValue) < 1) {
+            throw new \RuntimeException('curve_name=' . $curveName . ' is not supported');
+        }
+
         $initValue = [
             'kty' => 'EC',
-            'crv' => JsonWebAlgorithms::getCrvValueFromCurveName($detail['ec']['curve_name']),
+            'crv' => $crvValue,
             'x' => Base64Url::encode($detail['ec']['x']),
             'y' => Base64Url::encode($detail['ec']['y']),
             'kid' => $keyId,
@@ -227,9 +234,16 @@ class JsonWebKey implements SignatureInterface
         }
 
         $detail = openssl_pkey_get_details($ecdsaPrivateKey);
+
+        $curveName = $detail['ec']['curve_name'];
+        $crvValue = JsonWebAlgorithms::getCrvValueFromCurveName($curveName);
+        if (strlen($crvValue) < 1) {
+            throw new \RuntimeException('curve_name=' . $curveName . ' is not supported');
+        }
+
         $initValue = [
             'kty' => 'EC',
-            'crv' => JsonWebAlgorithms::getCrvValueFromCurveName($detail['ec']['curve_name']),
+            'crv' => $crvValue,
             'x' => Base64Url::encode($detail['ec']['x']),
             'y' => Base64Url::encode($detail['ec']['y']),
             'd' => Base64Url::encode($detail['ec']['d']),
