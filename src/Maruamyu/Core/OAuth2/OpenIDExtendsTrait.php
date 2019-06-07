@@ -19,7 +19,7 @@ trait OpenIDExtendsTrait
 
     /**
      * @return JsonWebKey[]
-     * @throws \Exception if invalid settings
+     * @throws \Exception if failed
      */
     public function fetchJwks()
     {
