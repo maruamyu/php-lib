@@ -14,7 +14,7 @@ class Base64Url
      */
     public static function encode($src, $strict = false)
     {
-        $padded = str_replace(['+', '/'], ['-', '_'], base64_encode($src));
+        $padded = strtr(base64_encode($src), '+/', '-_');
         if ($strict) {
             return $padded;
         } else {
@@ -29,7 +29,7 @@ class Base64Url
     public static function decode($src)
     {
         $src .= str_repeat('=', (strlen($src) % 4));
-        return base64_decode(str_replace(['-', '_'], ['+', '/'], $src));
+        return base64_decode(strtr($src, '-_', '+/'));
     }
 
     /**
