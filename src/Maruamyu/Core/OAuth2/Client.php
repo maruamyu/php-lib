@@ -414,10 +414,11 @@ class Client
      * JSON Web Token Profile Authorization Grants (RFC 7523)
      *
      * @param JsonWebKey $jsonWebKey private key
-     * @param string $iss
-     * @param string $sub
-     * @param int $expireSec expire(seconds)
+     * @param string $issuer
+     * @param string $subject
+     * @param integer $expireAtTimestamp expire(seconds)
      * @param string[] $scopes list of scopes
+     * @param string[] $optionalParameters
      * @return AccessToken|null
      * @throws \Exception if failed
      */
@@ -448,7 +449,7 @@ class Client
      * @param JsonWebKey $jsonWebKey private key
      * @param string $issuer
      * @param string $subject
-     * @param int $expireAtTimestamp
+     * @param integer $expireAtTimestamp
      * @param string[] $scopes
      * @param string[] $optionalParameters
      * @return Request

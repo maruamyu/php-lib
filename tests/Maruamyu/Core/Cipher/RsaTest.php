@@ -238,7 +238,7 @@ __EOS__;
     {
         # wrong format (public)
         try {
-            $public = new Rsa(DsaTest::PUBLIC_KEY);
+            new Rsa(DsaTest::PUBLIC_KEY);
             $this->assertTrue(false);
         } catch (\Exception $exception) {
             $this->assertTrue(true);
@@ -246,7 +246,7 @@ __EOS__;
 
         # wrong format (private)
         try {
-            $private = new Rsa(DsaTest::PRIVATE_KEY, DsaTest::PASSPHRASE);
+            new Rsa(DsaTest::PRIVATE_KEY, DsaTest::PASSPHRASE);
             $this->assertTrue(false);
         } catch (\Exception $exception) {
             $this->assertTrue(true);
@@ -254,7 +254,7 @@ __EOS__;
 
         # wrong passphrase
         try {
-            $private = new Rsa(self::PRIVATE_KEY);
+            new Rsa(self::PRIVATE_KEY);
             $this->assertTrue(false);
         } catch (\Exception $exception) {
             $this->assertTrue(true);

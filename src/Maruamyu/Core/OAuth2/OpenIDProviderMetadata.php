@@ -30,6 +30,9 @@ class OpenIDProviderMetadata extends Settings
      */
     public $supportedResponseTypes = ['query', 'fragment'];
 
+    /** @var null|string[] */
+    public $supportedResponseModes;
+
     /**
      * @var string[]
      *   default value is ["authorization_code", "implicit"]

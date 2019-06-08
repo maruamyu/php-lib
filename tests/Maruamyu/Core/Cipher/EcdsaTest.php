@@ -113,7 +113,7 @@ __EOS__;
 
         # wrong format (public)
         try {
-            $public = new Ecdsa(RsaTest::PUBLIC_KEY);
+            new Ecdsa(RsaTest::PUBLIC_KEY);
             $this->assertTrue(false);
         } catch (\Exception $exception) {
             $this->assertTrue(true);
@@ -121,7 +121,7 @@ __EOS__;
 
         # wrong format (private)
         try {
-            $private = new Ecdsa(RsaTest::PRIVATE_KEY, RsaTest::PASSPHRASE);
+            new Ecdsa(RsaTest::PRIVATE_KEY, RsaTest::PASSPHRASE);
             $this->assertTrue(false);
         } catch (\Exception $exception) {
             $this->assertTrue(true);
@@ -129,7 +129,7 @@ __EOS__;
 
         # wrong passphrase
         try {
-            $private = new Ecdsa(self::PRIVATE_KEY);
+            new Ecdsa(self::PRIVATE_KEY);
             $this->assertTrue(false);
         } catch (\Exception $exception) {
             $this->assertTrue(true);
