@@ -7,7 +7,7 @@ use Maruamyu\Core\Asn1;
 /**
  * ECDSA cryptography
  */
-class Ecdsa extends PublicKeyCryptography
+class Ecdsa extends PublicKeyCryptography implements KeyGeneratableInterface
 {
     const ECDSA_PUBLIC_KEY_OBJECT_ID = '1.2.840.10045.2.1';
 
@@ -202,5 +202,29 @@ class Ecdsa extends PublicKeyCryptography
 
         $privateKeyPem = '-----BEGIN EC PRIVATE KEY-----' . "\r\n" . chunk_split(base64_encode($privateKeySequence)) . '-----END EC PRIVATE KEY-----';
         return openssl_pkey_get_private($privateKeyPem);
+    }
+
+    /**
+     * @param string|null $passphrase
+     * @param string $curveName
+     * @return static
+     * @throws \Exception if failed
+     */
+    public static function generateKey($passphrase = null, $curveName = 'prime256v1')
+    {
+        $curveObjectIds = static::CURVE_OBJECT_ID;
+        if (isset($curveObjectIds[$curveName]) == false) {
+            $errorMsg = 'curveName = ' . $curveName . ' is not supported.';
+            throw new \InvalidArgumentException($errorMsg);
+        }
+        $privateKey = openssl_pkey_new([
+            'private_key_type' => OPENSSL_KEYTYPE_EC,
+            'curve_name' => $curveName,
+        ]);
+        $ecdsa = new static(null, $privateKey);
+        if (strlen($passphrase) > 0) {
+            $ecdsa->passphrase = $passphrase;
+        }
+        return $ecdsa;
     }
 }

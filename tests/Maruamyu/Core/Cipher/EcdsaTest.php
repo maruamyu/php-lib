@@ -25,11 +25,11 @@ __EOS__;
     const PASSPHRASE = 'passphrase';
 
     /*
-    # Ecdsa encryption is not supported
+    # key type not supported in this PHP build!
     public function test_encrypt_decrypt()
     {
-        $public = new Dsa(self::PUBLIC_KEY);
-        $private = new Dsa(null, self::PRIVATE_KEY, self::PASSPHRASE);
+        $public = new Ecdsa(self::PUBLIC_KEY);
+        $private = new Ecdsa(null, self::PRIVATE_KEY, self::PASSPHRASE);
 
         $cleartext = '秘密のメモリーズ / 四条貴音, 豊川風花';
         $encrypted = $public->encrypt($cleartext);
@@ -168,5 +168,33 @@ __EOS__;
             $privateKeyDetails['ec']['x'], $privateKeyDetails['ec']['y'], $privateKeyDetails['ec']['d']);
         $genDetails = openssl_pkey_get_details($genPrivateKey);
         $this->assertEquals($privateKeyDetails, $genDetails);
+    }
+
+    public function test_generateKey()
+    {
+        # ECDSA required PHP >= 7.1
+        if (version_compare(PHP_VERSION, '7.1.0') < 0) {
+            $this->assertTrue(true);
+            return;
+        }
+
+        $passphrase = 'passphrase';
+        $curveName = 'prime256v1';
+        $ecdsa = Ecdsa::generateKey($passphrase, $curveName);
+
+        $this->assertInstanceOf(Ecdsa::class, $ecdsa);
+        $this->assertTrue($ecdsa->hasPrivateKey());
+
+        $privateKeyPem = $ecdsa->exportPrivateKey();
+        $privateKey = openssl_pkey_get_private($privateKeyPem, $passphrase);
+        $privateKeyDetails = openssl_pkey_get_details($privateKey);
+
+        $this->assertArrayHasKey('type', $privateKeyDetails);
+        $this->assertEquals(OPENSSL_KEYTYPE_EC, $privateKeyDetails['type']);
+
+        $this->assertArrayHasKey('ec', $privateKeyDetails);
+        $this->assertArrayHasKey('d', $privateKeyDetails['ec']);
+        $this->assertArrayHasKey('curve_name', $privateKeyDetails['ec']);
+        $this->assertEquals($curveName, $privateKeyDetails['ec']['curve_name']);
     }
 }

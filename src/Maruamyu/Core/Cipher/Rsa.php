@@ -7,7 +7,7 @@ use Maruamyu\Core\Asn1;
 /**
  * RSA cryptography
  */
-class Rsa extends PublicKeyCryptography
+class Rsa extends PublicKeyCryptography implements KeyGeneratableInterface
 {
     const RSA_ENCRYPTION_OBJECT_ID = '1.2.840.113549.1.1.1';
 
@@ -109,5 +109,24 @@ class Rsa extends PublicKeyCryptography
         $privateKeySequence = chr(0x30) . Asn1::toLengthBinary(strlen($privateKeySequenceValue)) . $privateKeySequenceValue;
         $privateKeyPem = '-----BEGIN RSA PRIVATE KEY-----' . "\r\n" . chunk_split(base64_encode($privateKeySequence)) . '-----END RSA PRIVATE KEY-----';
         return openssl_pkey_get_private($privateKeyPem);
+    }
+
+    /**
+     * @param string|null $passphrase
+     * @param integer $bits
+     * @return static
+     * @throws \Exception if failed
+     */
+    public static function generateKey($passphrase = null, $bits = 4096)
+    {
+        $privateKey = openssl_pkey_new([
+            'private_key_type' => OPENSSL_KEYTYPE_RSA,
+            'private_key_bits' => $bits,
+        ]);
+        $rsa = new static(null, $privateKey);
+        if (strlen($passphrase) > 0) {
+            $rsa->passphrase = $passphrase;
+        }
+        return $rsa;
     }
 }

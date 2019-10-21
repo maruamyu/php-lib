@@ -7,7 +7,7 @@ use Maruamyu\Core\Asn1;
 /**
  * DSA (not EC) cryptography
  */
-class Dsa extends PublicKeyCryptography
+class Dsa extends PublicKeyCryptography implements KeyGeneratableInterface
 {
     const DSA_OBJECT_ID = '1.2.840.10040.4.1';
 
@@ -108,5 +108,24 @@ class Dsa extends PublicKeyCryptography
         $privateKeySequence = chr(0x30) . Asn1::toLengthBinary(strlen($privateKeySequenceValue)) . $privateKeySequenceValue;
         $privateKeyPem = '-----BEGIN DSA PRIVATE KEY-----' . "\r\n" . chunk_split(base64_encode($privateKeySequence)) . '-----END DSA PRIVATE KEY-----';
         return openssl_pkey_get_private($privateKeyPem);
+    }
+
+    /**
+     * @param string|null $passphrase
+     * @param integer $bits
+     * @return static
+     * @throws \Exception if failed
+     */
+    public static function generateKey($passphrase = null, $bits = 2048)
+    {
+        $privateKey = openssl_pkey_new([
+            'private_key_type' => OPENSSL_KEYTYPE_DSA,
+            'private_key_bits' => $bits,
+        ]);
+        $dsa = new static(null, $privateKey);
+        if (strlen($passphrase) > 0) {
+            $dsa->passphrase = $passphrase;
+        }
+        return $dsa;
     }
 }

@@ -282,4 +282,27 @@ __EOS__;
         $genDetails = openssl_pkey_get_details($genPrivateKey);
         $this->assertEquals($privateKeyDetails, $genDetails);
     }
+
+    public function test_generateKey()
+    {
+        $passphrase = 'passphrase';
+        $keyBits = 4096;
+        $rsa = Rsa::generateKey($passphrase, $keyBits);
+
+        $this->assertInstanceOf(Rsa::class, $rsa);
+        $this->assertTrue($rsa->hasPrivateKey());
+
+        $privateKeyPem = $rsa->exportPrivateKey();
+        $privateKey = openssl_pkey_get_private($privateKeyPem, $passphrase);
+        $privateKeyDetails = openssl_pkey_get_details($privateKey);
+
+        $this->assertArrayHasKey('type', $privateKeyDetails);
+        $this->assertEquals(OPENSSL_KEYTYPE_RSA, $privateKeyDetails['type']);
+
+        $this->assertArrayHasKey('bits', $privateKeyDetails);
+        $this->assertEquals($keyBits, $privateKeyDetails['bits']);
+
+        $this->assertArrayHasKey('rsa', $privateKeyDetails);
+        $this->assertArrayHasKey('d', $privateKeyDetails['rsa']);
+    }
 }
