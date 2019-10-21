@@ -16,6 +16,14 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf(Client::class, $client);
     }
 
+    public function test_getClientId()
+    {
+        $settings = $this->getSettings();
+
+        $client = new Client($settings);
+        $this->assertEquals($settings->clientId, $client->getClientId());
+    }
+
     public function test_startAuthorizationCodeGrant()
     {
         $settings = $this->getSettings();

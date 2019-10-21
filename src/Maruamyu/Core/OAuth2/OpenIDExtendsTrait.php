@@ -51,6 +51,17 @@ trait OpenIDExtendsTrait
     }
 
     /**
+     * @param array $idTokenPayload
+     * @return boolean
+     * @throws \Exception if invalid settings
+     * @see JsonWebToken::validatePayload()
+     */
+    public function validateIdTokenPayload($idTokenPayload)
+    {
+        return JsonWebToken::validatePayload($idTokenPayload, $this->getOpenIDSettings());
+    }
+
+    /**
      * @param string $issuer
      * @return OpenIDProviderMetadata
      * @throws \Exception if failed

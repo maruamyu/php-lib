@@ -108,6 +108,28 @@ class JsonWebToken
     }
 
     /**
+     * @param array $payload
+     * @param OpenIDProviderMetadata $metadata
+     * @return boolean
+     */
+    public static function validatePayload(array $payload, OpenIDProviderMetadata $metadata)
+    {
+        if ((isset($payload['iss']) == false) || (strcmp($payload['iss'], $metadata->issuer) != 0)) {
+            return false;
+        }
+        if ((isset($payload['aud']) == false) || (strcmp($payload['aud'], $metadata->clientId) != 0)) {
+            return false;
+        }
+        if ((isset($payload['exp']) == false) || ($payload['exp'] < time())) {
+            return false;
+        }
+        if ((isset($payload['sub']) == false) || (strlen($payload['sub']) < 1)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * constructor (private)
      */
     private function __construct()

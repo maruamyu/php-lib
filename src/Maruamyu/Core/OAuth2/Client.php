@@ -45,6 +45,14 @@ class Client
     }
 
     /**
+     * @return string
+     */
+    public function getClientId()
+    {
+        return $this->settings->clientId;
+    }
+
+    /**
      * @return AccessToken|null
      */
     public function getAccessToken()
