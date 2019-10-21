@@ -27,4 +27,34 @@ class AccessTokenTest extends \PHPUnit\Framework\TestCase
         $accessToken = new AccessToken($tokenData);
         $this->assertEquals($tokenData, $accessToken->toArray());
     }
+
+    public function test_toJson()
+    {
+        $tokenData = [
+            'access_token' => 'access_token',
+            'token_type' => 'Bearer',
+            'expires_in' => 3600,
+        ];
+        $accessToken = new AccessToken($tokenData);
+
+        $this->assertJson($accessToken->toJson());
+
+        $expectJson = json_encode($tokenData, JSON_UNESCAPED_SLASHES);
+        $this->assertJsonStringEqualsJsonString($expectJson, $accessToken->toJson());
+    }
+
+    public function test_toString()
+    {
+        $tokenData = [
+            'access_token' => 'access_token',
+            'token_type' => 'Bearer',
+            'expires_in' => 3600,
+        ];
+        $accessToken = new AccessToken($tokenData);
+
+        $this->assertJson(strval($accessToken));
+
+        $expectJson = json_encode($tokenData, JSON_UNESCAPED_SLASHES);
+        $this->assertJsonStringEqualsJsonString($expectJson, strval($accessToken));
+    }
 }

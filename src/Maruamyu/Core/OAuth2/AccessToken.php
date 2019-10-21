@@ -106,6 +106,23 @@ class AccessToken
     }
 
     /**
+     * @return string
+     * @see toJson()
+     */
+    public function __toString()
+    {
+        return $this->toJson();
+    }
+
+    /**
+     * @return string
+     */
+    public function toJson()
+    {
+        return json_encode($this->toArray(), JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
      * @return array
      */
     public function toArray()
