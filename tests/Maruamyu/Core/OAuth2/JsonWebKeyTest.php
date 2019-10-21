@@ -56,6 +56,13 @@ class JsonWebKeyTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('HS512', $jsonWebKey->getAlgorithm());
     }
 
+    public function test_setAlgorithm()
+    {
+        $jsonWebKey = JsonWebKey::createFromCommonKey('hoge', 'some_key_id', 'HS512');
+        $jsonWebKey->setAlgorithm('HS256');
+        $this->assertEquals('HS256', $jsonWebKey->getAlgorithm());
+    }
+
     public function test_signature()
     {
         $private = JsonWebKey::createFromPrivateKey(self::RSA_PRIVATE_KEY);

@@ -113,8 +113,8 @@ class JsonWebKey implements SignatureInterface
             $errorMsg = 'invalid data: alg is required';
             throw new \DomainException($errorMsg);
         }
-        if (JsonWebAlgorithms::isSupportedHashAlgorithm($data['alg']) == false) {
-            $errorMsg = 'invalid data: alg=' . $data['alg'] . ' is not supported';
+        if (JsonWebAlgorithms::isSupportedHashAlgorithm($data['alg'], $data['kty']) == false) {
+            $errorMsg = 'invalid data: alg=' . $data['alg'] . ' is not supported for kty=' . $data['kty'];
             throw new \DomainException($errorMsg);
         }
 
@@ -397,6 +397,20 @@ class JsonWebKey implements SignatureInterface
     public function getAlgorithm()
     {
         return $this->data['alg'];
+    }
+
+    /**
+     * @param string $hashAlgorithm `alg`
+     * @throws \Exception if not suppported
+     */
+    public function setAlgorithm($hashAlgorithm)
+    {
+        $kty = $this->getKeyType();
+        if (JsonWebAlgorithms::isSupportedHashAlgorithm($hashAlgorithm, $kty) == false) {
+            $errorMsg = 'invalid data: alg=' . $hashAlgorithm . ' is not supported for kty=' . $kty;
+            throw new \DomainException($errorMsg);
+        }
+        $this->data['alg'] = $hashAlgorithm;
     }
 
     /**

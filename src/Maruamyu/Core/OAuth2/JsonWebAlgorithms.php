@@ -7,20 +7,20 @@ namespace Maruamyu\Core\OAuth2;
  */
 class JsonWebAlgorithms
 {
-    # [ alg => [extention, hash_algorithm] ]
+    # [ alg => [extention, hash_algorithm, kty] ]
     const HASH_ALGORITHM = [
-        'HS256' => ['hash_hmac', 'sha256'],
-        'HS384' => ['hash_hmac', 'sha384'],
-        'HS512' => ['hash_hmac', 'sha512'],
-        'RS256' => ['openssl', OPENSSL_ALGO_SHA256],
-        'RS384' => ['openssl', OPENSSL_ALGO_SHA384],
-        'RS512' => ['openssl', OPENSSL_ALGO_SHA512],
-        'ES256' => ['openssl', OPENSSL_ALGO_SHA256],
-        'ES384' => ['openssl', OPENSSL_ALGO_SHA384],
-        'ES512' => ['openssl', OPENSSL_ALGO_SHA512],
-        # 'PS256' => ['openssl', OPENSSL_ALGO_SHA256],  # RSASSA-PSS is not supported
-        # 'PS384' => ['openssl', OPENSSL_ALGO_SHA384],  # RSASSA-PSS is not supported
-        # 'PS512' => ['openssl', OPENSSL_ALGO_SHA512],  # RSASSA-PSS is not supported
+        'HS256' => ['hash_hmac', 'sha256', 'oct'],
+        'HS384' => ['hash_hmac', 'sha384', 'oct'],
+        'HS512' => ['hash_hmac', 'sha512', 'oct'],
+        'RS256' => ['openssl', OPENSSL_ALGO_SHA256, 'RSA'],
+        'RS384' => ['openssl', OPENSSL_ALGO_SHA384, 'RSA'],
+        'RS512' => ['openssl', OPENSSL_ALGO_SHA512, 'RSA'],
+        'ES256' => ['openssl', OPENSSL_ALGO_SHA256, 'EC'],
+        'ES384' => ['openssl', OPENSSL_ALGO_SHA384, 'EC'],
+        'ES512' => ['openssl', OPENSSL_ALGO_SHA512, 'EC'],
+        # 'PS256' => ['openssl', OPENSSL_ALGO_SHA256, 'RSA'],  # RSASSA-PSS is not supported
+        # 'PS384' => ['openssl', OPENSSL_ALGO_SHA384, 'RSA'],  # RSASSA-PSS is not supported
+        # 'PS512' => ['openssl', OPENSSL_ALGO_SHA512, 'RSA'],  # RSASSA-PSS is not supported
     ];
 
     # [ crv => curve_name ]
@@ -40,12 +40,34 @@ class JsonWebAlgorithms
 
     /**
      * @param string $alg `alg`
+     * @param string $kty `kty`
      * @return boolean
      */
-    public static function isSupportedHashAlgorithm($alg)
+    public static function isSupportedHashAlgorithm($alg, $kty = null)
     {
         $supportedAlgorithms = static::HASH_ALGORITHM;
-        return isset($supportedAlgorithms[$alg]);
+        if (isset($supportedAlgorithms[$alg]) == false) {
+            return false;
+        }
+        if ($kty && ($kty !== $supportedAlgorithms[$alg][2])) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param string $kty `kty`
+     * @return string[]
+     */
+    public static function getSupportedAlgsByKty($kty)
+    {
+        $supportedAlgs = [];
+        foreach (static::HASH_ALGORITHM as $alg => $elem) {
+            if ($elem[2] === $kty) {
+                $supportedAlgs[] = $alg;
+            }
+        }
+        return $supportedAlgs;
     }
 
     /**
