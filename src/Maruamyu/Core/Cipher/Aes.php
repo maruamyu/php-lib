@@ -7,7 +7,7 @@ namespace Maruamyu\Core\Cipher;
  */
 class Aes implements EncryptionInterface
 {
-    const DEFAULT_MODE = 'CBC';
+    const DEFAULT_MODE = 'cbc';
 
     const SUPPORTED_KEY_LENGTH = [128, 192, 256];
 
@@ -63,16 +63,15 @@ class Aes implements EncryptionInterface
      */
     public function setMode($mode)
     {
-        $mode = strtoupper($mode);
-
         $usingExtension = $this->getUsingExtension();
         if ($usingExtension == 'mcrypt') {
-            if (defined('MCRYPT_MODE_' . $mode) == false) {
-                $errorMsg = 'unsupported MCRYPT_MODE_' . $mode;
+            $cipherMethod = 'MCRYPT_MODE_' . strtoupper($mode);
+            if (defined($cipherMethod) == false) {
+                $errorMsg = 'unsupported cipher method = ' . $cipherMethod;
                 throw new \DomainException($errorMsg);
             }
         } else {
-            $cipherMethod = 'AES-' . $this->keyLength . '-' . $mode;
+            $cipherMethod = 'aes-' . $this->keyLength . '-' . strtolower($mode);
             if (in_array($cipherMethod, openssl_get_cipher_methods()) == false) {
                 $errorMsg = 'unsupported cipher method = ' . $cipherMethod;
                 throw new \DomainException($errorMsg);
@@ -209,12 +208,12 @@ class Aes implements EncryptionInterface
     }
 
     /**
-     * @return string (example: 'AES-128-CBC')
+     * @return string (example: 'aes-128-cbc')
      * @internal
      */
     protected function getOpensslCipherMethod()
     {
-        return 'AES-' . $this->keyLength . '-' . $this->mode;
+        return 'aes-' . $this->keyLength . '-' . strtolower($this->mode);
     }
 
     /**
@@ -232,6 +231,6 @@ class Aes implements EncryptionInterface
      */
     protected function getMcryptMode()
     {
-        return constant('MCRYPT_MODE_' . $this->mode);
+        return constant('MCRYPT_MODE_' . strtoupper($this->mode));
     }
 }
