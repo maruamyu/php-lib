@@ -24,14 +24,14 @@ class OpenIDProviderMetadata extends Settings
     /** @var null|string[] */
     public $supportedScopes = [];
 
+    /** @var string[] (REQUIRED) */
+    public $supportedResponseTypes = ['code', 'id_token', 'token id_token'];
+
     /**
-     * @var string[] (REQUIRED)
+     * @var null|string[]
      *   default for Dynamic OpenID Providers is ["query", "fragment"]
      */
-    public $supportedResponseTypes = ['query', 'fragment'];
-
-    /** @var null|string[] */
-    public $supportedResponseModes;
+    public $supportedResponseModes = ['query', 'fragment'];
 
     /**
      * @var string[]

@@ -6,6 +6,22 @@ class OpenIDProviderMetadataTest extends \PHPUnit\Framework\TestCase
 {
     public function test_construct()
     {
+        $metadata = new OpenIDProviderMetadata();
+
+        # check default values
+        $this->assertEquals(['code', 'id_token', 'token id_token'], $metadata->supportedResponseTypes);
+        $this->assertEquals(['query', 'fragment'], $metadata->supportedResponseModes);
+        $this->assertEquals(['authorization_code', 'implicit'], $metadata->supportedGrantTypes);
+        $this->assertEquals([], $metadata->supportedSubjectTypes);
+        $this->assertEquals([], $metadata->supportedIdTokenSigningAlgValues);
+        $this->assertEquals(false, $metadata->isSupportedClaimsParameter);
+        $this->assertEquals(false, $metadata->isSupportedRequestParameter);
+        $this->assertEquals(true, $metadata->isSupportedRequestUriParameter);
+        $this->assertEquals(false, $metadata->isRequiredRequestUriRegistration);
+    }
+
+    public function test_initializeFromArray()
+    {
         $sourceMetadata = $this->getFixture();
         $metadata = new OpenIDProviderMetadata($sourceMetadata);
 
