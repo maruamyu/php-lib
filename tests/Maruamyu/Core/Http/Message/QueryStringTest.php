@@ -39,6 +39,10 @@ class QueryStringTest extends \PHPUnit\Framework\TestCase
         $afterElemCount = $queryString->add('346pro', 'rin');
         $this->assertEquals(2, $afterElemCount);
         $this->assertEquals(['udzuki', 'rin'], $queryString->get('346pro'));
+
+        $queryString->add('346pro', 'mio');
+        $this->assertEquals('udzuki, rin, mio', $queryString->getString('346pro', ', '));
+        $this->assertEquals('udzuki', $queryString->getFirst('346pro'));
     }
 
     /**
@@ -413,7 +417,7 @@ class QueryStringTest extends \PHPUnit\Framework\TestCase
         foreach ($sourceData as $key => $value) {
             $queryString->set($key, $value);
         }
-        $this->assertEquals(json_encode($sourceData), $queryString->toJson());
+        $this->assertJsonStringEqualsJsonString(json_encode($sourceData), $queryString->toJson());
     }
 
     /**

@@ -195,6 +195,19 @@ class QueryString
     }
 
     /**
+     * @param string $key
+     * @return string
+     */
+    public function getFirst($key)
+    {
+        if (isset($this->data[$key], $this->data[$key][0])) {
+            return $this->data[$key][0];
+        } else {
+            return '';
+        }
+    }
+
+    /**
      * キーに対する値を設定する.
      * すでに同じキーが存在している場合は, 上書きされる.
      *
