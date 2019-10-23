@@ -74,16 +74,16 @@ class UriTest extends \PHPUnit\Framework\TestCase
     {
         $uri = new Uri('http://example.jp/?hoge=fuga');
 
-        $uri = $uri->withAddedQueryString('hogehoge=' . rawurlencode('ほげほげ'));
-        $this->assertEquals('http://example.jp/?hoge=fuga&hogehoge=%E3%81%BB%E3%81%92%E3%81%BB%E3%81%92', $uri->toString());
+        $uri = $uri->withAddedQueryString('hoge=' . rawurlencode('ほげほげ'));
+        $this->assertEquals('http://example.jp/?hoge=fuga&hoge=%E3%81%BB%E3%81%92%E3%81%BB%E3%81%92', $uri->toString());
 
         $uri = $uri->withAddedQueryString(['fuga' => 'fugafuga']);
-        $this->assertEquals('http://example.jp/?hoge=fuga&hogehoge=%E3%81%BB%E3%81%92%E3%81%BB%E3%81%92&fuga=fugafuga', $uri->toString());
+        $this->assertEquals('http://example.jp/?hoge=fuga&hoge=%E3%81%BB%E3%81%92%E3%81%BB%E3%81%92&fuga=fugafuga', $uri->toString());
 
         $kvs = new QueryString();
         $kvs->set('piyo', 'ぴよぴよ');
         $uri = $uri->withAddedQueryString($kvs);
-        $this->assertEquals('http://example.jp/?hoge=fuga&hogehoge=%E3%81%BB%E3%81%92%E3%81%BB%E3%81%92&fuga=fugafuga&piyo=%E3%81%B4%E3%82%88%E3%81%B4%E3%82%88', $uri->toString());
+        $this->assertEquals('http://example.jp/?hoge=fuga&hoge=%E3%81%BB%E3%81%92%E3%81%BB%E3%81%92&fuga=fugafuga&piyo=%E3%81%B4%E3%82%88%E3%81%B4%E3%82%88', $uri->toString());
     }
 
     public function test_getFragment()

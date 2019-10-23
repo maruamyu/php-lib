@@ -321,7 +321,7 @@ class Uri implements UriInterface
     public function withAddedQueryString($queryString)
     {
         $newInstance = clone $this;
-        $newInstance->mergeQueryString($queryString);
+        $newInstance->appendQueryString($queryString);
         return $newInstance;
     }
 
@@ -474,7 +474,7 @@ class Uri implements UriInterface
     /**
      * @param string|array|QueryString $queryString QUERY_STRINGデータ
      */
-    private function mergeQueryString($queryString)
+    private function appendQueryString($queryString)
     {
         if ($queryString instanceof QueryString) {
             $workQueryString = $queryString;
@@ -486,7 +486,7 @@ class Uri implements UriInterface
         }
 
         $newQueryString = $this->getQueryString();
-        $newQueryString->merge($workQueryString);
+        $newQueryString->append($workQueryString);
         $this->setQueryString($newQueryString);
     }
 

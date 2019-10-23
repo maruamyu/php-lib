@@ -40,7 +40,7 @@ interface UriInterface extends PsrUriInterface
 
     /**
      * @param string|array|QueryString $queryString QUERY_STRINGデータ
-     * @return static 指定のQUERY_STRINGデータをマージした新しいインスタンス
+     * @return static 指定のQUERY_STRINGデータを追加した新しいインスタンス
      * @throws \InvalidArgumentException QUERY_STRINGデータが正しくないとき
      */
     public function withAddedQueryString($queryString);
