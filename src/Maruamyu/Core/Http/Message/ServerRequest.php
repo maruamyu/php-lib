@@ -214,4 +214,127 @@ class ServerRequest extends Request implements ServerRequestInterface
         }
         return $newInstance;
     }
+
+    /**
+     * @return static instance from $_SERVER, $_COOKIE, $_POST, $_GET, $_FILES
+     */
+    public static function fromEnvironment()
+    {
+        $serverRequest = new static();
+
+        # Message protocolVersion
+        if (isset($_SERVER['SERVER_PROTOCOL'])) {
+            if (preg_match('#^HTTP/([0-9\.]+)#u', $_SERVER['SERVER_PROTOCOL'], $matches)) {
+                $serverRequest->protocolVersion = strval($matches[1]);
+            }
+        }
+
+        # Message headers
+        $headers = new Headers();
+        foreach ($_SERVER as $rawHeaderName => $headerValue) {
+            if (($pos = strpos($rawHeaderName, 'HTTP_')) === 0) {
+                $headerName = strtr(substr($rawHeaderName, ($pos + 5)), '_', '-');
+                $headers->set($headerName, $headerValue);
+            }
+        }
+        if (isset($_SERVER['CONTENT_TYPE'])) {
+            $headers->set('Content-Type', $_SERVER['CONTENT_TYPE']);
+        }
+        if (isset($_SERVER['CONTENT_LENGTH'])) {
+            $headers->set('Content-Length', $_SERVER['CONTENT_LENGTH']);
+        }
+        $serverRequest->headers = $headers;
+
+        # Message body
+        # this library required (PHP >= 5.6). php://input is re-useful.
+        $serverRequest->body = Stream::fromFilePath('php://input', 'rb');
+
+        # Request method
+        if (isset($_SERVER['REQUEST_METHOD'])) {
+            $serverRequest->method = $_SERVER['REQUEST_METHOD'];
+        }
+
+        # Request uri
+        if (isset($_SERVER['REQUEST_URI'])) {
+            $url = '';
+            if (isset($_SERVER['SERVER_NAME'])) {
+                $url .= (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] !== 'off')) ? 'https' : 'http';
+                $url .= '://' . $_SERVER['SERVER_NAME'];
+            }
+            $url .= strval($_SERVER['REQUEST_URI']);
+            $serverRequest->uri = new Uri($url);
+        }
+        if (isset($_SERVER['QUERY_STRING'])) {
+            $queryString = strval($_SERVER['QUERY_STRING']);
+            if ($serverRequest->uri) {
+                $serverRequest->uri = $serverRequest->uri->withQuery($queryString);
+            } else {
+                $serverRequest->uri = new Uri('?' . $queryString);
+            }
+        }
+
+        # ServerRequest serverParams
+        $serverRequest->serverParams = $_SERVER;
+
+        # ServerRequest cookieParams
+        $serverRequest->cookieParams = $_COOKIE;
+
+        # ServerRequest queryParams
+        $serverRequest->queryParams = $_GET;
+
+        # ServerRequest parsedBody
+        list($contentType) = explode(';', $_SERVER['CONTENT_TYPE'], 2);
+        switch ($contentType) {
+            case 'application/json':
+            case 'text/javascript':
+                # from JSON -> parsedBody instanceof stdClass
+                $serverRequest->parsedBody = json_decode(strval($serverRequest->body));
+                break;
+            case 'application/xml':
+            case 'text/xml':
+                $serverRequest->parsedBody = simplexml_load_string(strval($serverRequest->body));
+                break;
+            case 'application/x-www-form-urlencoded':
+            case 'multipart/form-data':
+            default:
+                # parsedBody is PHP original structure
+                $serverRequest->parsedBody = $_POST;
+        }
+
+        # ServerRequest uploadedFiles
+        $serverRequest->uploadedFiles = static::parseUploadedFiles($_FILES);
+
+        # ServerRequest attributes
+        $serverRequest->attributes = [];
+
+        return $serverRequest;
+    }
+
+    /**
+     * @param array $files $_FILES
+     * @return UploadedFile[]
+     */
+    protected static function parseUploadedFiles(array $files)
+    {
+        if (empty($files)) {
+            return [];
+        }
+        $parsed = [];
+        foreach ($files as $values) {
+            if (is_array($values['error'])) {
+                $fileCount = count($values['error']);
+                $attrKeys = ['name', 'type', 'tmp_name', 'error', 'size'];
+                for ($i = 0; $i < $fileCount; $i++) {
+                    $entry = [];
+                    foreach ($attrKeys as $key) {
+                        $entry[$key] = $values[$key][$i];
+                    }
+                    $parsed[] = new UploadedFile($entry);
+                }
+            } else {
+                $parsed[] = new UploadedFile($values);
+            }
+        }
+        return $parsed;
+    }
 }
