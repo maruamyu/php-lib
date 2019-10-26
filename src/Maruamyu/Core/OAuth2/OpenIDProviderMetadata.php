@@ -159,6 +159,11 @@ class OpenIDProviderMetadata extends Settings
             $this->userinfoEndpoint = strval($metadata['userinfo_endpoint']);
         }
 
+        # introspection_endpoint (OPTIONAL)
+        if (isset($metadata['introspection_endpoint'])) {
+            $this->tokenIntrospectionEndpoint = strval($metadata['introspection_endpoint']);
+        }
+
         # jwks_uri (REQUIRED)
         $this->jwksUri = strval($metadata['jwks_uri']);
 
@@ -334,6 +339,11 @@ class OpenIDProviderMetadata extends Settings
         # userinfo_endpoint (RECOMMENDED)
         if (strlen($this->userinfoEndpoint) > 0) {
             $metadata['userinfo_endpoint'] = strval($this->userinfoEndpoint);
+        }
+
+        # introspection_endpoint (OPTIONAL)
+        if (strlen($this->tokenIntrospectionEndpoint) > 0) {
+            $metadata['introspection_endpoint'] = strval($this->tokenIntrospectionEndpoint);
         }
 
         # jwks_uri (REQUIRED)

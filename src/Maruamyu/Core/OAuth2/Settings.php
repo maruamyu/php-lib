@@ -52,6 +52,11 @@ class Settings
             $settings->revocationEndpoint = strval($metadata['revocation_endpoint']);
         }
 
+        # introspection_endpoint (OPTIONAL)
+        if (isset($metadata['introspection_endpoint'])) {
+            $settings->tokenIntrospectionEndpoint = strval($metadata['introspection_endpoint']);
+        }
+
         # token_endpoint_auth_methods_supported (OPTIONAL)
         if (isset($metadata['token_endpoint_auth_methods_supported'])) {
             $settings->setClientCredentialsRequestSettings($metadata['token_endpoint_auth_methods_supported']);
