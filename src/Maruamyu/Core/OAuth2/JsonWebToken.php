@@ -109,15 +109,16 @@ class JsonWebToken
 
     /**
      * @param array $payload
-     * @param OpenIDProviderMetadata $metadata
+     * @param string $issuer
+     * @param string $clientId
      * @return boolean
      */
-    public static function validatePayload(array $payload, OpenIDProviderMetadata $metadata)
+    public static function validatePayload(array $payload, $issuer, $clientId)
     {
-        if ((isset($payload['iss']) == false) || (strcmp($payload['iss'], $metadata->issuer) != 0)) {
+        if ((isset($payload['iss']) == false) || (strcmp($payload['iss'], $issuer) != 0)) {
             return false;
         }
-        if ((isset($payload['aud']) == false) || (strcmp($payload['aud'], $metadata->clientId) != 0)) {
+        if ((isset($payload['aud']) == false) || (strcmp($payload['aud'], $clientId) != 0)) {
             return false;
         }
         if ((isset($payload['exp']) == false) || ($payload['exp'] < time())) {

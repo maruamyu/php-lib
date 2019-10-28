@@ -22,8 +22,14 @@ class Client
     /** OpenID Connect Core 1.0 implements */
     use OpenIDExtendsTrait;
 
-    /** @var Settings */
-    protected $settings;
+    /** @var AuthorizationServerMetadata */
+    protected $metadata;
+
+    /** @var string */
+    protected $clientId;
+
+    /** @var string */
+    protected $clientSecret;
 
     /** @var AccessToken */
     protected $accessToken;
@@ -32,12 +38,16 @@ class Client
     protected $httpClient;
 
     /**
-     * @param Settings $settings
+     * @param AuthorizationServerMetadata $metadata
+     * @param string $clientId
+     * @param string $clientSecret
      * @param AccessToken $accessToken
      */
-    public function __construct(Settings $settings, AccessToken $accessToken = null)
+    public function __construct(AuthorizationServerMetadata $metadata, $clientId, $clientSecret, AccessToken $accessToken = null)
     {
-        $this->settings = clone $settings;
+        $this->metadata = clone $metadata;
+        $this->clientId = $clientId;
+        $this->clientSecret = $clientSecret;
         if ($accessToken) {
             $this->setAccessToken($accessToken);
         }
@@ -45,11 +55,39 @@ class Client
     }
 
     /**
+     * @param string $issuer
+     * @return AuthorizationServerMetadata
+     * @throws \Exception if failed
+     */
+    public static function fetchAuthorizationServerMetadata($issuer)
+    {
+        $configurationUrl = $issuer . '/.well-known/oauth-authorization-server';
+        $httpClient = static::createHttpClientInstance();
+        $response = $httpClient->request('GET', $configurationUrl);
+        if ($response->statusCodeIsOk() == false) {
+            throw new \RuntimeException('oauth-authorization-server fetch failed. (HTTP ' . $response->getStatusCode() . ')');
+        }
+        $metadataJson = strval($response->getBody());
+        if (strlen($metadataJson) < 1) {
+            throw new \RuntimeException('oauth-authorization-server fetch failed.');
+        }
+        $metadataValues = json_decode($metadataJson, true);
+        if (empty($metadataValues) || (isset($metadataValues['issuer']) == false)) {
+            throw new \RuntimeException('oauth-authorization-server fetch failed.');
+        }
+        if ($metadataValues['issuer'] !== $issuer) {
+            $errorMsg = 'issuer not match. (args=' . $issuer . ', metadata=' . $metadataValues['issuer'] . ')';
+            throw new \RuntimeException($errorMsg);
+        }
+        return new AuthorizationServerMetadata($metadataValues);
+    }
+
+    /**
      * @return string
      */
     public function getClientId()
     {
-        return $this->settings->clientId;
+        return $this->clientId;
     }
 
     /**
@@ -180,12 +218,12 @@ class Client
         $state = null,
         array $optionalParameters = []
     ) {
-        if (isset($this->settings->authorizationEndpoint) == false) {
+        if (isset($this->metadata->authorizationEndpoint) == false) {
             throw new \RuntimeException('authorizationEndpoint not set yet.');
         }
         $parameters = [
             'response_type' => 'code',
-            'client_id' => $this->settings->clientId,
+            'client_id' => $this->clientId,
         ];
         if ($redirectUrl) {
             $parameters['redirect_uri'] = strval($redirectUrl);
@@ -199,7 +237,7 @@ class Client
         if ($optionalParameters) {
             $parameters = array_merge($parameters, $optionalParameters);
         }
-        $url = new Uri($this->settings->authorizationEndpoint);
+        $url = new Uri($this->metadata->authorizationEndpoint);
         return strval($url->withQueryString($parameters));
     }
 
@@ -220,7 +258,7 @@ class Client
         $state = null,
         array $optionalParameters = []
     ) {
-        if (isset($this->settings->tokenEndpoint) == false) {
+        if (isset($this->metadata->tokenEndpoint) == false) {
             throw new \RuntimeException('tokenEndpoint not set yet.');
         }
 
@@ -236,7 +274,7 @@ class Client
             $parameters = array_merge($parameters, $optionalParameters);
         }
 
-        $request = $this->makePostRequestWithClientCredentials($this->settings->tokenEndpoint, $parameters);
+        $request = $this->makeTokenEndpointPostRequestWithClientCredentials($parameters);
         $response = $this->getHttpClient()->send($request);
         if ($response->statusCodeIsOk() == false) {
             return null;
@@ -326,12 +364,12 @@ class Client
      */
     public function startImplicitGrant(array $scopes = [], $redirectUrl = null, $state = null, array $optionalParameters = [])
     {
-        if (isset($this->settings->authorizationEndpoint) == false) {
+        if (isset($this->metadata->authorizationEndpoint) == false) {
             throw new \RuntimeException('authorizationEndpoint not set yet.');
         }
         $parameters = [
             'response_type' => 'token',
-            'client_id' => $this->settings->clientId,
+            'client_id' => $this->clientId,
         ];
         if ($redirectUrl) {
             $parameters['redirect_uri'] = strval($redirectUrl);
@@ -345,7 +383,7 @@ class Client
         if ($optionalParameters) {
             $parameters = array_merge($parameters, $optionalParameters);
         }
-        $url = new Uri($this->settings->authorizationEndpoint);
+        $url = new Uri($this->metadata->authorizationEndpoint);
         return strval($url->withQueryString($parameters));
     }
 
@@ -361,7 +399,7 @@ class Client
      */
     public function requestResourceOwnerPasswordCredentialsGrant($username, $password, array $scopes = [])
     {
-        if (isset($this->settings->tokenEndpoint) == false) {
+        if (isset($this->metadata->tokenEndpoint) == false) {
             throw new \RuntimeException('tokenEndpoint not set yet.');
         }
 
@@ -374,7 +412,7 @@ class Client
             $parameters['scope'] = join(' ', $scopes);
         }
 
-        $request = $this->makePostRequestWithClientCredentials($this->settings->tokenEndpoint, $parameters);
+        $request = $this->makeTokenEndpointPostRequestWithClientCredentials($parameters);
         $response = $this->getHttpClient()->send($request);
         if ($response->statusCodeIsOk() == false) {
             return null;
@@ -395,7 +433,7 @@ class Client
      */
     public function requestClientCredentialsGrant(array $scopes = [])
     {
-        if (isset($this->settings->tokenEndpoint) == false) {
+        if (isset($this->metadata->tokenEndpoint) == false) {
             throw new \RuntimeException('tokenEndpoint not set yet.');
         }
 
@@ -406,7 +444,7 @@ class Client
             $parameters['scope'] = join(' ', $scopes);
         }
 
-        $request = $this->makePostRequestWithClientCredentials($this->settings->tokenEndpoint, $parameters);
+        $request = $this->makeTokenEndpointPostRequestWithClientCredentials($parameters);
         $response = $this->getHttpClient()->send($request);
         if ($response->statusCodeIsOk() == false) {
             return null;
@@ -415,6 +453,41 @@ class Client
         $accessToken = new AccessToken($tokenData);
         $this->setAccessToken($accessToken);
         return $this->getAccessToken();
+    }
+
+    /**
+     * @param array $parameters
+     * @return Request
+     * @internal
+     */
+    protected function makeTokenEndpointPostRequestWithClientCredentials(array $parameters = [])
+    {
+        if (empty($parameters)) {
+            $parameters = [];
+        }
+        $request = new Request('POST', $this->metadata->tokenEndpoint);
+        # if ($request->getUri()->getScheme() !== 'https') {
+        #     throw new \RuntimeException('required https if including client credentials');
+        # }
+
+        if (
+            isset($this->metadata->supportedTokenEndpointAuthMethods)
+            && is_array($this->metadata->supportedTokenEndpointAuthMethods)
+            && in_array('client_secret_post', $this->metadata->supportedTokenEndpointAuthMethods)
+        ) {
+            $parameters['client_id'] = $this->clientId;
+            $parameters['client_secret'] = $this->clientSecret;
+        } else {
+            # default is client_secret_basic
+            $request = $request->withAddedHeader('Authorization', $this->makeClientSecretBasicAuthorizationHeaderValue());
+        }
+
+        if (empty($parameters) == false) {
+            $request = $request->withAddedHeader('Content-Type', 'application/x-www-form-urlencoded')
+                ->withBodyContents(QueryString::build($parameters));
+        }
+
+        return $request;
     }
 
     /**
@@ -478,7 +551,7 @@ class Client
         $jwtClaimSet = [
             'iss' => $issuer,
             'sub' => $subject,
-            'aud' => $this->settings->tokenEndpoint,
+            'aud' => $this->metadata->tokenEndpoint,
             'exp' => $expireAtTimestamp,
         ];
         if ($scopes) {
@@ -494,7 +567,7 @@ class Client
         ];
         $requestBody = QueryString::build($queryParameters);
 
-        return new Request('POST', $this->settings->tokenEndpoint, $requestBody);
+        return new Request('POST', $this->metadata->tokenEndpoint, $requestBody);
     }
 
     /**
@@ -505,7 +578,7 @@ class Client
      */
     public function refreshAccessToken()
     {
-        if (isset($this->settings->tokenEndpoint) == false) {
+        if (isset($this->metadata->tokenEndpoint) == false) {
             throw new \RuntimeException('tokenEndpoint not set yet.');
         }
         if (!($this->accessToken)) {
@@ -527,7 +600,7 @@ class Client
             $parameters['scope'] = join(' ', $scopes);
         }
 
-        $request = $this->makePostRequestWithClientCredentials($this->settings->tokenEndpoint, $parameters);
+        $request = $this->makePostRequestWithClientCredentials($this->metadata->tokenEndpoint, $parameters, $this->metadata->supportedTokenEndpointAuthMethods);
         $response = $this->getHttpClient()->send($request);
         if ($response->statusCodeIsOk() == false) {
             return null;
@@ -542,56 +615,14 @@ class Client
      *
      * @return boolean true if revoked
      * @throws \Exception if invalid settings
+     * @see makeTokenRevocationRequest()
      */
     public function revokeAccessToken()
     {
         if (!($this->accessToken)) {
             return false;
         }
-        return $this->requestTokenRevocation($this->accessToken->getToken(), 'access_token');
-    }
-
-    /**
-     * revoke refresh token
-     *
-     * @return boolean true if revoked
-     * @throws \Exception if invalid settings
-     */
-    public function revokeRefreshToken()
-    {
-        if (!($this->accessToken)) {
-            return false;
-        }
-        return $this->requestTokenRevocation($this->accessToken->getRefreshToken(), 'refresh_token');
-    }
-
-    /**
-     * token revocation request (RFC 7009)
-     *
-     * @param string $token
-     * @param string $tokenTypeHint 'access_token' or 'refresh_token'
-     * @return boolean true if revoked
-     * @throws \Exception if invalid settings
-     */
-    protected function requestTokenRevocation($token, $tokenTypeHint = '')
-    {
-        if (isset($this->settings->revocationEndpoint) == false) {
-            throw new \RuntimeException('revocationEndpoint not set yet.');
-        }
-
-        $parameters = [
-            'token' => $token,
-        ];
-        if (strlen($tokenTypeHint) > 0) {
-            $parameters['token_type_hint'] = strval($tokenTypeHint);
-        }
-        if ($this->settings->isRequiredClientCredentialsOnRevocationRequest) {
-            $request = $this->makePostRequestWithClientCredentials($this->settings->revocationEndpoint, $parameters);
-        } else {
-            $requestBody = QueryString::build($parameters);
-            $requestHeaders = ['Content-Type' => 'application/x-www-form-urlencoded'];
-            $request = new Request('POST', $this->settings->revocationEndpoint, $requestBody, $requestHeaders);
-        }
+        $request = $this->makeTokenRevocationRequest($this->accessToken->getToken(), 'access_token');
         $response = $this->getHttpClient()->send($request);
         if ($response->statusCodeIsOk()) {
             $this->accessToken = null;
@@ -602,7 +633,88 @@ class Client
     }
 
     /**
-     * token introspection request (RFC 7662)
+     * revoke refresh token
+     *
+     * @return boolean true if revoked
+     * @throws \Exception if invalid settings
+     * @see makeTokenRevocationRequest()
+     */
+    public function revokeRefreshToken()
+    {
+        if (!($this->accessToken)) {
+            return false;
+        }
+        $request = $this->makeTokenRevocationRequest($this->accessToken->getRefreshToken(), 'refresh_token');
+        $response = $this->getHttpClient()->send($request);
+        if ($response->statusCodeIsOk()) {
+            $this->accessToken = null;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * make token revocation request (RFC 7009)
+     *
+     * @param string $token
+     * @param string $tokenTypeHint 'access_token' or 'refresh_token'
+     * @return Request
+     * @throws \Exception if invalid settings
+     */
+    public function makeTokenRevocationRequest($token, $tokenTypeHint = '')
+    {
+        if (isset($this->metadata->revocationEndpoint) == false) {
+            throw new \RuntimeException('revocationEndpoint not set yet.');
+        }
+
+        $parameters = [
+            'token' => $token,
+        ];
+        if (strlen($tokenTypeHint) > 0) {
+            $parameters['token_type_hint'] = strval($tokenTypeHint);
+        }
+
+        $request = new Request('POST', $this->metadata->revocationEndpoint);
+        # if ($request->getUri()->getScheme() !== 'https') {
+        #     throw new \RuntimeException('required https if including client credentials');
+        # }
+
+        if (
+            isset($this->metadata->supportedRevocationEndpointAuthMethods)
+            && is_array($this->metadata->supportedRevocationEndpointAuthMethods)
+            && in_array('client_secret_post', $this->metadata->supportedRevocationEndpointAuthMethods)
+        ) {
+            $parameters['client_id'] = $this->clientId;
+            $parameters['client_secret'] = $this->clientSecret;
+        } else {
+            # default is client_secret_basic
+            $request = $request->withAddedHeader('Authorization', $this->makeClientSecretBasicAuthorizationHeaderValue());
+        }
+
+        return $request->withAddedHeader('Content-Type', 'application/x-www-form-urlencoded')
+            ->withBodyContents(QueryString::build($parameters));
+    }
+
+    /**
+     * execute token introspection request (RFC 7662)
+     *
+     * @param string $token
+     * @param string $tokenTypeHint 'access_token' or 'refresh_token'
+     * @return array
+     * @throws \Exception if invalid settings
+     * @see makeTokenIntrospectionRequest()
+     */
+    public function requestTokenIntrospection($token, $tokenTypeHint = '')
+    {
+        $request = $this->makeTokenIntrospectionRequest($token, $tokenTypeHint);
+        $response = $this->getHttpClient()->send($request);
+        $responseBody = strval($response->getBody());
+        return json_decode($responseBody, true);
+    }
+
+    /**
+     * make token introspection request (RFC 7662)
      * use Bearer Authorization if has access_token
      * use Client Credentials Authorization if not has access_token
      *
@@ -611,9 +723,9 @@ class Client
      * @return array
      * @throws \Exception if invalid settings
      */
-    public function requestTokenIntrospection($token, $tokenTypeHint = '')
+    public function makeTokenIntrospectionRequest($token, $tokenTypeHint = '')
     {
-        if (isset($this->settings->tokenIntrospectionEndpoint) == false) {
+        if (isset($this->metadata->tokenIntrospectionEndpoint) == false) {
             throw new \RuntimeException('tokenIntrospectionEndpoint not set yet.');
         }
 
@@ -624,51 +736,35 @@ class Client
             $parameters['token_type_hint'] = strval($tokenTypeHint);
         }
 
-        if ($this->accessToken) {
-            # has access_token
-            $requestBody = QueryString::build($parameters);
-            $request = $this->makeRequest('POST', $this->settings->tokenIntrospectionEndpoint, $requestBody)
-                ->withAddedHeader('Content-Type', 'application/x-www-form-urlencoded');
-        } else {
+        $request = $this->makeRequest('POST', $this->metadata->tokenIntrospectionEndpoint);
+        if (!($this->accessToken)) {
             # not has access_token
-            $request = $this->makePostRequestWithClientCredentials($this->settings->tokenIntrospectionEndpoint, $parameters);
+            # if ($request->getUri()->getScheme() !== 'https') {
+            #     throw new \RuntimeException('required https if including client credentials');
+            # }
+            if (
+                isset($this->metadata->supportedRevocationEndpointAuthMethods)
+                && is_array($this->metadata->supportedRevocationEndpointAuthMethods)
+                && in_array('client_secret_post', $this->metadata->supportedRevocationEndpointAuthMethods)
+            ) {
+                $parameters['client_id'] = $this->clientId;
+                $parameters['client_secret'] = $this->clientSecret;
+            } else {
+                # default is client_secret_basic
+                $request = $request->withAddedHeader('Authorization', $this->makeClientSecretBasicAuthorizationHeaderValue());
+            }
         }
-
-        $response = $this->getHttpClient()->send($request);
-        $responseBody = strval($response->getBody());
-        return json_decode($responseBody, true);
+        return $request->withAddedHeader('Content-Type', 'application/x-www-form-urlencoded')
+            ->withBodyContents(QueryString::build($parameters));
     }
 
     /**
-     * @param string|UriInterface $url
-     * @param array $parameters
-     * @return Request
-     * @internal
+     * @return string
      */
-    protected function makePostRequestWithClientCredentials($url, array $parameters = [])
+    protected function makeClientSecretBasicAuthorizationHeaderValue()
     {
-        if (empty($parameters)) {
-            $parameters = [];
-        }
-        $request = new Request('POST', $url);
-        # if ($request->getUri()->getScheme() !== 'https') {
-        #     throw new \RuntimeException('required https if including client credentials');
-        # }
-
-        if ($this->settings->isUseBasicAuthorizationOnClientCredentialsRequest) {
-            $credentials = base64_encode($this->settings->clientId . ':' . $this->settings->clientSecret);
-            $request = $request->withAddedHeader('Authorization', 'Basic ' . $credentials);
-        } else {
-            $parameters['client_id'] = $this->settings->clientId;
-            $parameters['client_secret'] = $this->settings->clientSecret;
-        }
-
-        if (empty($parameters) == false) {
-            $request = $request->withAddedHeader('Content-Type', 'application/x-www-form-urlencoded')
-                ->withBodyContents(QueryString::build($parameters));
-        }
-
-        return $request;
+        $credentials = base64_encode($this->clientId . ':' . $this->clientSecret);
+        return 'Basic ' . $credentials;
     }
 
     /**

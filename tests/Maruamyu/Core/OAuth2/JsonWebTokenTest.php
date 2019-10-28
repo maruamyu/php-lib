@@ -6,59 +6,44 @@ class JsonWebTokenTest extends \PHPUnit\Framework\TestCase
 {
     public function test_validatePayload()
     {
-        $metadata = $this->getOpenIDProviderMetadata();
         $payload = [
-            'iss' => $metadata->issuer,
-            'aud' => $metadata->clientId,
+            'iss' => 'openid.example.jp',
+            'aud' => 'client_id',
             'sub' => 'user_id',
             'exp' => (time() + 3600),
         ];
-        $this->assertTrue(JsonWebToken::validatePayload($payload, $metadata));
+        $this->assertTrue(JsonWebToken::validatePayload($payload, 'openid.example.jp', 'client_id'));
 
         $invalidPayload1 = [
             'iss' => 'invalid.issuer.example.jp',
-            'aud' => $metadata->clientId,
+            'aud' => 'client_id',
             'sub' => 'user_id',
             'exp' => (time() + 3600),
         ];
-        $this->assertFalse(JsonWebToken::validatePayload($invalidPayload1, $metadata));
+        $this->assertFalse(JsonWebToken::validatePayload($invalidPayload1, 'openid.example.jp', 'client_id'));
 
         $invalidPayload2 = [
-            'iss' => $metadata->issuer,
+            'iss' => 'openid.example.jp',
             'aud' => 'invalid_client_id',
             'sub' => 'user_id',
             'exp' => (time() + 3600),
         ];
-        $this->assertFalse(JsonWebToken::validatePayload($invalidPayload2, $metadata));
+        $this->assertFalse(JsonWebToken::validatePayload($invalidPayload2, 'openid.example.jp', 'client_id'));
 
         $invalidPayload3 = [
-            'iss' => $metadata->issuer,
-            'aud' => $metadata->clientId,
+            'iss' => 'openid.example.jp',
+            'aud' => 'client_id',
             'sub' => '',
             'exp' => (time() + 3600),
         ];
-        $this->assertFalse(JsonWebToken::validatePayload($invalidPayload3, $metadata));
+        $this->assertFalse(JsonWebToken::validatePayload($invalidPayload3, 'openid.example.jp', 'client_id'));
 
         $invalidPayload4 = [
-            'iss' => $metadata->issuer,
-            'aud' => $metadata->clientId,
+            'iss' => 'openid.example.jp',
+            'aud' => 'client_id',
             'sub' => 'user_id',
             'exp' => (time() - 3600),
         ];
-        $this->assertFalse(JsonWebToken::validatePayload($invalidPayload4, $metadata));
-    }
-
-    /**
-     * @return OpenIDProviderMetadata
-     */
-    private function getOpenIDProviderMetadata()
-    {
-        $metadata = new OpenIDProviderMetadata();
-        $metadata->issuer = 'openid.example.jp';
-        $metadata->clientId = 'client_id';
-        $metadata->clientSecret = 'client_secret';
-        $metadata->authorizationEndpoint = 'https://openid.example.jp/oauth2/authorization';
-        $metadata->tokenEndpoint = 'https://openid.example.jp/oauth2/token';
-        return $metadata;
+        $this->assertFalse(JsonWebToken::validatePayload($invalidPayload4, 'openid.example.jp', 'client_id'));
     }
 }

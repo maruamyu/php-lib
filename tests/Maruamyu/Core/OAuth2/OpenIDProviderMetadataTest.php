@@ -14,10 +14,6 @@ class OpenIDProviderMetadataTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(['authorization_code', 'implicit'], $metadata->supportedGrantTypes);
         $this->assertEquals([], $metadata->supportedSubjectTypes);
         $this->assertEquals([], $metadata->supportedIdTokenSigningAlgValues);
-        $this->assertEquals(false, $metadata->isSupportedClaimsParameter);
-        $this->assertEquals(false, $metadata->isSupportedRequestParameter);
-        $this->assertEquals(true, $metadata->isSupportedRequestUriParameter);
-        $this->assertEquals(false, $metadata->isRequiredRequestUriRegistration);
     }
 
     public function test_initializeFromArray()
@@ -37,8 +33,6 @@ class OpenIDProviderMetadataTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(['RS256'], $metadata->supportedIdTokenSigningAlgValues);
         $this->assertEquals(['openid', 'email', 'profile'], $metadata->supportedScopes);
         $this->assertEquals(['client_secret_post', 'client_secret_basic'], $metadata->supportedTokenEndpointAuthMethods);
-        $this->assertFalse($metadata->isRequiredClientCredentialsOnRevocationRequest);
-        $this->assertFalse($metadata->isUseBasicAuthorizationOnClientCredentialsRequest);
         $this->assertEquals(['aud', 'email', 'email_verified', 'exp', 'family_name', 'given_name', 'iat', 'iss', 'locale', 'name', 'picture', 'sub'], $metadata->supportedClaims);
         $this->assertEquals(['plain', 'S256'], $metadata->supportedCodeChallengeMethods);
     }
@@ -61,8 +55,6 @@ class OpenIDProviderMetadataTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(['RS256'], $metadata->supportedIdTokenSigningAlgValues);
         $this->assertEquals(['openid', 'email', 'profile'], $metadata->supportedScopes);
         $this->assertEquals(['client_secret_post', 'client_secret_basic'], $metadata->supportedTokenEndpointAuthMethods);
-        $this->assertFalse($metadata->isRequiredClientCredentialsOnRevocationRequest);
-        $this->assertFalse($metadata->isUseBasicAuthorizationOnClientCredentialsRequest);
         $this->assertEquals(['aud', 'email', 'email_verified', 'exp', 'family_name', 'given_name', 'iat', 'iss', 'locale', 'name', 'picture', 'sub'], $metadata->supportedClaims);
         $this->assertEquals(['plain', 'S256'], $metadata->supportedCodeChallengeMethods);
     }

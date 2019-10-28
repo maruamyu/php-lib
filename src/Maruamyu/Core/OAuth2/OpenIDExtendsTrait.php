@@ -12,9 +12,9 @@ trait OpenIDExtendsTrait
     /**
      * @return boolean true if initialized by OpenIDProviderMetadata
      */
-    public function hasOpenIDSettings()
+    public function hasOpenIDMetadata()
     {
-        return ($this->settings instanceof OpenIDProviderMetadata);
+        return ($this->metadata instanceof OpenIDProviderMetadata);
     }
 
     /**
@@ -23,12 +23,12 @@ trait OpenIDExtendsTrait
      */
     public function fetchJwks()
     {
-        $openIDSettings = $this->getOpenIDSettings();
-        if (strlen($openIDSettings->jwksUri) < 1) {
+        $openIDMetadata = $this->getOpenIDMetadata();
+        if (strlen($openIDMetadata->jwksUri) < 1) {
             throw new \RuntimeException('jwksUri not set yet.');
         }
 
-        $response = $this->getHttpClient()->request('GET', $openIDSettings->jwksUri);
+        $response = $this->getHttpClient()->request('GET', $openIDMetadata->jwksUri);
         if ($response->statusCodeIsOk() == false) {
             throw new \RuntimeException('jwks fetch failed.');
         }
@@ -58,7 +58,27 @@ trait OpenIDExtendsTrait
      */
     public function validateIdTokenPayload($idTokenPayload)
     {
-        return JsonWebToken::validatePayload($idTokenPayload, $this->getOpenIDSettings());
+        return JsonWebToken::validatePayload($idTokenPayload, $this->metadata->issuer, $this->clientId);
+    }
+
+    /**
+     * userinfo request
+     *
+     * @return array
+     * @throws \Exception if invalid settings or access_token
+     */
+    public function requestGetUserinfo()
+    {
+        $openIDMetadata = $this->getOpenIDMetadata();
+        if (strlen($openIDMetadata->userinfoEndpoint) < 1) {
+            throw new \RuntimeException('userinfoEndpoint not set yet.');
+        }
+        if (!($this->hasValidAccessToken())) {
+            throw new \RuntimeException('not has valid access_token.');
+        }
+        $response = $this->request('GET', $openIDMetadata->userinfoEndpoint);
+        $responseBody = strval($response->getBody());
+        return json_decode($responseBody, true);
     }
 
     /**
@@ -93,12 +113,12 @@ trait OpenIDExtendsTrait
      * @return OpenIDProviderMetadata
      * @throws \Exception if invalid settings
      */
-    protected function getOpenIDSettings()
+    protected function getOpenIDMetadata()
     {
-        if (!($this->settings instanceof OpenIDProviderMetadata)) {
+        if (!($this->metadata instanceof OpenIDProviderMetadata)) {
             throw new \RuntimeException('required OpenIDProviderMetadata');
         }
-        return $this->settings;
+        return $this->metadata;
     }
 
     /**

@@ -8,27 +8,22 @@ use Maruamyu\Core\Http\Message\Uri;
 
 class ClientTest extends \PHPUnit\Framework\TestCase
 {
-    public function test_initialize()
-    {
-        $settings = $this->getSettings();
-
-        $client = new Client($settings);
-        $this->assertInstanceOf(Client::class, $client);
-    }
-
     public function test_getClientId()
     {
-        $settings = $this->getSettings();
-
-        $client = new Client($settings);
-        $this->assertEquals($settings->clientId, $client->getClientId());
+        $metadata = $this->getDefaultMetadata();
+        $clientId = 'client_id';
+        $clientSecret = 'client_secret';
+        $client = new Client($metadata, $clientId, $clientSecret);
+        $this->assertEquals($clientId, $client->getClientId());
     }
 
     public function test_startAuthorizationCodeGrant()
     {
-        $settings = $this->getSettings();
+        $metadata = $this->getDefaultMetadata();
+        $clientId = 'client_id';
+        $clientSecret = 'client_secret';
+        $client = new Client($metadata, $clientId, $clientSecret);
 
-        $client = new Client($settings);
         $callbackUrl = 'https://example.jp/oauth2/callback';
         $state = sha1(uniqid());
         $uri = new Uri($client->startAuthorizationCodeGrant(['openid'], $callbackUrl, $state));
@@ -44,9 +39,11 @@ class ClientTest extends \PHPUnit\Framework\TestCase
 
     public function test_startAuthorizationCodeGrantWithPkce()
     {
-        $settings = $this->getSettings();
+        $metadata = $this->getDefaultMetadata();
+        $clientId = 'client_id';
+        $clientSecret = 'client_secret';
+        $client = new Client($metadata, $clientId, $clientSecret);
 
-        $client = new Client($settings);
         $callbackUrl = 'https://example.jp/oauth2/callback';
         $codeVerifier = openssl_random_pseudo_bytes(128);
         $uri = new Uri($client->startAuthorizationCodeGrantWithPkce(['openid'], $callbackUrl, $codeVerifier));
@@ -63,9 +60,11 @@ class ClientTest extends \PHPUnit\Framework\TestCase
 
     public function test_startImplicitGrant()
     {
-        $settings = $this->getSettings();
+        $metadata = $this->getDefaultMetadata();
+        $clientId = 'client_id';
+        $clientSecret = 'client_secret';
+        $client = new Client($metadata, $clientId, $clientSecret);
 
-        $client = new Client($settings);
         $callbackUrl = 'https://example.jp/oauth2/callback';
         $state = sha1(uniqid());
         $uri = new Uri($client->startImplicitGrant(['openid'], $callbackUrl, $state));
@@ -81,14 +80,18 @@ class ClientTest extends \PHPUnit\Framework\TestCase
 
     public function test_makeRequest()
     {
-        $settings = $this->getSettings();
+        $metadata = $this->getDefaultMetadata();
+        $clientId = 'client_id';
+        $clientSecret = 'client_secret';
+
         $accessToken = new AccessToken([
             'access_token' => 'access_token',
             'token_type' => 'Bearer',
             'expires_in' => 3600,
         ]);
 
-        $client = new Client($settings, $accessToken);
+        $client = new Client($metadata, $clientId, $clientSecret, $accessToken);
+
         $request = $client->makeRequest('POST', 'https://example.jp/oauth2/endpoint');
         $this->assertEquals('POST', $request->getMethod());
         $this->assertEquals('https://example.jp/oauth2/endpoint', strval($request->getUri()));
@@ -97,7 +100,10 @@ class ClientTest extends \PHPUnit\Framework\TestCase
 
     public function test_makeJwtBearerGrantRequest()
     {
-        $settings = $this->getSettings();
+        $metadata = $this->getDefaultMetadata();
+        $clientId = 'client_id';
+        $clientSecret = 'client_secret';
+        $client = new Client($metadata, $clientId, $clientSecret);
 
         $jsonWebKey = $this->getJsonWebKey();
 
@@ -105,7 +111,6 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         $expireAtTimestamp = $nowTimestamp + 3600;
         $scopes = ['hoge', 'fuga', 'piyo'];
 
-        $client = new Client($settings);
         $request = $client->makeJwtBearerGrantRequest($jsonWebKey, 'issuer@example.jp',
             'subject@example.jp', $expireAtTimestamp, $scopes, ['iat' => $nowTimestamp]);
         $this->assertEquals('POST', $request->getMethod());
@@ -129,10 +134,12 @@ class ClientTest extends \PHPUnit\Framework\TestCase
 
     public function test_hasOpenIDSettings()
     {
-        $oAuth2Settings = $this->getSettings();
+        $clientId = 'client_id';
+        $clientSecret = 'client_secret';
 
-        $oauth2Client = new Client($oAuth2Settings);
-        $this->assertFalse($oauth2Client->hasOpenIDSettings());
+        $oauth2metadata = $this->getDefaultMetadata();
+        $oauth2Client = new Client($oauth2metadata, $clientId, $clientSecret);
+        $this->assertFalse($oauth2Client->hasOpenIDMetadata());
 
         $openIDMetadata = [
             'issuer' => 'https://accounts.google.com',
@@ -150,21 +157,19 @@ class ClientTest extends \PHPUnit\Framework\TestCase
             'code_challenge_methods_supported' => ['plain', 'S256']
         ];
         $openIDSettings = new OpenIDProviderMetadata($openIDMetadata);
-        $openIDClient = new Client($openIDSettings);
-        $this->assertTrue($openIDClient->hasOpenIDSettings());
+        $openIDClient = new Client($openIDSettings, $clientId, $clientSecret);
+        $this->assertTrue($openIDClient->hasOpenIDMetadata());
     }
 
     /**
-     * @return Settings
+     * @return AuthorizationServerMetadata
      */
-    private function getSettings()
+    private function getDefaultMetadata()
     {
-        $settings = new Settings();
-        $settings->clientId = 'client_id';
-        $settings->clientSecret = 'client_secret';
-        $settings->authorizationEndpoint = 'https://example.jp/oauth2/authorization';
-        $settings->tokenEndpoint = 'https://example.jp/oauth2/token';
-        return $settings;
+        $metadata = new AuthorizationServerMetadata();
+        $metadata->authorizationEndpoint = 'https://example.jp/oauth2/authorization';
+        $metadata->tokenEndpoint = 'https://example.jp/oauth2/token';
+        return $metadata;
     }
 
     /**
