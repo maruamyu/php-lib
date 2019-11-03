@@ -270,9 +270,7 @@ class Client
         if ($response->statusCodeIsOk() == false) {
             return null;
         }
-        $tokenData = json_decode($response->getBody(), true);
-        $accessToken = new AccessToken($tokenData);
-        $this->setAccessToken($accessToken);
+        $this->setAccessTokenByResponse($response);
         return $this->getAccessToken();
     }
 
@@ -408,9 +406,7 @@ class Client
         if ($response->statusCodeIsOk() == false) {
             return null;
         }
-        $tokenData = json_decode($response->getBody(), true);
-        $accessToken = new AccessToken($tokenData);
-        $this->setAccessToken($accessToken);
+        $this->setAccessTokenByResponse($response);
         return $this->getAccessToken();
     }
 
@@ -440,9 +436,7 @@ class Client
         if ($response->statusCodeIsOk() == false) {
             return null;
         }
-        $tokenData = json_decode($response->getBody(), true);
-        $accessToken = new AccessToken($tokenData);
-        $this->setAccessToken($accessToken);
+        $this->setAccessTokenByResponse($response);
         return $this->getAccessToken();
     }
 
@@ -507,9 +501,7 @@ class Client
         if ($response->statusCodeIsOk() == false) {
             return null;
         }
-        $tokenData = json_decode($response->getBody(), true);
-        $accessToken = new AccessToken($tokenData);
-        $this->setAccessToken($accessToken);
+        $this->setAccessTokenByResponse($response);
         return $this->getAccessToken();
     }
 
@@ -596,8 +588,16 @@ class Client
         if ($response->statusCodeIsOk() == false) {
             return null;
         }
+
         $tokenData = json_decode($response->getBody(), true);
-        $this->accessToken->update($tokenData);
+
+        $issuedAt = null;
+        $serverDate = array_shift($response->getHeader('Date'));
+        if ($serverDate) {
+            $issuedAt = \DateTimeImmutable::createFromFormat('U', strtotime($serverDate));
+        }
+
+        $this->accessToken->update($tokenData, $issuedAt);
         return $this->getAccessToken();
     }
 
@@ -747,6 +747,23 @@ class Client
         }
         return $request->withAddedHeader('Content-Type', 'application/x-www-form-urlencoded')
             ->withBodyContents(QueryString::build($parameters));
+    }
+
+    /**
+     * @param Response $response
+     */
+    protected function setAccessTokenByResponse(Response $response)
+    {
+        $tokenData = json_decode($response->getBody(), true);
+
+        $issuedAt = null;
+        $serverDate = array_shift($response->getHeader('Date'));
+        if ($serverDate) {
+            $issuedAt = \DateTimeImmutable::createFromFormat('U', strtotime($serverDate));
+        }
+
+        $accessToken = new AccessToken($tokenData, $issuedAt);
+        $this->setAccessToken($accessToken);
     }
 
     /**
