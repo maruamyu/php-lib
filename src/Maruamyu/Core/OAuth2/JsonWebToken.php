@@ -15,6 +15,21 @@ class JsonWebToken
 
     /**
      * @param string $jwtString
+     * @return array header
+     */
+    public static function parseHeader($jwtString)
+    {
+        $parts = explode('.', $jwtString);
+        $headerJson = Base64Url::decode($parts[0]);
+        $header = json_decode($headerJson, true);
+        if (is_null($header)) {
+            $header = [];
+        }
+        return $header;
+    }
+
+    /**
+     * @param string $jwtString
      * @param JsonWebKey[] $jwks [ kid => JsonWebKey, ... ]  (ignore signature if empty)
      * @return array payload
      * @throws \DomainException JWE is not supported
