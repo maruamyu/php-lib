@@ -600,7 +600,7 @@ class Client
             $parameters['scope'] = join(' ', $scopes);
         }
 
-        $request = $this->makePostRequestWithClientCredentials($this->metadata->tokenEndpoint, $parameters, $this->metadata->supportedTokenEndpointAuthMethods);
+        $request = $this->makeTokenEndpointPostRequestWithClientCredentials($parameters);
         $response = $this->getHttpClient()->send($request);
         if ($response->statusCodeIsOk() == false) {
             return null;
