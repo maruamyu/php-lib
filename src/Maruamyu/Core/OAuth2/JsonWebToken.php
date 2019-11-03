@@ -17,6 +17,7 @@ class JsonWebToken
      * @param string $jwtString
      * @param JsonWebKey[] $jwks [ kid => JsonWebKey, ... ]  (ignore signature if empty)
      * @return array payload
+     * @throws \DomainException JWE is not supported
      * @throws \Exception if invalid JWT
      */
     public static function parse($jwtString, array $jwks = [])

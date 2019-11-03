@@ -720,7 +720,7 @@ class Client
      *
      * @param string $token
      * @param string $tokenTypeHint 'access_token' or 'refresh_token'
-     * @return array
+     * @return Request
      * @throws \Exception if invalid settings
      */
     public function makeTokenIntrospectionRequest($token, $tokenTypeHint = '')
