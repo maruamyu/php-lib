@@ -8,36 +8,38 @@ namespace Maruamyu\Core\OAuth2;
 class AccessToken
 {
     /** @var string */
-    private $token;
+    private $token = '';
 
     /** @var string */
-    private $type;
+    private $type = '';
 
     /** @var int|null */
-    private $expiresIn;
-
-    /** @var \DateTimeImmutable|null */
-    private $expireAt;
+    private $expiresIn = null;
 
     /** @var string|null */
-    private $refreshToken;
+    private $refreshToken = null;
 
     /** @var string[] */
-    private $scopes;
+    private $scopes = [];
 
-    /** @var string */
-    private $idToken;
+    /** @var string|null */
+    private $idToken = null;
+
+    /** @var \DateTimeImmutable|null */
+    private $issuedAt = null;
+
+    /** @var \DateTimeImmutable|null */
+    private $expireAt = null;
 
     /**
      * @param array $tokenData decoded successful access_token response
-     * @param int $timestamp unixtime
+     * @param \DateTimeInterface|integer $issuedAt
      */
-    public function __construct(array $tokenData = null, $timestamp = null)
+    public function __construct(array $tokenData = null, $issuedAt = null)
     {
-        if (empty($tokenData)) {
-            return;
+        if (isset($tokenData) && (empty($tokenData) == false)) {
+            $this->update($tokenData, $issuedAt);
         }
-        $this->setTokenData($tokenData, $timestamp);
     }
 
     /**
@@ -57,7 +59,7 @@ class AccessToken
     }
 
     /**
-     * @return string refresh_token
+     * @return string|null refresh_token
      */
     public function getRefreshToken()
     {
@@ -134,8 +136,13 @@ class AccessToken
 
         if ($this->expiresIn) {
             $tokenData['expires_in'] = $this->expiresIn;
-        } elseif ($this->expireAt) {
-            $tokenData['expires_in'] = $this->expireAt->getTimestamp() - time();
+        }
+
+        if ($this->issuedAt) {
+            $tokenData['iat'] = $this->issuedAt->getTimestamp();
+        }
+        if ($this->expireAt) {
+            $tokenData['exp'] = $this->expireAt->getTimestamp();
         }
 
         if ($this->refreshToken) {
@@ -155,58 +162,57 @@ class AccessToken
 
     /**
      * @param array $tokenData
-     * @param int $timestamp
+     * @param integer|\DateTimeInterface $issuedAt
      */
-    public function update(array $tokenData, $timestamp = null)
+    public function update(array $tokenData, $issuedAt = null)
     {
         if (isset($tokenData['access_token'])) {
-            $this->token = $tokenData['access_token'];
+            $this->token = strval($tokenData['access_token']);
         }
         if (isset($tokenData['token_type'])) {
-            $this->type = $tokenData['token_type'];
+            $this->type = strval($tokenData['token_type']);
         }
         if (isset($tokenData['expires_in'])) {
-            $this->setExpiresIn($tokenData['expires_in'], $timestamp);
+            $this->expiresIn = intval($tokenData['expires_in'], 10);
         }
         if (isset($tokenData['refresh_token'])) {
-            $this->refreshToken = $tokenData['refresh_token'];
+            $this->refreshToken = strval($tokenData['refresh_token']);
         }
         if (isset($tokenData['scope'])) {
-            $this->scopes = explode(' ', $tokenData['scope']);
+            $this->scopes = explode(' ', strval($tokenData['scope']));
         }
         if (isset($tokenData['id_token'])) {
-            $this->idToken = $tokenData['id_token'];
+            $this->idToken = strval($tokenData['id_token']);
         }
-    }
 
-    /**
-     * @param int $expiresIn
-     * @param int $timestamp
-     */
-    protected function setExpiresIn($expiresIn, $timestamp = null)
-    {
-        if (is_null($timestamp)) {
-            $timestamp = time();
+        # `iat` and `exp` from id_token
+        $idTokenPayload = [];
+        if (isset($this->idToken)) {
+            try {
+                $idTokenPayload = JsonWebToken::parse($this->idToken);
+            } catch (\Exception $exception) {
+                $idTokenPayload = [];
+            }
         }
-        $expireAtTimestamp = $timestamp + $expiresIn;
 
-        $this->expiresIn = $expiresIn;
-        $this->expireAt = \DateTimeImmutable::createFromFormat('U', $expireAtTimestamp);
-    }
+        # set issuedAt
+        if (isset($tokenData['iat'])) {
+            $this->issuedAt = \DateTimeImmutable::createFromFormat('U', $tokenData['iat']);
+        } elseif ($issuedAt instanceof \DateTimeImmutable) {
+            $this->issuedAt = $issuedAt;
+        } elseif ($issuedAt instanceof \DateTime) {
+            $this->issuedAt = \DateTimeImmutable::createFromMutable($issuedAt);
+        } elseif (is_integer($issuedAt)) {
+            $this->issuedAt = \DateTimeImmutable::createFromFormat('U', $issuedAt);
+        } elseif (isset($idTokenPayload['iat'])) {
+            $this->issuedAt = \DateTimeImmutable::createFromFormat('U', $idTokenPayload['iat']);
+        }
 
-    /**
-     * @param array $tokenData
-     * @param int $timestamp
-     */
-    protected function setTokenData(array $tokenData, $timestamp = null)
-    {
-        $this->token = null;
-        $this->type = null;
-        $this->expiresIn = null;
-        $this->expireAt = null;
-        $this->refreshToken = null;
-        $this->scopes = [];
-        $this->idToken = null;
-        $this->update($tokenData, $timestamp);
+        # set expireAt
+        if (isset($tokenData['exp'])) {
+            $this->expireAt = \DateTimeImmutable::createFromFormat('U', $tokenData['exp']);
+        } elseif (isset($this->issuedAt, $this->expiresIn)) {
+            $this->expireAt = $this->issuedAt->modify('+ ' . $this->expiresIn . ' sec');
+        }
     }
 }

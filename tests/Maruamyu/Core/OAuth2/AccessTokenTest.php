@@ -14,7 +14,19 @@ class AccessTokenTest extends \PHPUnit\Framework\TestCase
         $accessToken = new AccessToken($tokenData);
         $this->assertEquals($tokenData['access_token'], $accessToken->getToken());
         $this->assertEquals($tokenData['token_type'], $accessToken->getType());
-        $this->assertGreaterThanOrEqual(new \DateTime(), $accessToken->getExpireAt());
+        $this->assertNull($accessToken->getExpireAt());
+    }
+
+    public function test_iat_exp()
+    {
+        $tokenData = [
+            'access_token' => 'access_token',
+            'token_type' => 'Bearer',
+            'expires_in' => 3600,
+        ];
+        $accessToken = new AccessToken($tokenData);
+        $this->assertNull($accessToken->getExpireAt());
+
     }
 
     public function test_toArray()
