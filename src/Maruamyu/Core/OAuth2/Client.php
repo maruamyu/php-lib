@@ -247,17 +247,11 @@ class Client
      * @note update holding AccessToken if succeeded
      * @param string $code
      * @param string|UriInterface $redirectUrl
-     * @param string $state
      * @param array $optionalParameters
      * @return AccessToken|null
      * @throws \Exception if invalid settings or arguments
      */
-    public function finishAuthorizationCodeGrant(
-        $code,
-        $redirectUrl = null,
-        $state = null,
-        array $optionalParameters = []
-    ) {
+    public function finishAuthorizationCodeGrant($code, $redirectUrl = null, array $optionalParameters = []) {
         if (isset($this->metadata->tokenEndpoint) == false) {
             throw new \RuntimeException('tokenEndpoint not set yet.');
         }
@@ -267,9 +261,6 @@ class Client
             'code' => $code,
             'redirect_uri' => strval($redirectUrl),
         ];
-        if ($state) {
-            $parameters['state'] = $state;
-        }
         if ($optionalParameters) {
             $parameters = array_merge($parameters, $optionalParameters);
         }
@@ -349,7 +340,7 @@ class Client
         }
         $optionalParameters['code_verifier'] = $codeVerifier;
 
-        return $this->finishAuthorizationCodeGrant($code, $redirectUrl, null, $optionalParameters);
+        return $this->finishAuthorizationCodeGrant($code, $redirectUrl, $optionalParameters);
     }
 
     /**
