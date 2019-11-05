@@ -590,12 +590,7 @@ class Client
         }
 
         $tokenData = json_decode($response->getBody(), true);
-
-        $issuedAt = null;
-        $serverDate = array_shift($response->getHeader('Date'));
-        if ($serverDate) {
-            $issuedAt = \DateTimeImmutable::createFromFormat('U', strtotime($serverDate));
-        }
+        $issuedAt = $response->getDate();
 
         $this->accessToken->update($tokenData, $issuedAt);
         return $this->getAccessToken();
@@ -755,12 +750,7 @@ class Client
     protected function setAccessTokenByResponse(Response $response)
     {
         $tokenData = json_decode($response->getBody(), true);
-
-        $issuedAt = null;
-        $serverDate = array_shift($response->getHeader('Date'));
-        if ($serverDate) {
-            $issuedAt = \DateTimeImmutable::createFromFormat('U', strtotime($serverDate));
-        }
+        $issuedAt = $response->getDate();
 
         $accessToken = new AccessToken($tokenData, $issuedAt);
         $this->setAccessToken($accessToken);
