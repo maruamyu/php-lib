@@ -212,4 +212,24 @@ abstract class MessageAbstract implements MessageInterface
     {
         return $this->headers->fields();
     }
+
+    /**
+     * return `Date` header value
+     * (PSR-7規定にない独自実装メソッド)
+     *
+     * @return \DateTimeImmutable|null
+     */
+    public function getDate()
+    {
+        try {
+            $dateValues = $this->getHeader('Date');
+            $dateValue = array_pop($dateValues);
+            if ($dateValue) {
+                return new \DateTimeImmutable($dateValue);
+            }
+        } catch (\Exception $exception) {
+            ;
+        }
+        return null;
+    }
 }

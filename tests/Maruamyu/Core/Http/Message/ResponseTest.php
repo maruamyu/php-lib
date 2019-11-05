@@ -209,4 +209,17 @@ class ResponseTest extends \PHPUnit\Framework\TestCase
         $message->withBodyContents('Welcome!!');
         $this->assertEquals('ハイポーズ！', strval($message->getBody()));
     }
+
+    public function test_getDate()
+    {
+        $message = $this->getInstance();
+        $this->assertNull($message->getDate());
+
+        $message = $this->getInstance()
+            ->withAddedHeader('Date', 'Tue, 15 Nov 2000 08:12:31 GMT')
+            ->withAddedHeader('Date', 'Tue, 15 Nov 1994 08:12:31 GMT');
+        $date = $message->getDate();
+        $this->assertEquals(784887151, $date->getTimestamp());
+        $this->assertEquals('GMT', $date->getTimezone()->getName());
+    }
 }
