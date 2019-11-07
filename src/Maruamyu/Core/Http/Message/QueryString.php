@@ -330,11 +330,11 @@ class QueryString
             }
             $delimiterPos = strpos($kvpair, '=');
             if ($delimiterPos === false) {
-                $key = rawurldecode($kvpair);
+                $key = urldecode($kvpair);
                 $value = '';
             } else {
-                $key = rawurldecode(substr($kvpair, 0, $delimiterPos));
-                $value = rawurldecode(substr($kvpair, ($delimiterPos + 1)));
+                $key = urldecode(substr($kvpair, 0, $delimiterPos));
+                $value = urldecode(substr($kvpair, ($delimiterPos + 1)));
             }
             if (strlen($key) < 1) {
                 continue;
