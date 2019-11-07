@@ -109,6 +109,18 @@ class QueryStringTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * not RFC3986
+     */
+    public function test_not_rfc3986()
+    {
+        $actual = QueryString::parseQueryString('has+space=has+space+using+%2B');
+        $expect = [
+            'has space' => ['has space using +'],
+        ];
+        $this->assertEquals($expect, $actual);
+    }
+
+    /**
      * シンプルなQUERY_STRINGの生成
      */
     public function test_toStringSimple()

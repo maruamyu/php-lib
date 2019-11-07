@@ -156,14 +156,14 @@ class QueryString extends KeyValueStore
                 $key = substr($kvpair, 0, $delimiterPos);
                 $value = substr($kvpair, ($delimiterPos + 1));  # strlen('=') = 1
             }
-            $key = rawurldecode($key);
+            $key = urldecode($key);
             if (strlen($key) < 1) {
                 continue;
             }
             if (!(isset($parsed[$key]))) {
                 $parsed[$key] = [];
             }
-            $parsed[$key][] = rawurldecode($value);
+            $parsed[$key][] = urldecode($value);
         }
         return $parsed;
     }
