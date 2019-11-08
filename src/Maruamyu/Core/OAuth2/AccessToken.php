@@ -7,23 +7,8 @@ namespace Maruamyu\Core\OAuth2;
  */
 class AccessToken
 {
-    /** @var string */
-    private $token = '';
-
-    /** @var string */
-    private $type = '';
-
-    /** @var int|null */
-    private $expiresIn = null;
-
-    /** @var string|null */
-    private $refreshToken = null;
-
-    /** @var string[] */
-    private $scopes = [];
-
-    /** @var string|null */
-    private $idToken = null;
+    /** @var array */
+    private $data = [];
 
     /** @var \DateTimeImmutable|null */
     private $issuedAt = null;
@@ -47,7 +32,11 @@ class AccessToken
      */
     public function getType()
     {
-        return $this->type;
+        if (isset($this->data['token_type'])) {
+            return strval($this->data['token_type']);
+        } else {
+            return '';
+        }
     }
 
     /**
@@ -55,7 +44,11 @@ class AccessToken
      */
     public function getToken()
     {
-        return $this->token;
+        if (isset($this->data['access_token'])) {
+            return strval($this->data['access_token']);
+        } else {
+            return '';
+        }
     }
 
     /**
@@ -63,7 +56,11 @@ class AccessToken
      */
     public function getRefreshToken()
     {
-        return $this->refreshToken;
+        if (isset($this->data['refresh_token'])) {
+            return strval($this->data['refresh_token']);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -79,7 +76,11 @@ class AccessToken
      */
     public function getScopes()
     {
-        return $this->scopes;
+        if (isset($this->data['scope'])) {
+            return explode(' ', $this->data['scope']);
+        } else {
+            return [];
+        }
     }
 
     /**
@@ -88,15 +89,19 @@ class AccessToken
      */
     public function inScopes($scope)
     {
-        return in_array($scope, $this->scopes, true);
+        return in_array($scope, $this->getScopes(), true);
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getIdToken()
     {
-        return $this->idToken;
+        if (isset($this->data['id_token'])) {
+            return strval($this->data['id_token']);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -129,32 +134,13 @@ class AccessToken
      */
     public function toArray()
     {
-        $tokenData = [
-            'access_token' => $this->token,
-            'token_type' => $this->type,
-        ];
-
-        if ($this->expiresIn) {
-            $tokenData['expires_in'] = $this->expiresIn;
-        }
+        $tokenData = $this->data;
 
         if ($this->issuedAt) {
             $tokenData['iat'] = $this->issuedAt->getTimestamp();
         }
         if ($this->expireAt) {
             $tokenData['exp'] = $this->expireAt->getTimestamp();
-        }
-
-        if ($this->refreshToken) {
-            $tokenData['refresh_token'] = $this->refreshToken;
-        }
-
-        if (!(empty($this->scopes))) {
-            $tokenData['scope'] = join(' ', $this->scopes);
-        }
-
-        if ($this->idToken) {
-            $tokenData['id_token'] = strval($this->idToken);
         }
 
         return $tokenData;
@@ -166,30 +152,13 @@ class AccessToken
      */
     public function update(array $tokenData, $issuedAt = null)
     {
-        if (isset($tokenData['access_token'])) {
-            $this->token = strval($tokenData['access_token']);
-        }
-        if (isset($tokenData['token_type'])) {
-            $this->type = strval($tokenData['token_type']);
-        }
-        if (isset($tokenData['expires_in'])) {
-            $this->expiresIn = intval($tokenData['expires_in'], 10);
-        }
-        if (isset($tokenData['refresh_token'])) {
-            $this->refreshToken = strval($tokenData['refresh_token']);
-        }
-        if (isset($tokenData['scope'])) {
-            $this->scopes = explode(' ', strval($tokenData['scope']));
-        }
-        if (isset($tokenData['id_token'])) {
-            $this->idToken = strval($tokenData['id_token']);
-        }
+        $this->data = $tokenData;
 
         # `iat` and `exp` from id_token
         $idTokenPayload = [];
-        if (isset($this->idToken)) {
+        if (isset($tokenData['id_token'])) {
             try {
-                $idTokenPayload = JsonWebToken::parse($this->idToken);
+                $idTokenPayload = JsonWebToken::parse($tokenData['id_token']);
             } catch (\Exception $exception) {
                 $idTokenPayload = [];
             }
