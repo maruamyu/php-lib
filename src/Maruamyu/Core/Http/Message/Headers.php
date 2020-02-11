@@ -108,7 +108,7 @@ class Headers
      * すでに同じ名前の値が存在している場合は, 上書きされる.
      *
      * @param string $name 名前
-     * @param mixed $values 名前に対する値
+     * @param string|string[] $values 名前に対する値
      * @throws \InvalidArgumentException 空の名前を指定したとき
      */
     public function set($name, $values)
@@ -123,7 +123,7 @@ class Headers
      * すでに同じ名前の値が存在している場合は, 上書きされる.
      *
      * @param string $field ヘッダのフィールド("ヘッダ名: 値")
-     * @return boolean 設定できたときはtrue, それ以外はfalse
+     * @return bool 設定できたときはtrue, それ以外はfalse
      * @see set()
      */
     public function setFromField($field)
@@ -184,7 +184,7 @@ class Headers
      * 値を削除する.
      *
      * @param string $name 名前
-     * @return mixed[] 削除した名前に対する値のリスト (存在しなかったときは空)
+     * @return string[] 削除した名前に対する値のリスト (存在しなかったときは空)
      * @throws \InvalidArgumentException 空の名前を指定したとき
      */
     public function delete($name)
@@ -205,7 +205,7 @@ class Headers
      * ヘッダが存在するかどうか判定する.
      *
      * @param string $name 名前
-     * @return boolean 存在するならtrue, それ以外はfalse
+     * @return bool 存在するならtrue, それ以外はfalse
      */
     public function has($name)
     {
@@ -265,7 +265,7 @@ class Headers
     /**
      * 空(サイズが0)かどうか判定する.
      *
-     * @return boolean 空(サイズが0)ならtrue, それ以外はfalse
+     * @return bool 空(サイズが0)ならtrue, それ以外はfalse
      * @see hasAny()
      */
     public function isEmpty()
@@ -276,7 +276,7 @@ class Headers
     /**
      * 空でない(サイズが0でない)かどうか判定する.
      *
-     * @return boolean 空でないならtrue, それ以外はfalse
+     * @return bool 空でないならtrue, それ以外はfalse
      * @see isEmpty()
      */
     public function hasAny()

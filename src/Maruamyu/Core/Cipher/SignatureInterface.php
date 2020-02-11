@@ -8,7 +8,7 @@ namespace Maruamyu\Core\Cipher;
 interface SignatureInterface
 {
     /**
-     * @return boolean true if enable makeSignature()
+     * @return bool true if enable makeSignature()
      */
     public function canMakeSignature();
 
@@ -23,7 +23,7 @@ interface SignatureInterface
      * @param string $message
      * @param string $signature
      * @param mixed $hashAlgorithm
-     * @return boolean true if valid signature
+     * @return bool true if valid signature
      */
     public function verifySignature($message, $signature, $hashAlgorithm = null);
 }

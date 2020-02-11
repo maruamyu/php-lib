@@ -58,16 +58,16 @@ class OpenIDProviderMetadata extends AuthorizationServerMetadata
     /** @var null|string[] */
     public $supportedClaimsLocales;
 
-    /** @var boolean (OPTIONAL, default=false) */
+    /** @var bool (OPTIONAL, default=false) */
     public $isSupportedClaimsParameter = false;
 
-    /** @var boolean (OPTIONAL, default=false) */
+    /** @var bool (OPTIONAL, default=false) */
     public $isSupportedRequestParameter = false;
 
-    /** @var boolean (OPTIONAL, default=true) */
+    /** @var bool (OPTIONAL, default=true) */
     public $isSupportedRequestUriParameter = true;
 
-    /** @var boolean (OPTIONAL, default=false) */
+    /** @var bool (OPTIONAL, default=false) */
     public $isRequiredRequestUriRegistration = false;
 
     /**

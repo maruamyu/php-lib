@@ -155,7 +155,7 @@ class Stream implements PsrStreamInterface
      * ストリームのファイルポインタ位置がファイル末尾かどうか判定する.
      * ({feof()}に相当するもの.)
      *
-     * @return boolean 末尾ならtrue, それ以外はfalse
+     * @return bool 末尾ならtrue, それ以外はfalse
      */
     public function eof()
     {
@@ -168,7 +168,7 @@ class Stream implements PsrStreamInterface
     /**
      * ストリームがseek可能かどうか判定する.
      *
-     * @return boolean seek可能ならtrue, それ以外はfalse
+     * @return bool seek可能ならtrue, それ以外はfalse
      */
     public function isSeekable()
     {
@@ -204,7 +204,7 @@ class Stream implements PsrStreamInterface
     /**
      * ストリームが書き込み可能かどうか判定する.
      *
-     * @return boolean 書き込み可能ならtrue, それ以外はfalse
+     * @return bool 書き込み可能ならtrue, それ以外はfalse
      */
     public function isWritable()
     {
@@ -254,7 +254,7 @@ class Stream implements PsrStreamInterface
     /**
      * ストリームが読み込み可能かどうか判定する.
      *
-     * @return boolean 読み込み可能ならtrue, それ以外はfalse
+     * @return bool 読み込み可能ならtrue, それ以外はfalse
      */
     public function isReadable()
     {

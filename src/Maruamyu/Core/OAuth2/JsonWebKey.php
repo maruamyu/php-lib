@@ -454,7 +454,7 @@ class JsonWebKey implements SignatureInterface
     }
 
     /**
-     * @return boolean true if can make signature
+     * @return bool true if can make signature
      */
     public function hasPrivateKey()
     {
@@ -522,7 +522,7 @@ class JsonWebKey implements SignatureInterface
     }
 
     /**
-     * @return boolean true if enable makeSignature()
+     * @return bool true if enable makeSignature()
      */
     public function canMakeSignature()
     {
@@ -533,7 +533,7 @@ class JsonWebKey implements SignatureInterface
      * @param string $message
      * @param string $signature
      * @param mixed $forceHashAlgorithm
-     * @return boolean true if valid signature
+     * @return bool true if valid signature
      * @throws \Exception if invalid keys
      */
     public function verifySignature($message, $signature, $forceHashAlgorithm = null)

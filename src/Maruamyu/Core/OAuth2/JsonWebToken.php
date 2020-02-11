@@ -127,7 +127,7 @@ class JsonWebToken
      * @param array $payload
      * @param string $issuer
      * @param string $clientId
-     * @return boolean
+     * @return bool
      */
     public static function validatePayload(array $payload, $issuer, $clientId)
     {

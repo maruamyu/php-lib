@@ -204,7 +204,7 @@ class MagicEnvelope
     /**
      * @param SignatureInterface $signatureInterface
      * @param string $targetKeyId
-     * @return boolean true if verified
+     * @return bool true if verified
      */
     public function verify(SignatureInterface $signatureInterface, $targetKeyId = '')
     {
@@ -235,7 +235,7 @@ class MagicEnvelope
     /**
      * @param SignatureInterface $signatureInterface
      * @param string $keyId
-     * @return boolean true if succeeded
+     * @return bool true if succeeded
      * @throws \Exception if invalid private key or sign failed
      */
     public function sign(SignatureInterface $signatureInterface, $keyId = '')

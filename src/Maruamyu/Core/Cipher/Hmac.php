@@ -25,7 +25,7 @@ class Hmac implements SignatureInterface
     }
 
     /**
-     * @return boolean true if enable makeSignature()
+     * @return bool true if enable makeSignature()
      */
     public function canMakeSignature()
     {
@@ -49,7 +49,7 @@ class Hmac implements SignatureInterface
      * @param string $message
      * @param string $signature
      * @param string|null $hashAlgorithm
-     * @return boolean true if valid signature
+     * @return bool true if valid signature
      */
     public function verifySignature($message, $signature, $hashAlgorithm = null)
     {

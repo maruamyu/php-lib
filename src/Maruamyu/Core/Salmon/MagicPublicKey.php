@@ -62,7 +62,7 @@ class MagicPublicKey implements SignatureInterface
      * @param string $message (decoded binary)
      * @param string $signature (decoded binary)
      * @param int $hashAlgorithm
-     * @return boolean
+     * @return bool
      */
     public function verifySignature($message, $signature, $hashAlgorithm = OPENSSL_ALGO_SHA256)
     {
@@ -72,7 +72,7 @@ class MagicPublicKey implements SignatureInterface
 
     /**
      * @param string $message
-     * @param integer $hashAlgorithm
+     * @param int $hashAlgorithm
      * @throws \BadFunctionCallException this is not has private key
      */
     public function makeSignature($message, $hashAlgorithm = null)
@@ -81,7 +81,7 @@ class MagicPublicKey implements SignatureInterface
     }
 
     /**
-     * @return boolean false this is not has private key
+     * @return bool false this is not has private key
      */
     public function canMakeSignature()
     {

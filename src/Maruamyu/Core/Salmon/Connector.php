@@ -37,7 +37,7 @@ class Connector
 
     /**
      * @param MagicEnvelope $magicEnvelope
-     * @return boolean
+     * @return bool
      */
     public function verify(MagicEnvelope $magicEnvelope)
     {

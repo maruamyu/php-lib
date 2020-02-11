@@ -8,7 +8,7 @@ trait ArrayDetectionTrait
      * 純粋な配列かどうか判定する.
      *
      * @param array $array 配列
-     * @return boolean 純粋な配列ならtrue, それ以外(連想配列等)はfalse
+     * @return bool 純粋な配列ならtrue, それ以外(連想配列等)はfalse
      */
     protected static function isVector($array)
     {
@@ -29,7 +29,7 @@ trait ArrayDetectionTrait
      * 連想配列かどうか判定する.
      *
      * @param array $array 配列
-     * @return boolean 連想配列ならtrue, それ以外はfalse
+     * @return bool 連想配列ならtrue, それ以外はfalse
      */
     protected static function isAssoc($array)
     {

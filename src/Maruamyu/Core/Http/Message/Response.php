@@ -11,7 +11,7 @@ use Psr\Http\Message\StreamInterface;
  */
 class Response extends MessageAbstract implements ResponseInterface
 {
-    /** @var integer */
+    /** @var int */
     private $statusCode = 0;
 
     /** @var string */
@@ -60,7 +60,7 @@ class Response extends MessageAbstract implements ResponseInterface
     }
 
     /**
-     * @return boolean true if "200 OK"
+     * @return bool true if "200 OK"
      */
     public function statusCodeIsOk()
     {

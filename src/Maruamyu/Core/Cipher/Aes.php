@@ -20,19 +20,19 @@ class Aes implements EncryptionInterface
     /** @var string */
     protected $key;
 
-    /** @var integer (bit) */
+    /** @var int (bit) */
     protected $keyLength;
 
     /** @var string */
     protected $mode = self::DEFAULT_MODE;
 
-    /** @var integer */
+    /** @var int */
     protected $blockSize = 128;
 
     /**
      * @param string $key
      * @param string $mode
-     * @param integer $blockSize
+     * @param int $blockSize
      */
     public function __construct($key, $mode = self::DEFAULT_MODE, $blockSize = 128)
     {
@@ -191,7 +191,7 @@ class Aes implements EncryptionInterface
     }
 
     /**
-     * @return integer
+     * @return int
      * @internal
      */
     protected function getIVOctetSize()

@@ -113,7 +113,7 @@ class Rsa extends PublicKeyCryptography implements KeyGeneratableInterface
 
     /**
      * @param string|null $passphrase
-     * @param integer $bits
+     * @param int $bits
      * @return static
      * @throws \Exception if failed
      */

@@ -14,7 +14,7 @@ class ServiceProvider extends CoreLogic
      * verify signature in request
      *
      * @param Request $request HTTP request message
-     * @return boolean true if valid signature, else false
+     * @return bool true if valid signature, else false
      */
     public function verifySignature(Request $request)
     {

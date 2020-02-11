@@ -8,7 +8,7 @@ namespace Maruamyu\Core\Cipher;
 class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
 {
     /**
-     * @var integer OPENSSL_ALGO_*
+     * @var int OPENSSL_ALGO_*
      * @see https://secure.php.net/manual/ja/openssl.signature-algos.php
      */
     const DEFAULT_HASH_ALGORITHM = OPENSSL_ALGO_SHA256;
@@ -66,7 +66,7 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function hasPrivateKey()
     {
@@ -119,7 +119,7 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
     }
 
     /**
-     * @return boolean true if enable makeSignature()
+     * @return bool true if enable makeSignature()
      */
     public function canMakeSignature()
     {
@@ -128,7 +128,7 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
 
     /**
      * @param string $message
-     * @param integer|null $hashAlgorithm OPENSSL_ALGO_*
+     * @param int|null $hashAlgorithm OPENSSL_ALGO_*
      *   (if null, using DEFAULT_HASH_ALGORITHM)
      * @return string signature
      * @throws \Exception if failed or private key not set yet
@@ -152,9 +152,9 @@ class PublicKeyCryptography implements SignatureInterface, EncryptionInterface
     /**
      * @param string $message
      * @param string $signature
-     * @param integer|null $hashAlgorithm OPENSSL_ALGO_*
+     * @param int|null $hashAlgorithm OPENSSL_ALGO_*
      *   (if null, using DEFAULT_HASH_ALGORITHM)
-     * @return boolean
+     * @return bool
      */
     public function verifySignature($message, $signature, $hashAlgorithm = null)
     {

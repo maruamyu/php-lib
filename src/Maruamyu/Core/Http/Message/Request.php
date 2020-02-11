@@ -16,7 +16,7 @@ class Request extends MessageAbstract implements RequestInterface
     /** @var string */
     protected $method = 'GET';
 
-    /** @var PsrUriInterface */
+    /** @var UriInterface */
     protected $uri;
 
     /** @var MultipartData[] */
@@ -91,7 +91,7 @@ class Request extends MessageAbstract implements RequestInterface
     }
 
     /**
-     * @return PsrUriInterface Uriオブジェクト インスタンス
+     * @return UriInterface Uriオブジェクト インスタンス
      */
     public function getUri()
     {
@@ -100,7 +100,7 @@ class Request extends MessageAbstract implements RequestInterface
 
     /**
      * @param PsrUriInterface $uri Uriオブジェクト インスタンス
-     * @param boolean $preserveHost 持っているHostヘッダを再設定しないときtrueを指定
+     * @param bool $preserveHost 持っているHostヘッダを再設定しないときtrueを指定
      *   (falseだと, Uriからホストを読み取ってHostヘッダへ設定する.)
      * @return static 指定のUriを設定した新しいインスタンス
      */

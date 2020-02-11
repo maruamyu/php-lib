@@ -78,7 +78,7 @@ class UploadedFile implements UploadedFileInterface
      * ({move_uploaded_file()}に相当するもの.)
      *
      * @param string $targetPath 保存場所
-     * @return boolean 成功したらtrue
+     * @return bool 成功したらtrue
      * @throws \InvalidArgumentException 保存場所が正しくないとき
      * @throws \RuntimeException 保存時にエラーが発生したとき
      */

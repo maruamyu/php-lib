@@ -98,14 +98,14 @@ class StatusCode
         511 => 'Network Authentication Required',
     ];
 
-    /** @var integer */
+    /** @var int */
     private $code;
 
     /** @var string */
     private $reasonPhrase;
 
     /**
-     * @param integer $code
+     * @param int $code
      * @param string $reasonPhrase
      */
     public function __construct($code, $reasonPhrase = '')
@@ -115,7 +115,7 @@ class StatusCode
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isOk()
     {
@@ -123,7 +123,7 @@ class StatusCode
     }
 
     /**
-     * @return integer
+     * @return int
      */
     public function getCode()
     {
@@ -143,7 +143,7 @@ class StatusCode
     }
 
     /**
-     * @param integer $code
+     * @param int $code
      * @return string
      */
     public static function toReasonPhrase($code)

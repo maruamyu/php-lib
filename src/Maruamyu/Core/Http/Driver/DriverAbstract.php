@@ -30,7 +30,7 @@ abstract class DriverAbstract implements DriverInterface
     protected $response = null;
 
     /**
-     * @var boolean
+     * @var bool
      */
     protected $isFollowRedirect = false;
 
@@ -72,7 +72,7 @@ abstract class DriverAbstract implements DriverInterface
     }
 
     /**
-     * @param boolean $isFollow リダイレクトを追いかける:true,
+     * @param bool $isFollow リダイレクトを追いかける:true,
      *   リダイレクトを追いかけない:false
      */
     public function setFollowRedirect($isFollow)

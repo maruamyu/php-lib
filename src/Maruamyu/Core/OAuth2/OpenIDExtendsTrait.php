@@ -10,7 +10,7 @@ use Maruamyu\Core\Http\Client as HttpClient;
 trait OpenIDExtendsTrait
 {
     /**
-     * @return boolean true if initialized by OpenIDProviderMetadata
+     * @return bool true if initialized by OpenIDProviderMetadata
      */
     public function hasOpenIDMetadata()
     {
@@ -52,7 +52,7 @@ trait OpenIDExtendsTrait
 
     /**
      * @param array $idTokenPayload
-     * @return boolean
+     * @return bool
      * @throws \Exception if invalid settings
      * @see JsonWebToken::validatePayload()
      */

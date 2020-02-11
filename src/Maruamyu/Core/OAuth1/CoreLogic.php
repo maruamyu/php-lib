@@ -102,7 +102,7 @@ class CoreLogic
     /**
      * return true if have AccessToken
      *
-     * @return boolean true if have AccessToken, else false
+     * @return bool true if have AccessToken, else false
      */
     public function hasAccessToken()
     {
@@ -152,7 +152,7 @@ class CoreLogic
      * @param string $method HTTP method
      * @param string|UriInterface $uri URL
      * @param array|QueryString $params form data
-     * @param boolean $notUseAuthorizationHeader if true, then auth-params into QUERY_STRING or form data
+     * @param bool $notUseAuthorizationHeader if true, then auth-params into QUERY_STRING or form data
      * @return Request request message
      * @throws \InvalidArgumentException if invalid args
      */

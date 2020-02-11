@@ -41,7 +41,7 @@ class JsonWebAlgorithms
     /**
      * @param string $alg `alg`
      * @param string $kty `kty`
-     * @return boolean
+     * @return bool
      */
     public static function isSupportedHashAlgorithm($alg, $kty = null)
     {

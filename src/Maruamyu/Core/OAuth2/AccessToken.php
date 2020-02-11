@@ -18,7 +18,7 @@ class AccessToken
 
     /**
      * @param array $tokenData decoded successful access_token response
-     * @param \DateTimeInterface|integer $issuedAt
+     * @param \DateTimeInterface|int $issuedAt
      */
     public function __construct(array $tokenData = null, $issuedAt = null)
     {
@@ -85,7 +85,7 @@ class AccessToken
 
     /**
      * @param string $scope needle scope
-     * @return boolean true if needle in scopes, else false
+     * @return bool true if needle in scopes, else false
      */
     public function inScopes($scope)
     {
@@ -148,7 +148,7 @@ class AccessToken
 
     /**
      * @param array $tokenData
-     * @param integer|\DateTimeInterface $issuedAt
+     * @param int|\DateTimeInterface $issuedAt
      */
     public function update(array $tokenData, $issuedAt = null)
     {

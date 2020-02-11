@@ -39,7 +39,7 @@ class Asn1
     ];
 
     /**
-     * @param boolean $bool
+     * @param bool $bool
      * @return string
      */
     public static function encodeBoolean($bool)
@@ -49,7 +49,7 @@ class Asn1
     }
 
     /**
-     * @param integer $value
+     * @param int $value
      * @return string
      */
     public static function encodeInteger($value)
@@ -68,7 +68,7 @@ class Asn1
 
     /**
      * @param string $binary
-     * @param boolean $forcePositive add 0x00 to head if true and standed MSB
+     * @param bool $forcePositive add 0x00 to head if true and standed MSB
      * @return string
      */
     public static function encodeIntegerBinary($binary, $forcePositive = false)

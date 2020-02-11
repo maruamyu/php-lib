@@ -27,7 +27,7 @@ class DriverFactory
     }
 
     /**
-     * @return boolean cURLモジュールが利用可能ならtrue, それ以外はfalse
+     * @return bool cURLモジュールが利用可能ならtrue, それ以外はfalse
      */
     public static function isAvailableCURL()
     {

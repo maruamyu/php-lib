@@ -25,7 +25,7 @@ class Client extends CoreLogic
      * @param string $method HTTP method
      * @param string|UriInterface $uri URL
      * @param array|QueryString $params form data
-     * @param boolean $notUseAuthorizationHeader if true, then auth-params into QUERY_STRING or form data
+     * @param bool $notUseAuthorizationHeader if true, then auth-params into QUERY_STRING or form data
      * @return Response response message
      * @throws \InvalidArgumentException if invalid args
      */

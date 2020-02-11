@@ -501,7 +501,7 @@ class Uri implements UriInterface
     /**
      * @param string $scheme プロトコル
      * @param int $port ポート
-     * @return boolean 標準以外のポートだったらtrue, それ以外はfalse
+     * @return bool 標準以外のポートだったらtrue, それ以外はfalse
      */
     protected static function isNotDefaultPort($scheme, $port)
     {

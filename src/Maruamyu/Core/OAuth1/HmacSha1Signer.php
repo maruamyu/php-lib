@@ -74,7 +74,7 @@ class HmacSha1Signer implements SignerInterface
      * @param string|UriInterface $uri URL
      * @param array|QueryString $params request parameters
      * @param array $headerParams Authorization header parameters
-     * @return boolean true if valid signature in params, else false
+     * @return bool true if valid signature in params, else false
      */
     public function verify($method, $uri, $params, $headerParams = null)
     {

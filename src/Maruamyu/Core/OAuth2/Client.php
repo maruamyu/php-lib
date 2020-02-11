@@ -112,7 +112,7 @@ class Client
 
     /**
      * @param \DateTimeInterface $currentTime
-     * @return boolean true
+     * @return bool true
      */
     public function hasValidAccessToken(\DateTimeInterface $currentTime = null)
     {
@@ -482,7 +482,7 @@ class Client
      * @param JsonWebKey $jsonWebKey private key
      * @param string $issuer
      * @param string $subject
-     * @param integer $expireAtTimestamp expire(seconds)
+     * @param int $expireAtTimestamp expire(seconds)
      * @param string[] $scopes list of scopes
      * @param string[] $optionalParameters
      * @return AccessToken|null
@@ -513,7 +513,7 @@ class Client
      * @param JsonWebKey $jsonWebKey private key
      * @param string $issuer
      * @param string $subject
-     * @param integer $expireAtTimestamp
+     * @param int $expireAtTimestamp
      * @param string[] $scopes
      * @param string[] $optionalParameters
      * @return Request
@@ -599,7 +599,7 @@ class Client
     /**
      * revoke access token
      *
-     * @return boolean true if revoked
+     * @return bool true if revoked
      * @throws \Exception if invalid settings
      * @see makeTokenRevocationRequest()
      */
@@ -621,7 +621,7 @@ class Client
     /**
      * revoke refresh token
      *
-     * @return boolean true if revoked
+     * @return bool true if revoked
      * @throws \Exception if invalid settings
      * @see makeTokenRevocationRequest()
      */

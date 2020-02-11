@@ -114,7 +114,7 @@ class QueryString
 
     /**
      * @param string $key キー
-     * @return boolean 値が存在するならtrue, 存在しないならfalse
+     * @return bool 値が存在するならtrue, 存在しないならfalse
      */
     public function has($key)
     {
@@ -144,7 +144,7 @@ class QueryString
     /**
      * 空(サイズが0)かどうか判定する.
      *
-     * @return boolean 空(サイズが0)ならtrue, それ以外はfalse
+     * @return bool 空(サイズが0)ならtrue, それ以外はfalse
      * @see hasAny()
      */
     public function isEmpty()
@@ -155,7 +155,7 @@ class QueryString
     /**
      * 空でない(サイズが0でない)かどうか判定する.
      *
-     * @return boolean 空でないならtrue, それ以外はfalse
+     * @return bool 空でないならtrue, それ以外はfalse
      * @see isEmpty()
      */
     public function hasAny()

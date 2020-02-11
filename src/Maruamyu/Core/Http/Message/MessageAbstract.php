@@ -71,7 +71,7 @@ abstract class MessageAbstract implements MessageInterface
      * メッセージが設定されているかどうか確認する.
      *
      * @param string $name ヘッダ名
-     * @return boolean ヘッダが存在するならtrue, それ以外はfalse
+     * @return bool ヘッダが存在するならtrue, それ以外はfalse
      */
     public function hasHeader($name)
     {

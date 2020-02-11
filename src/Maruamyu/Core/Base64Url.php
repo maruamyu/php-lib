@@ -9,7 +9,7 @@ class Base64Url
 {
     /**
      * @param string $src source string
-     * @param boolean $strict true if padding
+     * @param bool $strict true if padding
      * @return string Base64-URL encoded string
      */
     public static function encode($src, $strict = false)

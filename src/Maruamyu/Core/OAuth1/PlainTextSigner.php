@@ -64,7 +64,7 @@ class PlaintextSigner implements SignerInterface
      * @param string|UriInterface $uri URL
      * @param array|QueryString $params form params
      * @param array $headerParams Authorization header params
-     * @return boolean true if valid signature in params, else false
+     * @return bool true if valid signature in params, else false
      */
     public function verify($method, $uri, $params, $headerParams = null)
     {
