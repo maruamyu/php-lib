@@ -10,7 +10,7 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     public function test_set_get()
     {
         $headers = new Headers();
-        $headers->set('Content-Type', 'text/html');
+        $headers->set(' Content-Type ', ' text/html ');
         $this->assertEquals(['text/html'], $headers->get('content-type'));
     }
 
@@ -20,8 +20,8 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     public function test_add()
     {
         $headers = new Headers();
-        $headers->add('COOKIE', 'akane=chan');
-        $headers->add('cookie', 'doll=maker');
+        $headers->add(' COOKIE ', ' akane=chan ');
+        $headers->add(' cookie ', ' doll=maker ');
         $this->assertEquals(['akane=chan', 'doll=maker'], $headers->get('Cookie'));
     }
 
@@ -31,8 +31,8 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     public function test_set_overwrite()
     {
         $headers = new Headers();
-        $headers->set('Content-Type', 'text/html');
-        $headers->set('content-type', 'application/xml');
+        $headers->set(' Content-Type ', ' text/html ');
+        $headers->set(' content-type ', ' application/xml ');
         $this->assertEquals(['application/xml'], $headers->get('CONTENT-TYPE'));
     }
 
@@ -42,8 +42,8 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     public function test_setArray()
     {
         $headers = new Headers();
-        $headers->add('X-Header', ['value1', 'value2']);
-        $headers->add('X-Header', ['value3']);
+        $headers->add(' X-Header ', [' value1 ', ' value2 ']);
+        $headers->add(' X-Header ', [' value3 ']);
         $this->assertEquals(['value1', 'value2', 'value3'], $headers->get('X-Header'));
     }
 
@@ -53,10 +53,10 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     public function test_delete()
     {
         $headers = new Headers();
-        $headers->set('X-Header-1', 'value1');
-        $headers->set('X-Header-2', 'value2');
-        $headers->set('X-Header-3', 'value3');
-        $deleted = $headers->delete('X-Header-2');
+        $headers->set(' X-Header-1 ', ' value1 ');
+        $headers->set(' X-Header-2 ', ' value2 ');
+        $headers->set(' X-Header-3 ', ' value3 ');
+        $deleted = $headers->delete(' X-Header-2 ');
         $this->assertEquals(['value2'], $deleted);
         $this->assertEquals(['X-Header-1', 'X-Header-3'], $headers->names());
     }
@@ -68,13 +68,13 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     {
         $headers = new Headers();
 
-        $this->assertFalse($headers->has('Content-Type'));
+        $this->assertFalse($headers->has(' Content-Type '));
 
-        $headers->set('content-type', 'text/html');
+        $headers->set(' content-type ', ' text/html ');
         $this->assertTrue($headers->has('Content-Type'));
         $this->assertTrue($headers->has('content-type'));
 
-        $headers->delete('Content-Type');
+        $headers->delete(' Content-Type ');
         $this->assertFalse($headers->has('Content-Type'));
         $this->assertFalse($headers->has('content-type'));
     }
@@ -85,9 +85,9 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     public function test_names()
     {
         $headers = new Headers();
-        $headers->set('X-Header-1', 'value1');
-        $headers->set('X-Header-2', 'value2');
-        $headers->set('X-Header-3', 'value3');
+        $headers->set(' X-Header-1 ', ' value1 ');
+        $headers->set(' X-Header-2 ', ' value2 ');
+        $headers->set(' X-Header-3 ', ' value3 ');
         $this->assertEquals(['X-Header-1', 'X-Header-2', 'X-Header-3'], $headers->names());
     }
 
@@ -97,8 +97,8 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     public function test_fields()
     {
         $headers = new Headers();
-        $headers->set('Host', 'example.jp');
-        $headers->set('Content-Type', 'text/html');
+        $headers->set(' Host ', ' example.jp ');
+        $headers->set(' Content-Type ', ' text/html ');
 
         $expect = [
             'Host: example.jp',
@@ -113,14 +113,14 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     public function test_append_headers()
     {
         $headers0 = new Headers();
-        $headers0->add('scalar', 'scalar_preset');
-        $headers0->add('vector', 'vector_preset');
-        $headers0->add('orig_key', 'orig_key_preset');
+        $headers0->add(' scalar ', ' scalar_preset ');
+        $headers0->add(' vector ', ' vector_preset ');
+        $headers0->add(' orig_key ', ' orig_key_preset ');
 
         $headers1 = new Headers();
-        $headers1->add('scalar', 'scalar_value');
-        $headers1->add('vector', ['vector_value1', 'vector_value2']);
-        $headers1->add('new_key', 'new_key_value');
+        $headers1->add(' scalar ', ' scalar_value ');
+        $headers1->add(' vector ', [' vector_value1 ', ' vector_value2 ']);
+        $headers1->add(' new_key ', ' new_key_value ');
 
         $headers0->append($headers1);
 
@@ -144,14 +144,14 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     public function test_append_hash()
     {
         $headers0 = new Headers();
-        $headers0->add('scalar', 'scalar_preset');
-        $headers0->add('vector', 'vector_preset');
-        $headers0->add('orig_key', 'orig_key_preset');
+        $headers0->add(' scalar ', ' scalar_preset ');
+        $headers0->add(' vector ', ' vector_preset ');
+        $headers0->add(' orig_key ', ' orig_key_preset ');
 
         $arrayData = [
-            'scalar' => 'scalar_value',
-            'vector' => ['vector_value1', 'vector_value2'],
-            'new_key' => 'new_key_value',
+            ' scalar ' => ' scalar_value ',
+            ' vector ' => [' vector_value1 ', ' vector_value2 '],
+            ' new_key ' => ' new_key_value ',
         ];
 
         $headers0->append($arrayData);
@@ -176,15 +176,15 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     public function test_append_vector()
     {
         $headers0 = new Headers();
-        $headers0->add('scalar', 'scalar_preset');
-        $headers0->add('vector', 'vector_preset');
-        $headers0->add('orig_key', 'orig_key_preset');
+        $headers0->add(' scalar ', ' scalar_preset ');
+        $headers0->add(' vector ', ' vector_preset ');
+        $headers0->add(' orig_key ', ' orig_key_preset ');
 
         $arrayData = [
-            'scalar: scalar_value',
-            'vector: vector_value1',
-            'vector: vector_value2',
-            'new_key: new_key_value',
+            ' scalar :  scalar_value ',
+            ' vector :  vector_value1 ',
+            ' vector :  vector_value2 ',
+            ' new_key :  new_key_value ',
         ];
 
         $headers0->append($arrayData);
@@ -209,14 +209,14 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     public function test_merge_headers()
     {
         $headers0 = new Headers();
-        $headers0->add('scalar', 'scalar_preset');
-        $headers0->add('vector', 'vector_preset');
-        $headers0->add('orig_key', 'orig_key_preset');
+        $headers0->add(' scalar ', ' scalar_preset ');
+        $headers0->add(' vector ', ' vector_preset ');
+        $headers0->add(' orig_key ', ' orig_key_preset ');
 
         $headers1 = new Headers();
-        $headers1->add('scalar', 'scalar_value');
-        $headers1->add('vector', ['vector_value1', 'vector_value2']);
-        $headers1->add('new_key', 'new_key_value');
+        $headers1->add(' scalar ', ' scalar_value ');
+        $headers1->add(' vector ', [' vector_value1 ', ' vector_value2 ']);
+        $headers1->add(' new_key ', ' new_key_value ');
 
         $headers0->merge($headers1);
 
@@ -240,14 +240,14 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     public function test_merge_array()
     {
         $headers0 = new Headers();
-        $headers0->add('scalar', 'scalar_preset');
-        $headers0->add('vector', 'vector_preset');
-        $headers0->add('orig_key', 'orig_key_preset');
+        $headers0->add(' scalar ', ' scalar_preset ');
+        $headers0->add(' vector ', ' vector_preset ');
+        $headers0->add(' orig_key ', ' orig_key_preset ');
 
         $arrayData = [
-            'scalar' => 'scalar_value',
-            'vector' => ['vector_value1', 'vector_value2'],
-            'new_key' => 'new_key_value',
+            ' scalar ' => ' scalar_value ',
+            ' vector ' => [' vector_value1 ', ' vector_value2 '],
+            ' new_key ' => ' new_key_value ',
         ];
 
         $headers0->merge($arrayData);
@@ -272,15 +272,15 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     public function test_merge_vector()
     {
         $headers0 = new Headers();
-        $headers0->add('scalar', 'scalar_preset');
-        $headers0->add('vector', 'vector_preset');
-        $headers0->add('orig_key', 'orig_key_preset');
+        $headers0->add(' scalar ', ' scalar_preset ');
+        $headers0->add(' vector ', ' vector_preset ');
+        $headers0->add(' orig_key ', ' orig_key_preset ');
 
         $arrayData = [
-            'scalar: scalar_value',
-            'vector: vector_value1',
-            'vector: vector_value2',
-            'new_key: new_key_value',
+            ' scalar :  scalar_value ',
+            ' vector :  vector_value1 ',
+            ' vector :  vector_value2 ',
+            ' new_key :  new_key_value ',
         ];
 
         $headers0->merge($arrayData);
@@ -305,8 +305,8 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     public function test_setFromField()
     {
         $headers = new Headers();
-        $headers->setFromField('Content-Type: text/plain');
-        $headers->setFromField('Content-Type: text/html');
+        $headers->setFromField(' Content-Type: text/plain ');
+        $headers->setFromField(' Content-Type: text/html ');
         $this->assertEquals(['text/html'], $headers->get('Content-Type'));
     }
 
@@ -316,8 +316,8 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     public function test_addFromField()
     {
         $headers = new Headers();
-        $headers->addFromField('Set-Cookie: hoge=hogehoge');
-        $headers->addFromField('Set-Cookie: fuga=fugafuga');
+        $headers->addFromField(' Set-Cookie: hoge=hogehoge ');
+        $headers->addFromField(' Set-Cookie: fuga=fugafuga ');
         $this->assertEquals(['hoge=hogehoge', 'fuga=fugafuga'], $headers->get('Set-Cookie'));
     }
 
@@ -330,8 +330,8 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('', strval($headers));
         $this->assertEquals('', $headers->toString());
 
-        $headers->set('Host', 'example.jp');
-        $headers->set('Content-Type', 'text/html');
+        $headers->set(' Host ', ' example.jp ');
+        $headers->set(' Content-Type ', ' text/html ');
 
         $expect  = 'Host: example.jp' . "\r\n";
         $expect .= 'Content-Type: text/html' . "\r\n";
@@ -347,10 +347,10 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
         $headers = new Headers();
         $this->assertEquals([], $headers->toArray());
 
-        $headers->add('Host', 'example.jp');
-        $headers->add('Content-Type', 'text/html');
-        $headers->add('X-Header', 'value1');
-        $headers->add('X-Header', 'value2');
+        $headers->add(' Host ', ' example.jp ');
+        $headers->add(' Content-Type ', ' text/html ');
+        $headers->add(' X-Header ', ' value1 ');
+        $headers->add(' X-Header ', ' value2 ');
 
         $expects = [
             'Host' => ['example.jp'],
@@ -365,8 +365,8 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
      */
     public function test_initialize_by_string()
     {
-        $initValue  = 'Host: example.jp' . "\r\n";
-        $initValue .= 'Content-Type: text/html' . "\r\n";
+        $initValue  = ' Host :  example.jp ' . "\r\n";
+        $initValue .= ' Content-Type :  text/html ' . "\r\n";
 
         $headers = new Headers($initValue);
         $this->assertEquals(['example.jp'], $headers->get('Host'));
@@ -379,8 +379,8 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     public function test_initialize_by_fields()
     {
         $initValue = [
-            'Host: example.jp',
-            'Content-Type: text/html',
+            ' Host :  example.jp ',
+            ' Content-Type :  text/html ',
         ];
         $headers = new Headers($initValue);
         $this->assertEquals(['example.jp'], $headers->get('Host'));
@@ -393,8 +393,8 @@ class HeadersTest extends \PHPUnit\Framework\TestCase
     public function test_initialize_by_assoc()
     {
         $initValue = [
-            'Host' => 'example.jp',
-            'Content-Type' => 'text/html',
+            ' Host ' => ' example.jp ',
+            ' Content-Type ' => ' text/html ',
         ];
         $headers = new Headers($initValue);
         $this->assertEquals(['example.jp'], $headers->get('Host'));

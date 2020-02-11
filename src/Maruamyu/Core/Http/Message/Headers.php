@@ -113,6 +113,7 @@ class Headers
      */
     public function set($name, $values)
     {
+        $name = trim($name);
         $lowerName = strtolower($name);
         $this->data[$lowerName] = [];
         $this->add($name, $values);
@@ -148,16 +149,17 @@ class Headers
      */
     public function add($name, $values)
     {
+        $name = trim($name);
         $lowerName = strtolower($name);
         if (!isset($this->data[$lowerName])) {
             $this->data[$lowerName] = [];
         }
         if (is_array($values)) {
             foreach ($values as $value) {
-                $this->data[$lowerName][] = [$value, $name];
+                $this->data[$lowerName][] = [trim($value), $name];
             }
         } else {
-            $this->data[$lowerName][] = [$values, $name];
+            $this->data[$lowerName][] = [trim($values), $name];
         }
         return count($this->data[$lowerName]);
     }
@@ -189,8 +191,9 @@ class Headers
      */
     public function delete($name)
     {
-        $deletedValues = [];
+        $name = trim($name);
         $lowerName = strtolower($name);
+        $deletedValues = [];
         if (isset($this->data[$lowerName])) {
             foreach ($this->data[$lowerName] as $pair) {
                 list($value) = $pair;
@@ -333,12 +336,12 @@ class Headers
      */
     public static function parseField($field)
     {
-        $delimiterPos = strpos($field, ': ', 0);
+        $delimiterPos = strpos($field, ':', 0);
         if ($delimiterPos === false) {
             return ['', ''];
         }
         $name = trim(substr($field, 0, $delimiterPos));
-        $value = trim(substr($field, ($delimiterPos + 2)));  # strlen(': ') = 2
+        $value = trim(substr($field, ($delimiterPos + 1)));  # strlen(':') = 1
         return [$name, $value];
     }
 }
