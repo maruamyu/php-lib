@@ -111,7 +111,7 @@ class Request extends MessageAbstract implements RequestInterface
         } else {
             $newInstance = $this->withHeader('Host', $uri->getHost());
         }
-        $newInstance->uri = clone $uri;
+        $newInstance->uri = static::normalizeUri($uri);
         return $newInstance;
     }
 
