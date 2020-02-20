@@ -3,8 +3,8 @@
 namespace Maruamyu\Core\Http\Driver;
 
 use Maruamyu\Core\Http\Message\Headers;
-use Maruamyu\Core\Http\Message\Request;
 use Maruamyu\Core\Http\Message\Response;
+use Psr\Http\Message\RequestInterface;
 
 /**
  * HTTP通信 処理クラス (cURL)
@@ -24,10 +24,10 @@ class CURL extends DriverAbstract
     /**
      * インスタンスを初期化する.
      *
-     * @param Request $request リクエスト情報
+     * @param RequestInterface $request リクエスト情報
      * @throws \RuntimeException 必要なモジュールがロードされていないとき
      */
-    public function __construct(Request $request = null)
+    public function __construct(RequestInterface $request = null)
     {
         if (!extension_loaded('curl')) {
             throw new \RuntimeException('cURL module not found');
@@ -76,7 +76,7 @@ class CURL extends DriverAbstract
         curl_setopt($cURLHandler, CURLOPT_HTTPGET, true);  # POSTFIELDSをリセットする
         $method = strtoupper($this->request->getMethod());
         if ($method === 'GET') {
-            ;
+            # do nothing
         } elseif ($method === 'HEAD') {
             curl_setopt($cURLHandler, CURLOPT_NOBODY, true);
         } elseif ($method === 'POST') {
@@ -200,7 +200,7 @@ class CURL extends DriverAbstract
                 $name = substr($line, 0, $delimiterPos);
                 $value = substr($line, ($delimiterPos + 2));
                 $headers->add($name, $value);
-            } else if (preg_match('#^HTTP/([0-9\.]+) (\d+) ?(.*)$#u', $line, $match)) {
+            } elseif (preg_match('#^HTTP/([0-9\.]+) (\d+) ?(.*)$#u', $line, $match)) {
                 $statusCode = intval($match[2], 10);
                 $statusReasonPhrase = $match[3];
                 $protocolVersion = $match[1];

@@ -6,6 +6,7 @@ use Maruamyu\Core\Http\Message\MultipartData;
 use Maruamyu\Core\Http\Message\QueryString;
 use Maruamyu\Core\Http\Message\Request;
 use Maruamyu\Core\Http\Message\Response;
+use Psr\Http\Message\RequestInterface;
 
 /**
  * HTTP通信 処理クラス
@@ -37,11 +38,11 @@ abstract class DriverAbstract implements DriverInterface
     /**
      * インスタンスを初期化する.
      *
-     * @param Request $request リクエスト情報
+     * @param RequestInterface $request リクエスト情報
      * @throws \RuntimeException 必要なモジュールがロードされていないとき
      *
      */
-    public function __construct(Request $request = null)
+    public function __construct(RequestInterface $request = null)
     {
         if (!extension_loaded('openssl')) {
             throw new \RuntimeException('OpenSSL module not found');
@@ -54,10 +55,10 @@ abstract class DriverAbstract implements DriverInterface
     /**
      * リクエスト情報を設定する.
      *
-     * @param Request $request リクエスト情報
+     * @param RequestInterface $request リクエスト情報
      * @throws \InvalidArgumentException 指定されたリクエストのURLが正しくないとき
      */
-    public function setRequest(Request $request)
+    public function setRequest(RequestInterface $request)
     {
         $requestUri = $request->getUri();
         $requestUriString = strval($requestUri);
@@ -68,7 +69,7 @@ abstract class DriverAbstract implements DriverInterface
         if (!($protocol) || !(static::$allowProtocols[$protocol])) {
             throw new \InvalidArgumentException('invalid protocol: ' . $protocol);
         }
-        $this->request = clone $request;
+        $this->request = static::normalizeRequest($request);
     }
 
     /**
@@ -142,5 +143,23 @@ abstract class DriverAbstract implements DriverInterface
         $this->request = $this->request->withHeader('Content-Type', $newContentType);
 
         return $multipartFormData;
+    }
+
+    /**
+     * @param RequestInterface $requestInterface
+     * @return Request
+     */
+    protected static function normalizeRequest(RequestInterface $requestInterface)
+    {
+        if ($requestInterface instanceof Request) {
+            return $requestInterface;
+        } else {
+            $request = new Request($requestInterface->getMethod(), $requestInterface->getUri(),
+                $requestInterface->getBody(), $requestInterface->getHeaders());
+            if ($request->getProtocolVersion() !== $requestInterface->getProtocolVersion()) {
+                $request = $request->withProtocolVersion($requestInterface->getProtocolVersion());
+            }
+            return $request;
+        }
     }
 }

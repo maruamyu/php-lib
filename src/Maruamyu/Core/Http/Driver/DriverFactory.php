@@ -2,7 +2,7 @@
 
 namespace Maruamyu\Core\Http\Driver;
 
-use Maruamyu\Core\Http\Message\Request;
+use Psr\Http\Message\RequestInterface;
 
 /**
  * HTTP通信処理クラスのインスタンスを取得する
@@ -12,11 +12,11 @@ class DriverFactory
     /**
      * HTTP通信処理クラスのインスタンスを取得する.
      *
-     * @param Request $request リクエスト情報
+     * @param RequestInterface $request リクエスト情報
      * @return DriverInterface HTTPドライバ インスタンス
      * @throws \RuntimeException 必要なモジュールがロードされていないとき
      */
-    public function getDriver(Request $request = null)
+    public function getDriver(RequestInterface $request = null)
     {
         if (static::isAvailableCURL()) {
             return new CURL($request);

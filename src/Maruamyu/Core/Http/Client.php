@@ -9,6 +9,7 @@ use Maruamyu\Core\Http\Message\NormalizeMessageTrait;
 use Maruamyu\Core\Http\Message\Request;
 use Maruamyu\Core\Http\Message\Response;
 use Maruamyu\Core\Http\Message\UriInterface;
+use Psr\Http\Message\RequestInterface;
 
 /**
  * HTTPクライアント
@@ -47,10 +48,10 @@ class Client
     /**
      * 指定されたリクエストメッセージを送信し, レスポンスを返す.
      *
-     * @param Request $request リクエスト情報
+     * @param RequestInterface $request リクエスト情報
      * @return Response レスポンス
      */
-    public function send(Request $request)
+    public function send(RequestInterface $request)
     {
         if (!$request->hasHeader('User-Agent')) {
             $defaultUserAgent = $this->defaultUserAgent();
@@ -118,10 +119,10 @@ class Client
     }
 
     /**
-     * @param Request $request リクエスト
+     * @param RequestInterface $request リクエスト
      * @return DriverInterface HTTP処理クラス
      */
-    protected function getHttpDriver(Request $request = null)
+    protected function getHttpDriver(RequestInterface $request = null)
     {
         if (!$this->httpDriverFactory) {
             $this->httpDriverFactory = new DriverFactory();
