@@ -2,7 +2,7 @@
     "name": "maruamyu/web-app-lib",
     "type": "library",
     "description": "simple and useful library for web application.",
-    "keywords": ["psr-7", "http", "request", "response", "oauth", "oauth2", "openid", "jwt"],
+    "keywords": ["psr-7", "http", "request", "response", "oauth", "oauth2", "openid", "jwt", "ulid"],
     "homepage": "https://github.com/maruamyu/php-lib",
     "license": "MIT",
     "authors": [
@@ -29,7 +29,8 @@
         "phpunit/phpunit": "5.7.*"
     },
     "suggest": {
-        "ext-mcrypt": "Needed to support Rijndael in class Cipher\\Aes"
+        "ext-mcrypt": "if use Rijndael (`Maruamyu\\Core\\Cipher\\Aes`)",
+        "ext-bcmath": "if used 32bit PHP (`Maruamyu\\Core\\Ulid`)"
     },
     "autoload": {
         "psr-4": {
