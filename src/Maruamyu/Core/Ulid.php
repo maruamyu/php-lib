@@ -87,10 +87,11 @@ class Ulid
             $timestamp = strval($timestamp);
         } elseif (extension_loaded('bcmath')) {
             $timestamp = '0';
+            bcscale(0);
             $charsCount = strval(count(static::CHARS));
             for ($i = 0; $i < count($workCharIndices); $i++) {
-                $base = bcpow($charsCount, strval($i), 0);
-                $add = bcmul(strval($workCharIndices[$i]), $base, 0);
+                $base = bcpow($charsCount, strval($i));
+                $add = bcmul(strval($workCharIndices[$i]), $base);
                 $timestamp = bcadd($timestamp, $add);
             }
         } else {
@@ -147,12 +148,13 @@ class Ulid
     protected static function generateTimePartBcmath($timestampString)
     {
         $timePart = '';
+        bcscale(0);
         $workTimestamp = $timestampString;
         $charsCount = strval(count(static::CHARS));
         for ($i = 0; $i < static::TIME_PART_CHARS; $i++) {
-            $idx = intval(bcmod($workTimestamp, $charsCount, 0));
+            $idx = intval(bcmod($workTimestamp, $charsCount));
             $timePart = static::CHARS[$idx] . $timePart;
-            $workTimestamp = bcdiv($workTimestamp, $charsCount, 0);
+            $workTimestamp = bcdiv($workTimestamp, $charsCount);
         }
         return $timePart;
     }
