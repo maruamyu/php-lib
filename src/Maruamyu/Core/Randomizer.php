@@ -71,6 +71,13 @@ class Randomizer
         return Uuid::generate();
     }
 
+    /**
+     * @return string
+     */
+    public static function generateUlid()
+    {
+        return Ulid::generate();
+    }
 
     /**
      * constructor (private)

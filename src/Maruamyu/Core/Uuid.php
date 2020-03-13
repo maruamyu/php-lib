@@ -21,17 +21,42 @@ class Uuid
      */
     public static function generateV4()
     {
-        $randomizer = (function_exists('random_int')) ? 'random_int' : 'mt_rand';
-        $random1 = $randomizer(0, 0xFFFF);
-        $random2 = $randomizer(0, 0xFFFF);
-        $random3 = $randomizer(0, 0xFFFF);
-        $random4 = $randomizer(0, 0x0FFF) | 0x4000;  # 0100xxxx xxxxxxxx (version = 4)
-        $random5 = $randomizer(0, 0x3FFF) | 0x8000;  # 10xxxxxx xxxxxxxx (variant = RFC4122)
-        $random6 = $randomizer(0, 0xFFFF);
-        $random7 = $randomizer(0, 0xFFFF);
-        $random8 = $randomizer(0, 0xFFFF);
+        if (PHP_INT_SIZE >= 8) {
+            return static::generateV4_64bit();
+        } else {
+            return static::generateV4_32bit();
+        }
+    }
+
+    /**
+     * @return string UUIDv4
+     */
+    private static function generateV4_32bit()
+    {
+        $random1 = Randomizer::randomInt(0, 0xFFFF);
+        $random2 = Randomizer::randomInt(0, 0xFFFF);
+        $random3 = Randomizer::randomInt(0, 0xFFFF);
+        $random4 = Randomizer::randomInt(0, 0x0FFF) | 0x4000;  # 0100xxxx xxxxxxxx (version = 4)
+        $random5 = Randomizer::randomInt(0, 0x3FFF) | 0x8000;  # 10xxxxxx xxxxxxxx (variant = RFC4122)
+        $random6 = Randomizer::randomInt(0, 0xFFFF);
+        $random7 = Randomizer::randomInt(0, 0xFFFF);
+        $random8 = Randomizer::randomInt(0, 0xFFFF);
         return sprintf('%04X%04X-%04X-%04X-%04X-%04X%04X%04X',
             $random1, $random2, $random3, $random4, $random5, $random6, $random7, $random8);
+    }
+
+    /**
+     * @return string UUIDv4
+     */
+    private static function generateV4_64bit()
+    {
+        $random1 = Randomizer::randomInt(0, 0xFFFFFFFF);
+        $random2 = Randomizer::randomInt(0, 0xFFFF);
+        $random3 = Randomizer::randomInt(0, 0x0FFF) | 0x4000;  # 0100xxxx xxxxxxxx (version = 4)
+        $random4 = Randomizer::randomInt(0, 0x3FFF) | 0x8000;  # 10xxxxxx xxxxxxxx (variant = RFC4122)
+        $random5 = Randomizer::randomInt(0, 0xFFFFFFFFFFFF);
+        return sprintf('%08X-%04X-%04X-%04X-%012X',
+            $random1, $random2, $random3, $random4, $random5);
     }
 
     /**

@@ -68,4 +68,10 @@ class RandomizerTest extends \PHPUnit\Framework\TestCase
         $expectsRegExp = '/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/u';
         $this->assertRegExp($expectsRegExp, Randomizer::generateUuid());
     }
+
+    public function test_generateUlid()
+    {
+        $expectsRegExp = '/^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$/u';
+        $this->assertRegExp($expectsRegExp, Randomizer::generateUlid());
+    }
 }
