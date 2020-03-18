@@ -51,12 +51,14 @@ class Uuid
     private static function generateV4_64bit()
     {
         $random1 = Randomizer::randomInt(0, 0xFFFFFFFF);
-        $random2 = Randomizer::randomInt(0, 0xFFFF);
-        $random3 = Randomizer::randomInt(0, 0x0FFF) | 0x4000;  # 0100xxxx xxxxxxxx (version = 4)
-        $random4 = Randomizer::randomInt(0, 0x3FFF) | 0x8000;  # 10xxxxxx xxxxxxxx (variant = RFC4122)
+        $random234 = Randomizer::randomInt(0, 0xFFFFFFFFFFFF);
         $random5 = Randomizer::randomInt(0, 0xFFFFFFFFFFFF);
-        return sprintf('%08X-%04X-%04X-%04X-%012X',
-            $random1, $random2, $random3, $random4, $random5);
+
+        $random2 = ($random234) & 0xFFFF;
+        $random3 = (($random234 >> 16) & 0x0FFF) | 0x4000;  # 0100xxxx xxxxxxxx (version = 4)
+        $random4 = (($random234 >> 32) & 0x3FFF) | 0x8000;  # 10xxxxxx xxxxxxxx (variant = RFC4122)
+
+        return sprintf('%08X-%04X-%04X-%04X-%012X', $random1, $random2, $random3, $random4, $random5);
     }
 
     /**

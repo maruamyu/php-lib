@@ -77,18 +77,23 @@ class Ulid
             $timePartCharIndices[] = $idx;
         }
 
-        $workCharIndices = array_reverse($timePartCharIndices);
         if ((PHP_INT_SIZE >= 8) && !(static::$configForceBcmath)) {
             $timestamp = 0;
-            $charsCount = count(static::CHARS);
-            for ($i = 0; $i < count($workCharIndices); $i++) {
-                $timestamp += $workCharIndices[$i] * pow($charsCount, $i);
+            # $charsCount = count(static::CHARS);
+            # $workCharIndices = array_reverse($timePartCharIndices);  # Big Endian -> Little Endian
+            # for ($i = 0; $i < count($workCharIndices); $i++) {
+            #     $timestamp += $workCharIndices[$i] * pow($charsCount, $i);
+            # }
+            # Big Endian bit operation
+            for ($i = 0; $i < count($timePartCharIndices); $i++) {
+                $timestamp = ($timestamp << 5) | $timePartCharIndices[$i];
             }
             $timestamp = strval($timestamp);
         } elseif (extension_loaded('bcmath')) {
             $timestamp = '0';
             bcscale(0);
             $charsCount = strval(count(static::CHARS));
+            $workCharIndices = array_reverse($timePartCharIndices);  # Big Endian -> Little Endian
             for ($i = 0; $i < count($workCharIndices); $i++) {
                 $base = bcpow($charsCount, strval($i));
                 $add = bcmul(strval($workCharIndices[$i]), $base);
