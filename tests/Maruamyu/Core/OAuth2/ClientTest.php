@@ -141,6 +141,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         $oauth2Client = new Client($oauth2metadata, $clientId, $clientSecret);
         $this->assertFalse($oauth2Client->hasOpenIDMetadata());
 
+        # Google's OpenID metadata
         $openIDMetadata = [
             'issuer' => 'https://accounts.google.com',
             'authorization_endpoint' => 'https://accounts.google.com/o/oauth2/v2/auth',

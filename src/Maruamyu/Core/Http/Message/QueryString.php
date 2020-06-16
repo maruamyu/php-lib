@@ -348,7 +348,7 @@ class QueryString
     }
 
     /**
-     * @param string[][] $parameters
+     * @param string[][]|string[] $parameters
      * @return string
      */
     public static function build(array $parameters)

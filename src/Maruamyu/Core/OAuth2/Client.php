@@ -251,7 +251,8 @@ class Client
      * @return AccessToken|null
      * @throws \Exception if invalid settings or arguments
      */
-    public function finishAuthorizationCodeGrant($code, $redirectUrl = null, array $optionalParameters = []) {
+    public function finishAuthorizationCodeGrant($code, $redirectUrl = null, array $optionalParameters = [])
+    {
         if (isset($this->metadata->tokenEndpoint) == false) {
             throw new \RuntimeException('tokenEndpoint not set yet.');
         }
@@ -504,7 +505,6 @@ class Client
         $this->setAccessTokenByResponse($response);
         return $this->getAccessToken();
     }
-
 
     /**
      * make HTTP Request of
