@@ -12,21 +12,48 @@ class AccessTokenTest extends \PHPUnit\Framework\TestCase
             'expires_in' => 3600,
         ];
         $accessToken = new AccessToken($tokenData);
-        $this->assertEquals($tokenData['access_token'], $accessToken->getToken());
-        $this->assertEquals($tokenData['token_type'], $accessToken->getType());
+        $this->assertEquals('access_token', $accessToken->getToken());
+        $this->assertEquals('Bearer', $accessToken->getType());
+        $this->assertEquals(3600, $accessToken->getExpiresIn());
         $this->assertNull($accessToken->getExpireAt());
     }
 
-    public function test_iat_exp()
+    public function test_expireAt_with_iat()
+    {
+        $tokenData = [
+            'access_token' => 'access_token',
+            'token_type' => 'Bearer',
+            'expires_in' => 3600,
+            'iat' => 1234567890,
+        ];
+        $accessToken = new AccessToken($tokenData);
+        $expireAt = $accessToken->getExpireAt();
+        $this->assertEquals((1234567890 + 3600), $expireAt->getTimestamp());
+    }
+
+    public function test_expireAt_with_issuedAt()
     {
         $tokenData = [
             'access_token' => 'access_token',
             'token_type' => 'Bearer',
             'expires_in' => 3600,
         ];
-        $accessToken = new AccessToken($tokenData);
-        $this->assertNull($accessToken->getExpireAt());
+        $issuedAt = \DateTime::createFromFormat('U', 1234567890);
+        $accessToken = new AccessToken($tokenData, $issuedAt);
+        $expireAt = $accessToken->getExpireAt();
+        $this->assertEquals((1234567890 + 3600), $expireAt->getTimestamp());
+    }
 
+    public function test_expireAt_with_exp()
+    {
+        $tokenData = [
+            'access_token' => 'access_token',
+            'token_type' => 'Bearer',
+            'exp' => 1234567890,
+        ];
+        $accessToken = new AccessToken($tokenData);
+        $expireAt = $accessToken->getExpireAt();
+        $this->assertEquals(1234567890, $expireAt->getTimestamp());
     }
 
     public function test_toArray()

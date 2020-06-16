@@ -64,6 +64,18 @@ class AccessToken
     }
 
     /**
+     * @return int expires_in (return zero if not set yet)
+     */
+    public function getExpiresIn()
+    {
+        if (isset($this->data['expires_in'])) {
+            return intval(($this->data['expires_in']), 10);
+        } else {
+            return 0;
+        }
+    }
+
+    /**
      * @return \DateTimeImmutable|null expire of token (return null if not set yet)
      */
     public function getExpireAt()
@@ -180,8 +192,8 @@ class AccessToken
         # set expireAt
         if (isset($tokenData['exp'])) {
             $this->expireAt = \DateTimeImmutable::createFromFormat('U', $tokenData['exp']);
-        } elseif (isset($this->issuedAt, $this->expiresIn)) {
-            $this->expireAt = $this->issuedAt->modify('+ ' . $this->expiresIn . ' sec');
+        } elseif (isset($this->issuedAt, $tokenData['expires_in'])) {
+            $this->expireAt = $this->issuedAt->modify('+ ' . $tokenData['expires_in'] . ' sec');
         }
     }
 }
