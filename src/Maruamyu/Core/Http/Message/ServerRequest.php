@@ -231,9 +231,17 @@ class ServerRequest extends Request implements ServerRequestInterface
 
         # Message headers
         $headers = new Headers();
+        if (function_exists('apache_request_headers')) {
+            $apacheRequestHeaders = apache_request_headers();
+            if ($apacheRequestHeaders) {
+                foreach ($apacheRequestHeaders as $headerName => $headerValue) {
+                    $headers->set($headerName, $headerValue);
+                }
+            }
+        }
         foreach ($_SERVER as $rawHeaderName => $headerValue) {
-            if (($pos = strpos($rawHeaderName, 'HTTP_')) === 0) {
-                $headerName = strtr(substr($rawHeaderName, ($pos + 5)), '_', '-');
+            if (strpos($rawHeaderName, 'HTTP_') === 0) {
+                $headerName = strtr(substr($rawHeaderName, 5), '_', '-');
                 $headers->set($headerName, $headerValue);
             }
         }
@@ -258,8 +266,13 @@ class ServerRequest extends Request implements ServerRequestInterface
         if (isset($_SERVER['REQUEST_URI'])) {
             $url = '';
             if (isset($_SERVER['SERVER_NAME'])) {
-                $url .= (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] !== 'off')) ? 'https' : 'http';
-                $url .= '://' . $_SERVER['SERVER_NAME'];
+                $protocol = 'http';
+                if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+                    $protocol = strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']);
+                } elseif (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] !== 'off')) {
+                    $protocol = 'https';
+                }
+                $url = $protocol . '://' . $_SERVER['SERVER_NAME'];
             }
             $url .= strval($_SERVER['REQUEST_URI']);
             $serverRequest->uri = new Uri($url);
