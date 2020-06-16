@@ -343,6 +343,64 @@ class Client
     }
 
     /**
+     * Device Authorization Grant (RFC 8628) : start
+     *
+     * @param string[] $scopes
+     * @return array|null Device Authorization Response
+     */
+    public function startDeviceAuthorizationGrant(array $scopes = [])
+    {
+        if (isset($this->metadata->deviceAuthorizationEndpoint) == false) {
+            throw new \RuntimeException('deviceAuthorizationEndpoint not set yet.');
+        }
+        $parameters = [
+            'client_id' => $this->clientId,
+        ];
+        if ($scopes) {
+            $parameters['scope'] = join(' ', $scopes);
+        }
+        $requestBodoy = QueryString::build($parameters);
+        $request = new Request('POST', $this->metadata->deviceAuthorizationEndpoint, $requestBodoy);
+        $response = $this->getHttpClient()->send($request);
+        if ($response->statusCodeIsOk() == false) {
+            return null;
+        }
+        $responseBody = strval($response->getBody());
+        return json_decode($responseBody, true);
+    }
+
+    /**
+     * Device Authorization Grant (RFC 8628) : exchange device_code to token
+     *
+     * @param string $deviceCode
+     * @return array|null Device Authorization Response
+     */
+    public function finishDeviceAuthorizationGrant($deviceCode)
+    {
+        if (isset($this->metadata->tokenEndpoint) == false) {
+            throw new \RuntimeException('tokenEndpoint not set yet.');
+        }
+
+        $parameters = [
+            'grant_type' => 'urn:ietf:params:oauth:grant-type:device_code',
+            'device_code' => $deviceCode,
+            'client_id' => $this->clientId,
+        ];
+
+        $requestBodoy = QueryString::build($parameters);
+        $request = new Request('POST', $this->metadata->deviceAuthorizationEndpoint, $requestBodoy);
+        $response = $this->getHttpClient()->send($request);
+        if ($response->statusCodeIsOk() == false) {
+            return null;
+        }
+        $responseData = json_decode(strval($response->getBody()), true);
+        if (isset($responseData['error']) == false) {
+            $this->setAccessTokenByResponse($response);
+        }
+        return $responseData;
+    }
+
+    /**
      * start Implicit Grant
      *
      * @param string[] $scopes
@@ -746,14 +804,18 @@ class Client
 
     /**
      * @param Response $response
+     * @return bool
      */
     protected function setAccessTokenByResponse(Response $response)
     {
         $tokenData = json_decode($response->getBody(), true);
+        if (isset($tokenData['error'])) {
+            return false;
+        }
         $issuedAt = $response->getDate();
-
         $accessToken = new AccessToken($tokenData, $issuedAt);
         $this->setAccessToken($accessToken);
+        return true;
     }
 
     /**

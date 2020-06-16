@@ -15,6 +15,9 @@ class AuthorizationServerMetadata
     /** @var string authorization_endpoint */
     public $authorizationEndpoint;
 
+    /** @var string device_authorization_endpoint */
+    public $deviceAuthorizationEndpoint;
+
     /** @var string token_endpoint */
     public $tokenEndpoint;
 
@@ -81,6 +84,9 @@ class AuthorizationServerMetadata
     /** @var null|string[] code_challenge_methods_supported */
     public $supportedCodeChallengeMethods;
 
+    /** @var string signed_metadata */
+    public $signedMetadata;
+
     /**
      * @param string|array|null $initialMetadata
      */
@@ -113,6 +119,11 @@ class AuthorizationServerMetadata
         # authorization_endpoint (REQUIRED unless no grant types are supported that use the authorization endpoint)
         if (isset($metadata['authorization_endpoint'])) {
             $this->authorizationEndpoint = strval($metadata['authorization_endpoint']);
+        }
+
+        # device_authorization_endpoint (OPTIONAL)
+        if (isset($metadata['device_authorization_endpoint'])) {
+            $this->deviceAuthorizationEndpoint = strval($metadata['device_authorization_endpoint']);
         }
 
         # token_endpoint (REQUIRED unless only the Implicit Flow is used)
@@ -216,6 +227,11 @@ class AuthorizationServerMetadata
         if (isset($metadata['code_challenge_methods_supported'])) {
             $this->supportedCodeChallengeMethods = $metadata['code_challenge_methods_supported'];
         }
+
+        # signed_metadata (OPTIONAL)
+        if (isset($metadata['signed_metadata'])) {
+            $this->signedMetadata = $metadata['signed_metadata'];
+        }
     }
 
     /**
@@ -231,6 +247,11 @@ class AuthorizationServerMetadata
         # authorization_endpoint (REQUIRED unless no grant types are supported that use the authorization endpoint)
         if (strlen($this->authorizationEndpoint) > 0) {
             $metadata['authorization_endpoint'] = strval($this->authorizationEndpoint);
+        }
+
+        # device_authorization_endpoint (OPTIONAL)
+        if (strlen($this->deviceAuthorizationEndpoint) > 0) {
+            $metadata['device_authorization_endpoint'] = strval($this->deviceAuthorizationEndpoint);
         }
 
         # token_endpoint (REQUIRED unless only the Implicit Flow is used)
@@ -329,6 +350,11 @@ class AuthorizationServerMetadata
         # code_challenge_methods_supported (OPTIONAL)
         if (isset($this->supportedCodeChallengeMethods) && !(empty($this->supportedCodeChallengeMethods))) {
             $metadata['code_challenge_methods_supported'] = $this->supportedCodeChallengeMethods;
+        }
+
+        # signed_metadata (OPTIONAL)
+        if (isset($this->signedMetadata) && !(empty($this->signedMetadata))) {
+            $metadata['signed_metadata'] = $this->signedMetadata;
         }
 
         return $metadata;
