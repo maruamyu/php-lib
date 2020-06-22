@@ -46,4 +46,12 @@ class JsonWebTokenTest extends \PHPUnit\Framework\TestCase
         ];
         $this->assertFalse(JsonWebToken::validatePayload($invalidPayload4, 'openid.example.jp', 'client_id'));
     }
+
+    public function test_makeAtHashValue()
+    {
+        $accessToken = 'access_token';
+        $this->assertEquals('hrOQHuo3oE6FR82RIiX1SA', JsonWebToken::makeAtHashValue('HS256', $accessToken));
+        $this->assertEquals('-8n-hMQb1uN9jiUmNx_u-ebU3iiup8so', JsonWebToken::makeAtHashValue('RS384', $accessToken));
+        $this->assertEquals('27_LkB_iLYdThB7OdGZjD6FMBlxSF1srJ_OCYC0MK5w', JsonWebToken::makeAtHashValue('ES512', $accessToken));
+    }
 }

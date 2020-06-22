@@ -147,6 +147,42 @@ class JsonWebToken
     }
 
     /**
+     * make `at_hash`, `c_hash` value
+     * @param string $algValue
+     * @param string $message
+     * @return string
+     * @throws \Exception
+     */
+    public static function makeAtHashValue($algValue, $message)
+    {
+        if (JsonWebAlgorithms::isSupportedHashAlgorithm($algValue) == false) {
+            throw new \DomainException('alg=' . $algValue . ' is not supported');
+        }
+        list($type, $algorithm) = JsonWebAlgorithms::HASH_ALGORITHM[$algValue];
+        if ($type === 'hash_hmac') {
+            $hashAlgorithm = $algorithm;
+        } elseif ($type === 'openssl') {
+            switch ($algorithm) {
+                case OPENSSL_ALGO_SHA512:
+                    $hashAlgorithm = 'sha512';
+                    break;
+                case OPENSSL_ALGO_SHA384:
+                    $hashAlgorithm = 'sha384';
+                    break;
+                case OPENSSL_ALGO_SHA256:
+                default:
+                    $hashAlgorithm = 'sha256';
+            }
+        } else {
+            # fallback
+            $hashAlgorithm = 'sha256';
+        }
+        $rawHash = hash($hashAlgorithm, $message, true);
+        $length = intval(strlen($rawHash) / 2);
+        return Base64Url::encode(substr($rawHash, 0, $length));
+    }
+
+    /**
      * constructor (private)
      */
     private function __construct()
