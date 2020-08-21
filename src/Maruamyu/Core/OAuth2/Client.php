@@ -3,6 +3,7 @@
 namespace Maruamyu\Core\OAuth2;
 
 use Maruamyu\Core\Base64Url;
+use Maruamyu\Core\Cipher\Digest;
 use Maruamyu\Core\Http\Client as HttpClient;
 use Maruamyu\Core\Http\Message\Headers;
 use Maruamyu\Core\Http\Message\QueryString;
@@ -304,7 +305,7 @@ class Client
                 $optionalParameters['code_challenge'] = $codeVerifier;
                 break;
             case 'S256':
-                $optionalParameters['code_challenge'] = Base64Url::encode(hash('sha256', $codeVerifier, true));
+                $optionalParameters['code_challenge'] = Base64Url::encode(Digest::sha256($codeVerifier));
                 break;
             default:
                 throw new \DomainException('invalid code_challenge_method=' . $codeChallengeMethod . '');
