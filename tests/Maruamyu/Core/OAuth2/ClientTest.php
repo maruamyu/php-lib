@@ -108,11 +108,11 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         $jsonWebKey = $this->getJsonWebKey();
 
         $nowTimestamp = time();
-        $expireAtTimestamp = $nowTimestamp + 3600;
+        $expiresAtTimestamp = $nowTimestamp + 3600;
         $scopes = ['hoge', 'fuga', 'piyo'];
 
         $request = $client->makeJwtBearerGrantRequest($jsonWebKey, 'issuer@example.jp',
-            'subject@example.jp', $expireAtTimestamp, $scopes, ['iat' => $nowTimestamp]);
+            'subject@example.jp', $expiresAtTimestamp, $scopes, ['iat' => $nowTimestamp]);
         $this->assertEquals('POST', $request->getMethod());
         $this->assertEquals('https://example.jp/oauth2/token', strval($request->getUri()));
 
@@ -127,7 +127,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('issuer@example.jp', $jwtPayload['iss']);
         $this->assertEquals('subject@example.jp', $jwtPayload['sub']);
         $this->assertEquals('https://example.jp/oauth2/token', $jwtPayload['aud']);
-        $this->assertEquals($expireAtTimestamp, $jwtPayload['exp']);
+        $this->assertEquals($expiresAtTimestamp, $jwtPayload['exp']);
         $this->assertEquals($nowTimestamp, $jwtPayload['iat']);
         $this->assertEquals('hoge fuga piyo', $jwtPayload['scope']);
     }

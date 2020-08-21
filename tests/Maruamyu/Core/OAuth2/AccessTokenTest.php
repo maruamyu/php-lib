@@ -15,10 +15,10 @@ class AccessTokenTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('access_token', $accessToken->getToken());
         $this->assertEquals('Bearer', $accessToken->getType());
         $this->assertEquals(3600, $accessToken->getExpiresIn());
-        $this->assertNull($accessToken->getExpireAt());
+        $this->assertNull($accessToken->getExpiresAt());
     }
 
-    public function test_expireAt_with_iat()
+    public function test_expiresAt_with_iat()
     {
         $tokenData = [
             'access_token' => 'access_token',
@@ -27,11 +27,11 @@ class AccessTokenTest extends \PHPUnit\Framework\TestCase
             'iat' => 1234567890,
         ];
         $accessToken = new AccessToken($tokenData);
-        $expireAt = $accessToken->getExpireAt();
-        $this->assertEquals((1234567890 + 3600), $expireAt->getTimestamp());
+        $expiresAt = $accessToken->getExpiresAt();
+        $this->assertEquals((1234567890 + 3600), $expiresAt->getTimestamp());
     }
 
-    public function test_expireAt_with_issuedAt()
+    public function test_expiresAt_with_issuedAt()
     {
         $tokenData = [
             'access_token' => 'access_token',
@@ -40,11 +40,11 @@ class AccessTokenTest extends \PHPUnit\Framework\TestCase
         ];
         $issuedAt = \DateTime::createFromFormat('U', 1234567890);
         $accessToken = new AccessToken($tokenData, $issuedAt);
-        $expireAt = $accessToken->getExpireAt();
-        $this->assertEquals((1234567890 + 3600), $expireAt->getTimestamp());
+        $expiresAt = $accessToken->getExpiresAt();
+        $this->assertEquals((1234567890 + 3600), $expiresAt->getTimestamp());
     }
 
-    public function test_expireAt_with_exp()
+    public function test_expiresAt_with_exp()
     {
         $tokenData = [
             'access_token' => 'access_token',
@@ -52,8 +52,8 @@ class AccessTokenTest extends \PHPUnit\Framework\TestCase
             'exp' => 1234567890,
         ];
         $accessToken = new AccessToken($tokenData);
-        $expireAt = $accessToken->getExpireAt();
-        $this->assertEquals(1234567890, $expireAt->getTimestamp());
+        $expiresAt = $accessToken->getExpiresAt();
+        $this->assertEquals(1234567890, $expiresAt->getTimestamp());
     }
 
     public function test_toArray()

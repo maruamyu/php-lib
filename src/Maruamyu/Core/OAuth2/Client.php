@@ -121,9 +121,9 @@ class Client
             return false;
         }
 
-        # check expire_at
-        $expireAt = $this->accessToken->getExpireAt();
-        if ($expireAt) {
+        # check expires_at
+        $expiresAt = $this->accessToken->getExpiresAt();
+        if ($expiresAt) {
             if (!$currentTime) {
                 try {
                     $currentTime = new \DateTime();
@@ -131,7 +131,7 @@ class Client
                     return false;
                 }
             }
-            if ($currentTime > $expireAt) {
+            if ($currentTime > $expiresAt) {
                 return false;
             }
         }
@@ -541,7 +541,7 @@ class Client
      * @param JsonWebKey $jsonWebKey private key
      * @param string $issuer
      * @param string $subject
-     * @param int $expireAtTimestamp expire(seconds)
+     * @param int $expiresAtTimestamp expire(seconds)
      * @param string[] $scopes list of scopes
      * @param string[] $optionalParameters
      * @return AccessToken|null
@@ -551,11 +551,11 @@ class Client
         JsonWebKey $jsonWebKey,
         $issuer,
         $subject,
-        $expireAtTimestamp,
+        $expiresAtTimestamp,
         array $scopes = [],
         array $optionalParameters = []
     ) {
-        $request = $this->makeJwtBearerGrantRequest($jsonWebKey, $issuer, $subject, $expireAtTimestamp, $scopes, $optionalParameters);
+        $request = $this->makeJwtBearerGrantRequest($jsonWebKey, $issuer, $subject, $expiresAtTimestamp, $scopes, $optionalParameters);
         $response = $this->getHttpClient()->send($request);
         if ($response->statusCodeIsOk() == false) {
             return null;
@@ -571,7 +571,7 @@ class Client
      * @param JsonWebKey $jsonWebKey private key
      * @param string $issuer
      * @param string $subject
-     * @param int $expireAtTimestamp
+     * @param int $expiresAtTimestamp
      * @param string[] $scopes
      * @param string[] $optionalParameters
      * @return Request
@@ -581,7 +581,7 @@ class Client
         JsonWebKey $jsonWebKey,
         $issuer,
         $subject,
-        $expireAtTimestamp,
+        $expiresAtTimestamp,
         array $scopes = [],
         array $optionalParameters = []
     ) {
@@ -593,7 +593,7 @@ class Client
             'iss' => $issuer,
             'sub' => $subject,
             'aud' => $this->metadata->tokenEndpoint,
-            'exp' => $expireAtTimestamp,
+            'exp' => $expiresAtTimestamp,
         ];
         if ($scopes) {
             $jwtClaimSet['scope'] = join(' ', $scopes);

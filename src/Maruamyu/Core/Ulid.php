@@ -25,7 +25,7 @@ class Ulid
     const TIME_PART_CHARS = 10;
     const RANDOM_PART_CHARS = 16;
 
-    /** @var boolean */
+    /** @var bool */
     public static $configForceBcmath = false;
 
     /** @var string[] 'timestamp' => 'time_part' */

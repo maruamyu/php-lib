@@ -14,7 +14,7 @@ class AccessToken
     private $issuedAt = null;
 
     /** @var \DateTimeImmutable|null */
-    private $expireAt = null;
+    private $expiresAt = null;
 
     /**
      * @param array $tokenData decoded successful access_token response
@@ -78,9 +78,18 @@ class AccessToken
     /**
      * @return \DateTimeImmutable|null expire of token (return null if not set yet)
      */
+    public function getExpiresAt()
+    {
+        return $this->expiresAt;
+    }
+
+    /**
+     * @return \DateTimeImmutable|null expire of token (return null if not set yet)
+     * @deprecated getExpiresAt()
+     */
     public function getExpireAt()
     {
-        return $this->expireAt;
+        return $this->getExpiresAt();
     }
 
     /**
@@ -151,8 +160,8 @@ class AccessToken
         if ($this->issuedAt) {
             $tokenData['iat'] = $this->issuedAt->getTimestamp();
         }
-        if ($this->expireAt) {
-            $tokenData['exp'] = $this->expireAt->getTimestamp();
+        if ($this->expiresAt) {
+            $tokenData['exp'] = $this->expiresAt->getTimestamp();
         }
 
         return $tokenData;
@@ -189,11 +198,11 @@ class AccessToken
             $this->issuedAt = \DateTimeImmutable::createFromFormat('U', $idTokenPayload['iat']);
         }
 
-        # set expireAt
+        # set expiresAt
         if (isset($tokenData['exp'])) {
-            $this->expireAt = \DateTimeImmutable::createFromFormat('U', $tokenData['exp']);
+            $this->expiresAt = \DateTimeImmutable::createFromFormat('U', $tokenData['exp']);
         } elseif (isset($this->issuedAt, $tokenData['expires_in'])) {
-            $this->expireAt = $this->issuedAt->modify('+ ' . $tokenData['expires_in'] . ' sec');
+            $this->expiresAt = $this->issuedAt->modify('+ ' . $tokenData['expires_in'] . ' sec');
         }
     }
 }
