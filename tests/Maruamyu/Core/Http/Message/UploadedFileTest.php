@@ -50,6 +50,46 @@ class UploadedFileTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * initialized by file resouce
+     */
+    public function test_initByResouce()
+    {
+        $handler = fopen('php://temp', 'c+b');
+        fwrite($handler, 'hogehoge');
+
+        $fileEntry = [
+            'tmp_name' => '',
+            'error' => 0,
+            'size' => 765,
+            'name' => '43210.bin',
+            'type' => 'application/octet-stream',
+        ];
+        $uploadedFile = new UploadedFile($fileEntry, $handler);
+        $stream = $uploadedFile->getStream();
+        $stream->rewind();
+        $this->assertEquals('hogehoge', $stream->getContents());
+    }
+
+    /**
+     * initialized by StreamInterface
+     */
+    public function test_initByStreamInterface()
+    {
+        $stream = Stream::fromTemp('hogehoge');
+        $fileEntry = [
+            'tmp_name' => '',
+            'error' => 0,
+            'size' => 765,
+            'name' => '43210.bin',
+            'type' => 'application/octet-stream',
+        ];
+        $uploadedFile = new UploadedFile($fileEntry, $stream);
+        $stream = $uploadedFile->getStream();
+        $stream->rewind();
+        $this->assertEquals('hogehoge', $stream->getContents());
+    }
+
+    /**
      * @return UploadedFile
      */
     private function getInstance()

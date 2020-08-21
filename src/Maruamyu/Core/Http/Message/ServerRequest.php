@@ -3,7 +3,9 @@
 namespace Maruamyu\Core\Http\Message;
 
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
+use Psr\Http\Message\UriInterface as PsrUriInterface;
 
 /**
  * Webアプリから利用するリクエストコンテキストデータ
@@ -13,32 +15,45 @@ class ServerRequest extends Request implements ServerRequestInterface
     /**
      * @var array
      */
-    protected $serverParams;
+    protected $serverParams = [];
 
     /**
      * @var array
      */
-    protected $cookieParams;
+    protected $cookieParams = [];
 
     /**
      * @var array
      */
-    protected $queryParams;
+    protected $queryParams = [];
 
     /**
-     * @var array
+     * @var null|array|object
      */
     protected $parsedBody;
 
     /**
      * @var UploadedFileInterface[]
      */
-    protected $uploadedFiles;
+    protected $uploadedFiles = [];
 
     /**
      * @var array
      */
-    protected $attributes;
+    protected $attributes = [];
+
+    /**
+     * @param string $method
+     * @param string|PsrUriInterface $uri
+     * @param string|StreamInterface $body
+     * @param Headers|string|array $headers
+     * @param array $serverParams
+     */
+    public function __construct($method = 'GET', $uri = null, $body = null, $headers = null, array $serverParams = [])
+    {
+        parent::__construct($method, $uri, $body, $headers);
+        $this->serverParams = $serverParams;
+    }
 
     /**
      * サーバーのパラメータを返す.
@@ -224,34 +239,13 @@ class ServerRequest extends Request implements ServerRequestInterface
 
         # Message protocolVersion
         if (isset($_SERVER['SERVER_PROTOCOL'])) {
-            if (preg_match('#^HTTP/([0-9\.]+)#u', $_SERVER['SERVER_PROTOCOL'], $matches)) {
+            if (preg_match('#^HTTP/([0-9\\\.]+)#u', $_SERVER['SERVER_PROTOCOL'], $matches)) {
                 $serverRequest->protocolVersion = strval($matches[1]);
             }
         }
 
         # Message headers
-        $headers = new Headers();
-        if (function_exists('apache_request_headers')) {
-            $apacheRequestHeaders = apache_request_headers();
-            if ($apacheRequestHeaders) {
-                foreach ($apacheRequestHeaders as $headerName => $headerValue) {
-                    $headers->set($headerName, $headerValue);
-                }
-            }
-        }
-        foreach ($_SERVER as $rawHeaderName => $headerValue) {
-            if (strpos($rawHeaderName, 'HTTP_') === 0) {
-                $headerName = strtr(substr($rawHeaderName, 5), '_', '-');
-                $headers->set($headerName, $headerValue);
-            }
-        }
-        if (isset($_SERVER['CONTENT_TYPE'])) {
-            $headers->set('Content-Type', $_SERVER['CONTENT_TYPE']);
-        }
-        if (isset($_SERVER['CONTENT_LENGTH'])) {
-            $headers->set('Content-Length', $_SERVER['CONTENT_LENGTH']);
-        }
-        $serverRequest->headers = $headers;
+        $serverRequest->headers = static::getHeadersFromEnvironment();
 
         # Message body
         # this library required (PHP >= 5.6). php://input is re-useful.
@@ -259,32 +253,11 @@ class ServerRequest extends Request implements ServerRequestInterface
 
         # Request method
         if (isset($_SERVER['REQUEST_METHOD'])) {
-            $serverRequest->method = $_SERVER['REQUEST_METHOD'];
+            $serverRequest->method = strtoupper($_SERVER['REQUEST_METHOD']);
         }
 
         # Request uri
-        if (isset($_SERVER['REQUEST_URI'])) {
-            $url = '';
-            if (isset($_SERVER['SERVER_NAME'])) {
-                $protocol = 'http';
-                if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
-                    $protocol = strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']);
-                } elseif (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] !== 'off')) {
-                    $protocol = 'https';
-                }
-                $url = $protocol . '://' . $_SERVER['SERVER_NAME'];
-            }
-            $url .= strval($_SERVER['REQUEST_URI']);
-            $serverRequest->uri = new Uri($url);
-        }
-        if (isset($_SERVER['QUERY_STRING'])) {
-            $queryString = strval($_SERVER['QUERY_STRING']);
-            if ($serverRequest->uri) {
-                $serverRequest->uri = $serverRequest->uri->withQuery($queryString);
-            } else {
-                $serverRequest->uri = new Uri('?' . $queryString);
-            }
-        }
+        $serverRequest->uri = static::getUriFromEnvironment();
 
         # ServerRequest serverParams
         $serverRequest->serverParams = $_SERVER;
@@ -321,6 +294,107 @@ class ServerRequest extends Request implements ServerRequestInterface
         $serverRequest->attributes = [];
 
         return $serverRequest;
+    }
+
+    /**
+     * @return Headers
+     */
+    protected static function getHeadersFromEnvironment()
+    {
+        $headers = new Headers();
+
+        if (function_exists('apache_request_headers')) {
+            $apacheRequestHeaders = apache_request_headers();
+            if ($apacheRequestHeaders) {
+                foreach ($apacheRequestHeaders as $headerName => $headerValue) {
+                    $headers->set($headerName, $headerValue);
+                }
+            }
+        }
+
+        foreach ($_SERVER as $rawHeaderName => $headerValue) {
+            if (substr($rawHeaderName, 0, 5) === 'HTTP_') {
+                $headerName = strtr(substr($rawHeaderName, 5), '_', '-');
+                $headerName = ucwords(strtolower($headerName), '-');
+                $headers->set($headerName, $headerValue);
+            }
+        }
+        if (isset($_SERVER['CONTENT_TYPE'])) {
+            $headers->set('Content-Type', $_SERVER['CONTENT_TYPE']);
+        }
+        if (isset($_SERVER['CONTENT_LENGTH'])) {
+            $headers->set('Content-Length', $_SERVER['CONTENT_LENGTH']);
+        }
+        if (isset($_SERVER['CONTENT_MD5'])) {
+            $headers->set('Content-Md5', $_SERVER['CONTENT_MD5']);
+        }
+
+        if ($headers->has('Authorization') == false) {
+            if (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+                $headers->set('Authorization', $_SERVER['REDIRECT_HTTP_AUTHORIZATION']);
+            } elseif (isset($_SERVER['PHP_AUTH_USER'])) {
+                $basicPassword = isset($_SERVER['PHP_AUTH_PW']) ? $_SERVER['PHP_AUTH_PW'] : '';
+                $authParams = base64_encode($_SERVER['PHP_AUTH_USER'] . ':' . $basicPassword);
+                $headers->set('Authorization', 'Basic ' . $authParams);
+            } elseif (isset($_SERVER['PHP_AUTH_DIGEST'])) {
+                $headers->set('Authorization', $_SERVER['PHP_AUTH_DIGEST']);
+            }
+        }
+
+        return $headers;
+    }
+
+    /**
+     * @return Uri
+     */
+    protected static function getUriFromEnvironment()
+    {
+        $protocol = 'http';
+        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            $protocol = strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']);
+        } elseif (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] !== 'off')) {
+            $protocol = 'https';
+        }
+
+        $protocolDefaultPort = null;
+        if ($protocol === 'https') {
+            $protocolDefaultPort = 443;
+        } elseif ($protocol === 'http') {
+            $protocolDefaultPort = 80;
+        }
+
+        $host = '';
+        if (isset($_SERVER['HTTP_HOST'])) {
+            $host = $_SERVER['HTTP_HOST'];
+        } elseif (isset($_SERVER['SERVER_NAME'])) {
+            $host = $_SERVER['SERVER_NAME'];
+        } elseif (isset($_SERVER['SERVER_ADDR'])) {
+            $host = $_SERVER['SERVER_ADDR'];
+        }
+
+        $uriString = $protocol . '://' . $host;
+        $hasQueryString = false;
+        if (isset($_SERVER['REQUEST_URI'])) {
+            $requestUriParts = explode('?', $_SERVER['REQUEST_URI'], 2);
+            $uriString .= $requestUriParts[0];
+            if (isset($requestUriParts[1])) {
+                $hasQueryString = true;
+                $uriString .= '?' . $requestUriParts[1];
+            }
+        }
+        if (!($hasQueryString) && isset($_SERVER['QUERY_STRING'])) {
+            $uriString .= '?' . strval($_SERVER['QUERY_STRING']);
+        }
+
+        $uri = new Uri($uriString);
+        if (isset($_SERVER['SERVER_PORT'])) {
+            $serverPort = intval($_SERVER['SERVER_PORT'], 10);
+            if ($protocolDefaultPort !== $serverPort) {
+                $uri = $uri->withPort($serverPort);
+            }
+        }
+
+        return $uri;
     }
 
     /**

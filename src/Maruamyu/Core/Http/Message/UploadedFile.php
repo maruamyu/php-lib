@@ -10,6 +10,9 @@ use Psr\Http\Message\UploadedFileInterface;
  */
 class UploadedFile implements UploadedFileInterface
 {
+    /** @var bool */
+    protected $isInitializedByStream = false;
+
     /**
      * @var StreamInterface
      */
@@ -44,11 +47,20 @@ class UploadedFile implements UploadedFileInterface
      * インスタンスを初期化する.
      *
      * @param array $fileEntry $_FILESのうち1ファイル分
+     * @param StreamInterface|null $stream
      */
-    public function __construct(array $fileEntry)
+    public function __construct(array $fileEntry, $stream = null)
     {
-        $this->stream = null;
-        $this->tmpName = $fileEntry['tmp_name'];
+        if ($stream instanceof StreamInterface) {
+            $this->isInitializedByStream = true;
+            $this->stream = $stream;
+        } elseif (is_resource($stream)) {
+            $this->isInitializedByStream = true;
+            $this->stream = new Stream($stream);
+        } else {
+            $this->isInitializedByStream = false;
+            $this->tmpName = $fileEntry['tmp_name'];
+        }
         $this->error = $fileEntry['error'];
         $this->size = $fileEntry['size'];
         $this->name = $fileEntry['name'];
@@ -87,11 +99,25 @@ class UploadedFile implements UploadedFileInterface
         if (strlen($targetPath) < 1) {
             throw new \InvalidArgumentException('invalid target path.');
         }
-        $succeeded = move_uploaded_file($this->tmpName, $targetPath);
-        if (!$succeeded) {
-            throw new \RuntimeException('upload file write error.');
+        if ($this->isInitializedByStream) {
+            # use stream copy
+            $targetResource = fopen($targetPath, 'c+b');
+            stream_copy_to_stream($this->stream->detach(), $targetResource);
+            $this->stream = new Stream($targetResource);
+        } else {
+            # use move_uploaded_file
+            if (is_uploaded_file($this->tmpName) == false) {
+                throw new \RuntimeException('is not uploaded file.');
+            }
+            $succeeded = move_uploaded_file($this->tmpName, $targetPath);
+            if (!$succeeded) {
+                throw new \RuntimeException('upload file write error.');
+            }
+            # for next get stream...
+            $this->tmpName = $targetPath;
+            $this->stream = null;
         }
-        return $succeeded;
+        return true;
     }
 
     /**
